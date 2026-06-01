@@ -120,12 +120,6 @@ git clone https://github.com/zarazhangrui/beautiful-feishu-whiteboard \
 - **`RULES.md`**：画板的硬性限制（只用原生图形、不用透明度、不用渐变和模糊、文字颜色导出失真的注意事项），以及 `lark-cli` / `whiteboard-cli` 的具体命令。
 - **`templates/<slug>/design.md`**：每个风格一份，只有配色和用色说明。布局由 agent 自由发挥，模板只约束配色与气质。
 
-## 说明与限制
-
-- 仅支持 **飞书 / Lark**（通过 `lark-cli` 写入你的租户）。
-- 画板渲染引擎本质是一个 **「矩形 + 圆形」** 的工具。这些风格只用原生图形，刻意不包含任意手绘 / 插画类图形（那类图形渲染效果很差）。
-- 画板的**图片导出对文字颜色不可靠**（经常显示为黑色）；真实文档里颜色是对的。agent 知道要用 raw 导出或真实文档来确认颜色。
-
 ## 许可
 
 [MIT](LICENSE) (c) Zara Zhang（[@zarazhangrui](https://github.com/zarazhangrui)）

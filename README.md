@@ -136,14 +136,6 @@ Your agent will: ask what the board is for and what vibe you want, pick a fittin
 - **`templates/<slug>/design.md`**: one per style, just the palette and how to use its colours. The
   agent is free to lay out the content however reads best; the template only constrains colour and mood.
 
-## Notes and limits
-
-- Works only with **Feishu / Lark** (it writes via `lark-cli` to your tenant).
-- The whiteboard renderer is a **rectangles and circles** tool. These styles use only native shapes.
-  There are no freeform or illustrative shapes by design, because they render badly.
-- The board's **image export is unreliable for text colour** (it often shows black). The live doc
-  renders colours correctly. Your agent knows to verify colour via the raw export or the live doc.
-
 ## License
 
 [MIT](LICENSE) (c) Zara Zhang ([@zarazhangrui](https://github.com/zarazhangrui))
