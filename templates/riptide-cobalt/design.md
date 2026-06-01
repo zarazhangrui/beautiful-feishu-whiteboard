@@ -2,7 +2,8 @@
 version: 1.0
 name: Riptide Cobalt
 renderer: feishu-svg-whiteboard
-description: A two-tone Marimekko-grade poster system — electric cobalt and warm cream locked in interlocking color blocks, with no third color and no ornament. The canvas is warm cream; structure comes from big solid cobalt bands and chunky squared panels, never from shadow. Type is heavy and quiet, sitting in high-contrast panels so the loud color-blocking carries the energy. Best for bold single-idea hero boards, two-sided comparisons, simple stage flows, and section dividers where mood matters more than density.
+description: >
+  A two-tone Marimekko-grade poster system — electric cobalt and warm cream locked in interlocking color blocks, with no third color and no ornament. The canvas is warm cream; structure comes from big solid cobalt bands and chunky squared panels, never from shadow. Type is heavy and quiet, sitting in high-contrast panels so the loud color-blocking carries the energy. Best for bold single-idea hero boards, two-sided comparisons, simple stage flows, and section dividers where mood matters more than density.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

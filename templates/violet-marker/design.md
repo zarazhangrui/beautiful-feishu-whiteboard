@@ -2,7 +2,8 @@
 version: 1.0
 name: Violet Marker
 renderer: feishu-svg-whiteboard
-description: A flat neobrutalist landing-page system — a bright lavender outer field framing a warm cream card with heavy black borders and hard squared corners. Panels abut flush like a web nav bar, a lime highlighter block sits behind one keyword, and a chunky purple button-tile carries the call to action. Type is heavy and mixed-case, ink-black on cream. NO shadows: depth is flat color blocks, thick black frames, panel role-swaps, and scale. Built for explainers, product/process walkthroughs, comparisons, and confident hero-and-steps system maps.
+description: >
+  A flat neobrutalist landing-page system — a bright lavender outer field framing a warm cream card with heavy black borders and hard squared corners. Panels abut flush like a web nav bar, a lime highlighter block sits behind one keyword, and a chunky purple button-tile carries the call to action. Type is heavy and mixed-case, ink-black on cream. NO shadows: depth is flat color blocks, thick black frames, panel role-swaps, and scale. Built for explainers, product/process walkthroughs, comparisons, and confident hero-and-steps system maps.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

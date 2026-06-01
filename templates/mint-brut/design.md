@@ -2,7 +2,8 @@
 version: 1.0
 name: Mint Brut
 renderer: feishu-svg-whiteboard
-description: A candy-bright neo-brutalist design system for Feishu SVG whiteboards, drawn from playful mobile-UI mockups. A mint-green canvas carries flat cream cards capped by hot-pink header bands, all bound by heavy 3–4px black borders with softly rounded corners. Type is a clean bold register — no display typeface survives, so weight and scale do the work — and bright pink / green / gold accents pop as solid color-blocks with bold accent chips breaking the grid. FLAT throughout: no shadows, no gradients. Built for friendly explainers, onboarding flows, step sequences, and comparison or system maps that should feel approachable rather than corporate.
+description: >
+  A candy-bright neo-brutalist design system for Feishu SVG whiteboards, drawn from playful mobile-UI mockups. A mint-green canvas carries flat cream cards capped by hot-pink header bands, all bound by heavy 3–4px black borders with softly rounded corners. Type is a clean bold register — no display typeface survives, so weight and scale do the work — and bright pink / green / gold accents pop as solid color-blocks with bold accent chips breaking the grid. FLAT throughout: no shadows, no gradients. Built for friendly explainers, onboarding flows, step sequences, and comparison or system maps that should feel approachable rather than corporate.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
@@ -12,7 +13,7 @@ colors:
   pink:     "#F888C8"   # dominant accent: header bands, big numerals
   green:    "#70F0A8"   # secondary accent: money-bill stamps, highlights
   gold:     "#F0DE4E"   # punctuation accent: coin stamps, badges, dots
-  pale-pink:"#F8E0F0"   # soft note / aside panel fill (solid light, not opacity)
+  pale-pink: "#F8E0F0"   # soft note / aside panel fill (solid light, not opacity)
   # Use 2–3 accents per scene, never all at once. Colors pop flat against mint — never blend.
 
 # ── DEPTH ────────────────────────────────────────────────────

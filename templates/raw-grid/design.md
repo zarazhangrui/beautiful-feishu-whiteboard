@@ -2,7 +2,8 @@
 version: 1.0
 name: Raw Grid
 renderer: feishu-svg-whiteboard
-description: A neo-brutalist system where the borders ARE the layout. Pure white canvas, 3px solid black structure, and two muted pastel accents (blush + sage) plus neutral gray. Depth is hard black offset shadows — never blurred, never colored. Cells abut without gaps; a giant solid numeral anchors each step. Sharp, system-native, unmistakably digital — closer to a protest poster meets a Notion board than a polished deck.
+description: >
+  A neo-brutalist system where the borders ARE the layout. Pure white canvas, 3px solid black structure, and two muted pastel accents (blush + sage) plus neutral gray. Depth is hard black offset shadows — never blurred, never colored. Cells abut without gaps; a giant solid numeral anchors each step. Sharp, system-native, unmistakably digital — closer to a protest poster meets a Notion board than a polished deck.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

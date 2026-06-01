@@ -2,7 +2,8 @@
 version: 1.0
 name: Neo-Grid Bold
 renderer: feishu-svg-whiteboard
-description: A heavy editorial poster system built on a strict block grid with one neon-lemon accent on putty-ecru. Display type is bold uppercase; labels read as monospace-style metadata tags. Each board reads as a magazine spread divided into colored panels — paper-ecru, ink-black, and electric lemon trading roles across cells. Flatness is the point: no shadows, no rounded corners. Borrows from contemporary editorial print, brutalist annual reports, and populist design-week posters.
+description: >
+  A heavy editorial poster system built on a strict block grid with one neon-lemon accent on putty-ecru. Display type is bold uppercase; labels read as monospace-style metadata tags. Each board reads as a magazine spread divided into colored panels — paper-ecru, ink-black, and electric lemon trading roles across cells. Flatness is the point: no shadows, no rounded corners. Borrows from contemporary editorial print, brutalist annual reports, and populist design-week posters.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

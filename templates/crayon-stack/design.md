@@ -2,7 +2,8 @@
 version: 1.0
 name: Crayon Stack
 renderer: feishu-svg-whiteboard
-description: A loud poster system in primary-school crayon brights on pure white, built from clean native shapes. Flat saturated color-blocks — rectangles, rounded-rects, and circles — abut and lean (via a slight `rotate()`) like books tipping on a shelf. Display type is heavy, all-caps, tightly stacked vermilion; block labels run vertically (rotated 90°) in contrasting hues. Built for explainers, taxonomies, "stacks" of options, and playful comparisons where energy and clash matter more than restraint.
+description: >
+  A loud poster system in primary-school crayon brights on pure white, built from clean native shapes. Flat saturated color-blocks — rectangles, rounded-rects, and circles — abut and lean (via a slight `rotate()`) like books tipping on a shelf. Display type is heavy, all-caps, tightly stacked vermilion; block labels run vertically (rotated 90°) in contrasting hues. Built for explainers, taxonomies, "stacks" of options, and playful comparisons where energy and clash matter more than restraint.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

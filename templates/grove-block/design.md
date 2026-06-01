@@ -2,7 +2,8 @@
 version: 1.0
 name: Grove Block
 renderer: feishu-svg-whiteboard
-description: >-
+description: >
+  >-
   A warm-cream neobrutalist system built from flat, saturated color-blocks
   framed by a single heavy forest-green border. Cards abut inside one big
   rounded green frame, each a solid block of pink, gold, or green; type is a

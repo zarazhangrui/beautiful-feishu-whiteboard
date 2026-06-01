@@ -2,7 +2,8 @@
 version: 1.0
 name: Jade Lens
 renderer: feishu-svg-whiteboard
-description: A calm, harmonious system built on a warm putty canvas and large solid jade-emerald ellipses, where two ellipses overlapping produce a third deeper-green "lens" ellipse in the intersection rather than a transparency. Depth and structure come from flat color blocks, ellipse-on-ellipse overlap, and quiet generous whitespace — no shadows, no chrome, borders only when a divider is genuinely needed. Type is a heavy near-black display set sparingly beside the ellipses or in the margins. Best for serene system maps, concept overviews, two-part comparisons, and slow-paced explainers where the geometry carries the meaning and labels stay minimal.
+description: >
+  A calm, harmonious system built on a warm putty canvas and large solid jade-emerald ellipses, where two ellipses overlapping produce a third deeper-green "lens" ellipse in the intersection rather than a transparency. Depth and structure come from flat color blocks, ellipse-on-ellipse overlap, and quiet generous whitespace — no shadows, no chrome, borders only when a divider is genuinely needed. Type is a heavy near-black display set sparingly beside the ellipses or in the margins. Best for serene system maps, concept overviews, two-part comparisons, and slow-paced explainers where the geometry carries the meaning and labels stay minimal.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

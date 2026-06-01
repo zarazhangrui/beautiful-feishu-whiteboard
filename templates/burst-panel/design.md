@@ -2,7 +2,8 @@
 version: 1.0
 name: Burst Panel
 renderer: feishu-svg-whiteboard
-description: A loud neobrutalist dashboard system — a saturated marigold-yellow canvas carved into big lavender panels and near-black ink cards, all bound by chunky black borders with squared-to-soft corners. Type is heavy and plain (no caps gimmickry), the structural signature is flat color-blocking plus role-swapped nested panels and oversized numeral cells, and color does the shouting while ink does the holding. Great for product/system maps, dashboards-as-diagrams, feature comparisons, and pricing/plan explainers that want energy without clutter.
+description: >
+  A loud neobrutalist dashboard system — a saturated marigold-yellow canvas carved into big lavender panels and near-black ink cards, all bound by chunky black borders with squared-to-soft corners. Type is heavy and plain (no caps gimmickry), the structural signature is flat color-blocking plus role-swapped nested panels and oversized numeral cells, and color does the shouting while ink does the holding. Great for product/system maps, dashboards-as-diagrams, feature comparisons, and pricing/plan explainers that want energy without clutter.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

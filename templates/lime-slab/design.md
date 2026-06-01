@@ -2,7 +2,8 @@
 version: 1.0
 name: Lime Slab
 renderer: feishu-svg-whiteboard
-description: A neobrutalist SaaS-landing aesthetic built on a single electric lime field and slab-heavy black type. Two flat canvases — an electric chartreuse hero and a warm cream body — host crisp white cards outlined in thin charcoal rules and squared pill chips. Depth is entirely flat: solid color blocks, hairline-but-readable borders, and big scale jumps, never a shadow. The type register is loud, tight, mixed-case display weight over quiet sentence-case body. Best for product explainers, feature breakdowns, comparison grids, and bright system maps that want energy without clutter.
+description: >
+  A neobrutalist SaaS-landing aesthetic built on a single electric lime field and slab-heavy black type. Two flat canvases — an electric chartreuse hero and a warm cream body — host crisp white cards outlined in thin charcoal rules and squared pill chips. Depth is entirely flat: solid color blocks, hairline-but-readable borders, and big scale jumps, never a shadow. The type register is loud, tight, mixed-case display weight over quiet sentence-case body. Best for product explainers, feature breakdowns, comparison grids, and bright system maps that want energy without clutter.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

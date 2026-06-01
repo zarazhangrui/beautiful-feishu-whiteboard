@@ -2,7 +2,8 @@
 version: 1.0
 name: Riso Brut
 renderer: feishu-svg-whiteboard
-description: A neo-brutalist editorial design system for Feishu SVG whiteboards. Warm cream canvas, heavy 4px ink borders, hard solid-offset shadows (no blur), and flat saturated color-blocking in four accents. Bold uppercase Latin labels in a technical-spec register. No gradients, no rounded cards, no subtlety — the collision of flat colors is the design. Built for explanatory diagrams: pipelines, stages, comparisons, system maps, timelines.
+description: >
+  A neo-brutalist editorial design system for Feishu SVG whiteboards. Warm cream canvas, heavy 4px ink borders, hard solid-offset shadows (no blur), and flat saturated color-blocking in four accents. Bold uppercase Latin labels in a technical-spec register. No gradients, no rounded cards, no subtlety — the collision of flat colors is the design. Built for explanatory diagrams: pipelines, stages, comparisons, system maps, timelines.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

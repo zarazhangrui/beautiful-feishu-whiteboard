@@ -2,7 +2,8 @@
 version: 1.0
 name: Specimen Bold
 renderer: feishu-svg-whiteboard
-description: A type-specimen poster system for Feishu SVG whiteboards. Near-white paper canvas, three loud flat color-blocks (grass green, acid yellow, sky blue) used as "labels", each holding ONE heavy charcoal word at display scale. No borders by default — the saturated block IS the frame; depth comes from solid color and a few rotated blocks, never shadows. Big-word-on-a-block is the whole grammar. Built for punchy single-frame statements: category showcases, vocabulary/term maps, stage callouts, comparisons, and bold hero diagrams.
+description: >
+  A type-specimen poster system for Feishu SVG whiteboards. Near-white paper canvas, three loud flat color-blocks (grass green, acid yellow, sky blue) used as "labels", each holding ONE heavy charcoal word at display scale. No borders by default — the saturated block IS the frame; depth comes from solid color and a few rotated blocks, never shadows. Big-word-on-a-block is the whole grammar. Built for punchy single-frame statements: category showcases, vocabulary/term maps, stage callouts, comparisons, and bold hero diagrams.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

@@ -2,7 +2,8 @@
 version: 1.0
 name: Salmon Stamp
 renderer: feishu-svg-whiteboard
-description: A neobrutalist stamp system on a warm salmon canvas. Big black-outlined frames hold oversized green display letterforms, and a flat black backer panel sits offset behind each block to read as hard depth — never a shadow, always a solid role-swapped panel. Ink is pure black; the one loud accent is a saturated green. The register is heavy, squared, all-caps and confident. Built for explainers, processes, comparisons, and bold system maps that want a poster-like punch.
+description: >
+  A neobrutalist stamp system on a warm salmon canvas. Big black-outlined frames hold oversized green display letterforms, and a flat black backer panel sits offset behind each block to read as hard depth — never a shadow, always a solid role-swapped panel. Ink is pure black; the one loud accent is a saturated green. The register is heavy, squared, all-caps and confident. Built for explainers, processes, comparisons, and bold system maps that want a poster-like punch.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

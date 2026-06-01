@@ -2,7 +2,8 @@
 version: 1.0
 name: Cut Bloom
 renderer: feishu-svg-whiteboard
-description: A calm two-color color-block system — flat periwinkle blue and marigold yellow blocks on a clean white page, built entirely from rectangles, rounded-rects, circles, and ellipses with no borders. Depth comes purely from solid color blocks and figure-ground contrast, plus a darker solid periwinkle where blocks overlap, never from outlines or shadows. Type is quiet and lowercase-leaning so the color blocks carry the show. Best for warm, editorial explainers, concept maps, value/principle showcases, and gentle process flows where the structure should feel soft and unhurried.
+description: >
+  A calm two-color color-block system — flat periwinkle blue and marigold yellow blocks on a clean white page, built entirely from rectangles, rounded-rects, circles, and ellipses with no borders. Depth comes purely from solid color blocks and figure-ground contrast, plus a darker solid periwinkle where blocks overlap, never from outlines or shadows. Type is quiet and lowercase-leaning so the color blocks carry the show. Best for warm, editorial explainers, concept maps, value/principle showcases, and gentle process flows where the structure should feel soft and unhurried.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

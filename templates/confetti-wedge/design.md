@@ -2,13 +2,14 @@
 version: 1.0
 name: Confetti Wedge
 renderer: feishu-svg-whiteboard
-description: A bright, playful brand-deck system — a cool near-white page punctuated with big flat pastel color blocks (candy pink, mint green, aqua teal) that bleed off the edges as rectangles and circles, framing a heavy black rounded-sans headline. No borders, no shadows: depth and energy come purely from oversized flat color blocks, generous air, and a huge weight jump between the black display word and the soft charcoal body. Best for upbeat brand explainers, value/personality showcases, kickoff title scenes, and light playful concept maps.
+description: >
+  A bright, playful brand-deck system — a cool near-white page punctuated with big flat pastel color blocks (candy pink, mint green, aqua teal) that bleed off the edges as rectangles and circles, framing a heavy black rounded-sans headline. No borders, no shadows: depth and energy come purely from oversized flat color blocks, generous air, and a huge weight jump between the black display word and the soft charcoal body. Best for upbeat brand explainers, value/personality showcases, kickoff title scenes, and light playful concept maps.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
   page:    "#F4F8FB"   # canvas — cool airy near-white with a faint blue cast
   ink:     "#000000"   # ink / structure — pure black, used for the heavy display word
-  charcoal:"#3A3C3E"   # secondary ink — soft charcoal for body copy
+  charcoal: "#3A3C3E"   # secondary ink — soft charcoal for body copy
   pink:    "#F8BED4"   # accent-1 — candy/blossom pink block
   mint:    "#62C0A5"   # accent-2 — fresh mint-green block & big numerals
   aqua:    "#65C8CD"   # accent-3 — aqua-teal block

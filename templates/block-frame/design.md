@@ -2,7 +2,8 @@
 version: 1.0
 name: BlockFrame
 renderer: feishu-svg-whiteboard
-description: A maximalist neo-brutalist system built on 4px black borders, big 8px hard offset shadows, and a high-key candy palette of five saturated pastels plus cream. Display type is heavy uppercase. Tilted decorative shapes — rotated badges and rectangles — puncture the borders and break the grid on purpose. Pastels are paired loudly: pink + blue + green + yellow + cream cycle through every region. Borrows from zine layout, 90s sticker books, and toy packaging — bold, joyful, slightly chaotic, never timid.
+description: >
+  A maximalist neo-brutalist system built on 4px black borders, big 8px hard offset shadows, and a high-key candy palette of five saturated pastels plus cream. Display type is heavy uppercase. Tilted decorative shapes — rotated badges and rectangles — puncture the borders and break the grid on purpose. Pastels are paired loudly: pink + blue + green + yellow + cream cycle through every region. Borrows from zine layout, 90s sticker books, and toy packaging — bold, joyful, slightly chaotic, never timid.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

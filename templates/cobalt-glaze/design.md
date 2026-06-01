@@ -3,6 +3,7 @@ version: 1.0
 name: Cobalt Glaze
 renderer: feishu-svg-whiteboard
 description: >
+  >
   A serene blue-and-white ceramic system built entirely from native shapes: a warm matte
   off-white canvas carrying ONE loud cobalt that speaks through crisp cobalt-on-white
   rounded-rect tiles, checker grids of small squares, and circles — with a whisper of muted
@@ -16,7 +17,7 @@ colors:
   canvas:     "#ECECEC"   # canvas / cool light studio gray backdrop
   ceramic:    "#F4F2EE"   # panel / warm matte off-white "vase body" card
   cobalt:     "#185DB7"   # accent-1 / the loud primary — tiles, grids, circles, fills
-  deep-cobalt:"#0D4FA8"   # ink / structure — borders, rules, connectors, dark text on ceramic
+  deep-cobalt: "#0D4FA8"   # ink / structure — borders, rules, connectors, dark text on ceramic
   sage:       "#8E9179"   # accent-2 / muted relief, used sparingly
   # Rule: 2 accents per scene max — cobalt is the star, sage is a quiet guest.
   # Dark text (deep-cobalt) on the light ceramic/canvas fills; light text only on solid cobalt.

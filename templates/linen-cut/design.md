@@ -2,7 +2,8 @@
 version: 1.0
 name: Linen Cut
 renderer: feishu-svg-whiteboard
-description: A mid-century modernist color-block system in the spirit of Eames-era Herman Miller and Phaidon monographs — a warm natural-linen ground holding a few bold flat blocks and discs in true primary blue, green, and red, with crisp near-black type set top-left. Calm, confident, and graphic; vast negative space and three loud-but-flat primaries do all the work. No grids, no shadows, no chrome — depth is pure color-blocking and scale. Built for cover-style hero boards, manifestos, big-idea explainers, and three-way comparisons that should feel like a gallery print, not a diagram.
+description: >
+  A mid-century modernist color-block system in the spirit of Eames-era Herman Miller and Phaidon monographs — a warm natural-linen ground holding a few bold flat blocks and discs in true primary blue, green, and red, with crisp near-black type set top-left. Calm, confident, and graphic; vast negative space and three loud-but-flat primaries do all the work. No grids, no shadows, no chrome — depth is pure color-blocking and scale. Built for cover-style hero boards, manifestos, big-idea explainers, and three-way comparisons that should feel like a gallery print, not a diagram.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

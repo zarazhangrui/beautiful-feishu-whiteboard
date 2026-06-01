@@ -2,7 +2,8 @@
 version: 1.0
 name: Papier Bleu
 renderer: feishu-svg-whiteboard
-description: A calm two-tone system in the spirit of Matisse's papiers découpés — soft aqua color-blocks on warm cream, with deep-blue type. Breezy, gallery-calm; depth comes from flat color and generous negative space, not grids or shadows. The softness is carried by rounded-rectangles, circles, and ellipses (the board's native soft shapes) — not freeform cut-outs. Flat color only (no gradients, no shadows). Built for gentle explainers, journeys, calm overviews, and boards that should feel artful rather than technical.
+description: >
+  A calm two-tone system in the spirit of Matisse's papiers découpés — soft aqua color-blocks on warm cream, with deep-blue type. Breezy, gallery-calm; depth comes from flat color and generous negative space, not grids or shadows. The softness is carried by rounded-rectangles, circles, and ellipses (the board's native soft shapes) — not freeform cut-outs. Flat color only (no gradients, no shadows). Built for gentle explainers, journeys, calm overviews, and boards that should feel artful rather than technical.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

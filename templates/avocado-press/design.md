@@ -2,7 +2,8 @@
 version: 1.0
 name: Avocado Press
 renderer: feishu-svg-whiteboard
-description: An editorial two-tone color-combo system built on a single loud clash — pale avocado lime against deep French blue. Each scene is a stack of full-bleed solid color bands, no borders, where one band's fill becomes the next band's text color (role-swap). Type is a quiet/elegant register — large, calm display lines plus tiny UPPER tracked spec tags reading like a swatch card. Color does all the work; depth is pure flat color-blocking. Best for comparisons, paired concepts, before/after, and palette/spec breakdowns.
+description: >
+  An editorial two-tone color-combo system built on a single loud clash — pale avocado lime against deep French blue. Each scene is a stack of full-bleed solid color bands, no borders, where one band's fill becomes the next band's text color (role-swap). Type is a quiet/elegant register — large, calm display lines plus tiny UPPER tracked spec tags reading like a swatch card. Color does all the work; depth is pure flat color-blocking. Best for comparisons, paired concepts, before/after, and palette/spec breakdowns.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

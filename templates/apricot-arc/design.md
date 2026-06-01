@@ -2,7 +2,8 @@
 version: 1.0
 name: Apricot Arc
 renderer: feishu-svg-whiteboard
-description: A warm mid-century geometric design system for Feishu SVG whiteboards. Soft cream canvas, no borders and no shadows — depth comes purely from flat apricot-and-salmon color-blocking and a signature half-circle (arc) motif laid out on a tight checkerboard rhythm. Rounded, friendly, two-hue palette with a deep terracotta ink reserved for text inside light panels. Calm and retro rather than loud. Built for explanatory diagrams that benefit from a soft, rhythmic, optimistic register: stages, comparisons, system maps, timelines, and step pipelines.
+description: >
+  A warm mid-century geometric design system for Feishu SVG whiteboards. Soft cream canvas, no borders and no shadows — depth comes purely from flat apricot-and-salmon color-blocking and a signature half-circle (arc) motif laid out on a tight checkerboard rhythm. Rounded, friendly, two-hue palette with a deep terracotta ink reserved for text inside light panels. Calm and retro rather than loud. Built for explanatory diagrams that benefit from a soft, rhythmic, optimistic register: stages, comparisons, system maps, timelines, and step pipelines.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
@@ -10,7 +11,7 @@ colors:
   paper:     "#FFFFFF"   # optional clean panel fill (highest-contrast card)
   orange:    "#F69834"   # primary accent — warm apricot orange
   salmon:    "#F9C2BD"   # secondary accent — soft salmon pink (pairs with orange)
-  terracotta:"#C7561E"   # ink: text, big numerals, rules — a deep burnt tone from the orange family
+  terracotta: "#C7561E"   # ink: text, big numerals, rules — a deep burnt tone from the orange family
   ink-2:     "#7A4A33"   # softer brown for secondary text on light panels
   # Use the 2-hue core (orange + salmon) per scene; terracotta is for ink only, not a fill block.
   # Dark (terracotta) text on light fills always. No black — the system stays warm.

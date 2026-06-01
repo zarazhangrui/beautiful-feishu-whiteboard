@@ -3,6 +3,7 @@ version: 1.0
 name: Reading Room
 renderer: feishu-svg-whiteboard
 description: >
+  >
   A quiet literary-editorial system built from cream paper, a thin drawn black frame,
   and big all-caps headline type, warmed by three soft pastel color-blocks (lilac,
   terracotta, butter). The structural signature is a hand-drawn-feeling outline:

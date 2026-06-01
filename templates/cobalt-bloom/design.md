@@ -2,7 +2,8 @@
 version: 1.0
 name: Cobalt Bloom
 renderer: feishu-svg-whiteboard
-description: A maximal-typographic, two-tone editorial system — electric cobalt blue on a warm blush-salmon ground. The signature is OVERSIZED type: giant solid numerals that anchor the board and a word running vertically up an edge. Off-white book-page panels hold the small text. Fashion-magazine confidence, airy negative space, no clutter — and flat: no shadows. Built for headline boards, yearly/quarterly plans, single-number stats, and bold section openers.
+description: >
+  A maximal-typographic, two-tone editorial system — electric cobalt blue on a warm blush-salmon ground. The signature is OVERSIZED type: giant solid numerals that anchor the board and a word running vertically up an edge. Off-white book-page panels hold the small text. Fashion-magazine confidence, airy negative space, no clutter — and flat: no shadows. Built for headline boards, yearly/quarterly plans, single-number stats, and bold section openers.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:

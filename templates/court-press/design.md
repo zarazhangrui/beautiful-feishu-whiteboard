@@ -2,7 +2,8 @@
 version: 1.0
 name: Court Press
 renderer: feishu-svg-whiteboard
-description: A flat sports-poster system on a grass-green field. Off-white "court lines" divide the canvas, dusty-pink circles read as balls, and deep-forest type carries every label. The mood is editorial-athletic — minimal, confident, a pink-on-green complementary clash. No borders-heavy brutalism and NO shadows: depth comes from flat color blocks, chalk rules, and scale. Built for explainers, processes, and playful step-by-step boards.
+description: >
+  A flat sports-poster system on a grass-green field. Off-white "court lines" divide the canvas, dusty-pink circles read as balls, and deep-forest type carries every label. The mood is editorial-athletic — minimal, confident, a pink-on-green complementary clash. No borders-heavy brutalism and NO shadows: depth comes from flat color blocks, chalk rules, and scale. Built for explainers, processes, and playful step-by-step boards.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
