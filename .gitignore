@@ -1,0 +1,11 @@
+# personal authoring reference — not part of the published skill
+AUTHORING-PROMPT.md
+
+# os / cruft
+.DS_Store
+*.log
+
+# local scratch / generated artifacts
+data/
+diagrams/
+*.png
