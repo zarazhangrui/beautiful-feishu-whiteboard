@@ -52,6 +52,10 @@ authenticate, then stop. You cannot write a board without it.
    - Compose the SVG in a logical space about 1600 to 1700 wide, in that palette, with **native
      shapes only** (rect, rounded rect, circle, ellipse, connectors, text). Lay the content out
      however reads best. Every label is a `<text>`; never set `font-family`.
+   - **Only the content goes on the board, never the instruction behind it.** Do not print the
+     user's prompt, scope notes, source citations, the chosen style name, or any "summary of… /
+     来源… / 风格…" meta line onto the canvas — that looks like a homework header. Such context
+     belongs in your chat reply. (See the "Never echo the user's instructions" rule in `RULES.md`.)
    - **Render it, then look at the image and correct yourself**: fix text overflow, tight margins or
      padding, numerals touching edges, accidental overlaps, and clipping. Iterate render, view, fix
      until it is clean. (Commands and the full checklist are in `RULES.md`.)

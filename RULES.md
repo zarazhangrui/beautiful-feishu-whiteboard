@@ -52,6 +52,20 @@ the real board (the image export and the GUI behave differently — see notes be
 - **No decorative micro-chrome.** No ornamental kicker/footer/slug/metadata labels. Every text
   element must be load-bearing and legible (≥ ~16px, strong contrast); keep small text inside
   high-contrast panels, never small on a colored canvas.
+- **Never echo the user's instructions or your own process onto the board.** The board shows the
+  **content** — never the request that produced it, the inputs you read, or how you built it. A
+  whiteboard is a finished artifact, not a homework submission, so it carries no "here's what you
+  asked for" framing. Cut every meta / process line, for example:
+  - scope or task notes — *"整理范围：仅总结张睿发言；问答部分按她的回答归纳"*, *"本图涵盖第 3-5 章"*
+  - source citations — *"来源：会议逐字稿 00:06:28–00:52:58 的张睿发言"*, *"based on the attached doc"*
+  - the chosen style / template name — *"风格：Specimen Bold"*, *"Riso Brut template"*
+  - audience / format directions, restatements of the prompt, and *"summary of… / 总结自…"* framing
+  - dates, tokens, file paths, or tooling you were not explicitly asked to display
+
+  A **title may name the subject** (e.g. *"张睿 · 发言总结"* is fine — that is the topic), but nothing
+  on the board may describe the task, the source material, or the tool. **Litmus test:** if a line is
+  addressed to the person who asked (or to a grader) rather than being a real part of the artifact,
+  delete it. Put that kind of context in your chat reply to the user, never on the canvas.
 - **Transforms:** `translate` / `rotate` / `scale` are safe; avoid `skewX` / `skewY` / `matrix(...)`.
 - **No fixed canvas.** No 16:9, no scaler. Work in a logical coordinate space (≈1600–1700 wide) and
   let content define the bounds.
