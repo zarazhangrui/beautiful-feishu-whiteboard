@@ -1,24 +1,16 @@
-# Beautiful Feishu Whiteboard
+# Beautiful Feishu Whiteboard（飞书画板配色库）
 
-[中文 README](./README.zh.md)
+[English README](./README.md)
 
-**A library of 24 curated colour palette styles for building gorgeous, *editable* Feishu / Lark
-(飞书) whiteboards.**
+**一个包含 24 种精选配色风格的库，用来生成漂亮、可二次编辑的飞书 / Lark 画板。**
 
-This is an agent **skill** (for Claude Code and other agents that read `SKILL.md`). It is not an
-auto layout chart tool. Your agent composes the layout, and these templates give it a tasteful
-**colour palette and mood** plus the whiteboard medium's hard rendering rules. The result is a real,
-**editable** Feishu whiteboard inside a doc, not a screenshot.
+这是一个给 AI agent 用的 **skill**（适用于 Claude Code 等会读取 `SKILL.md` 的 agent）。它不是一个自动排版的图表工具：**布局由你的 agent 自己来排**，而这些模板只提供有品味的**配色与气质**，外加飞书画板渲染引擎的硬性规则。产出是一块真正可在文档里继续编辑的飞书画板，而不是一张截图。
 
-> Built from hard won, on board verified knowledge of what the Feishu SVG whiteboard renderer can and
-> cannot do (native shapes only, no opacity, the text colour export quirk, and more), all captured in
-> [`RULES.md`](RULES.md).
+> 这套规则来自对飞书 SVG 画板渲染引擎「能做什么、不能做什么」的实测沉淀（只支持原生图形、不支持透明度、文字颜色导出会失真等），全部写在 [`RULES.md`](RULES.md) 里。
 
-## Gallery
+## 风格画廊（Gallery）
 
-Every style below renders the **same content**, the three stages of LLM training, so you can compare
-palettes directly. Click a name to open its template. (Text colours shown are the live board
-colours.)
+下面每个风格画的都是**同一份内容**（LLM 训练的三个阶段），方便你直接对比配色。点击风格名可以打开对应模板。（图中文字颜色为真实画板上的颜色。）
 
 <table>
 <tr>
@@ -73,79 +65,69 @@ colours.)
 
 ---
 
-## Install
+## 安装
 
-**Tell your agent** (Claude Code, etc.):
+**直接告诉你的 agent**（Claude Code 等）：
 
-> "Install the **beautiful-feishu-whiteboard** skill from
-> `github.com/zarazhangrui/beautiful-feishu-whiteboard`."
+> “帮我从 `github.com/zarazhangrui/beautiful-feishu-whiteboard` 安装 **beautiful-feishu-whiteboard** 这个 skill。”
 
-Or run the installer yourself:
+或者自己运行安装器：
 
 ```bash
-# project level (./.claude/skills or your agent's skills dir)
+# 项目级（./.claude/skills 或你的 agent 的 skills 目录）
 npx skills add zarazhangrui/beautiful-feishu-whiteboard
 
-# or globally (available in every project)
+# 或者全局安装（每个项目都能用）
 npx skills add zarazhangrui/beautiful-feishu-whiteboard -g
 ```
 
-Or install manually (clone into your agent's skills folder):
+或者手动安装（clone 到 agent 的 skills 目录）：
 
 ```bash
 git clone https://github.com/zarazhangrui/beautiful-feishu-whiteboard \
   ~/.claude/skills/beautiful-feishu-whiteboard
 ```
 
-## Requirements
+## 前置条件
 
-- **Node.js 20 or newer**
-- **A Feishu / Lark account.** Boards are written into your own tenant.
-- **`lark-cli`** (npm `@larksuite/cli`), installed and authenticated:
+- **Node.js 20 或更高版本**
+- **一个飞书 / Lark 账号**。画板会写入你自己的租户。
+- **`lark-cli`**（npm 包 `@larksuite/cli`），已安装并完成授权：
   ```bash
   npm install -g @larksuite/cli
-  lark-cli config init     # first run: scan the QR code
-  lark-cli auth login      # authorize your Feishu/Lark account
+  lark-cli config init     # 首次运行：扫码
+  lark-cli auth login      # 授权你的飞书/Lark 账号
   ```
-- **`@larksuite/whiteboard-cli`**, used via `npx`, downloads automatically, no install needed.
+- **`@larksuite/whiteboard-cli`**，通过 `npx` 调用，自动下载，无需单独安装。
 
-Run the bundled check any time: `bash scripts/preflight.sh`
+随时运行自检：`bash scripts/preflight.sh`
 
-## Use it
+## 怎么用
 
-Once installed, just ask your agent in plain language. You can name a style or describe a vibe:
+安装后，用大白话告诉你的 agent 就行。可以指定风格，也可以描述气质：
 
-> - "Make a **Feishu whiteboard** explaining our onboarding flow, in the **Riso Brut** style."
-> - "Turn this doc into a visual **board** in Feishu, minimal **cobalt** look."
-> - "Draw the system architecture as a Feishu whiteboard, **playful candy** colours."
-> - "Explain the 3 LLM training stages as a board."
+> - “用 **Riso Brut** 风格做一块飞书画板，讲清楚我们的新人上手流程。”
+> - “把这篇文档变成一块飞书画板，**极简、cobalt 蓝** 的感觉。”
+> - “把系统架构画成飞书画板，**糖果色、活泼** 一点。”
+> - “用一块画板讲清楚 LLM 训练的三个阶段。”
 
-Your agent will: ask what the board is for and what vibe you want, pick a fitting style from the
-[catalogue](CATALOG.md), compose the diagram with native shapes, render it and self correct
-(overflow, margins, overlaps), write it into a Feishu doc as an editable whiteboard, then send you
-**both the doc link and the image**. You can switch to a different style any time.
+你的 agent 会：先问清楚这块画板是干什么的、你想要什么气质，从[风格目录](CATALOG.md)里挑一个合适的风格，用原生图形把图画出来，渲染后自我检查（溢出、留白、重叠等问题），写入飞书文档成为可编辑画板，然后把**文档链接和图片一起**发给你。你随时可以换一个风格。
 
-## How it works
+## 工作原理
 
-- **`SKILL.md`**: the agent entry point. When to use, the preflight, and the conversation flow
-  (understand the board, ask the vibe, pick a style, build, deliver the link and image, offer to switch).
-- **`CATALOG.md`**: every style with its vibe, formality level, and what it is good for, so the agent
-  can pick a style that fits the content.
-- **`RULES.md`**: the medium's hard limits (native shapes only, no opacity, no gradients or blur, the
-  text colour export caveat) and the exact `lark-cli` and `whiteboard-cli` commands.
-- **`templates/<slug>/design.md`**: one per style, just the palette and how to use its colours. The
-  agent is free to lay out the content however reads best; the template only constrains colour and mood.
+- **`SKILL.md`**：agent 的入口。包含使用时机、前置自检，以及对话流程（先搞清楚要画什么、再问气质、挑风格、生成、把链接和图片一起给用户、并告知可换风格）。
+- **`CATALOG.md`**：每个风格的气质、正式程度、适合的内容类型，便于 agent 按内容挑风格。
+- **`RULES.md`**：画板的硬性限制（只用原生图形、不用透明度、不用渐变和模糊、文字颜色导出失真的注意事项），以及 `lark-cli` / `whiteboard-cli` 的具体命令。
+- **`templates/<slug>/design.md`**：每个风格一份，只有配色和用色说明。布局由 agent 自由发挥，模板只约束配色与气质。
 
-## Notes and limits
+## 说明与限制
 
-- Works only with **Feishu / Lark** (it writes via `lark-cli` to your tenant).
-- The whiteboard renderer is a **rectangles and circles** tool. These styles use only native shapes.
-  There are no freeform or illustrative shapes by design, because they render badly.
-- The board's **image export is unreliable for text colour** (it often shows black). The live doc
-  renders colours correctly. Your agent knows to verify colour via the raw export or the live doc.
+- 仅支持 **飞书 / Lark**（通过 `lark-cli` 写入你的租户）。
+- 画板渲染引擎本质是一个 **「矩形 + 圆形」** 的工具。这些风格只用原生图形，刻意不包含任意手绘 / 插画类图形（那类图形渲染效果很差）。
+- 画板的**图片导出对文字颜色不可靠**（经常显示为黑色）；真实文档里颜色是对的。agent 知道要用 raw 导出或真实文档来确认颜色。
 
-## License
+## 许可
 
-[MIT](LICENSE) (c) Zara Zhang ([@zarazhangrui](https://github.com/zarazhangrui))
+[MIT](LICENSE) (c) Zara Zhang（[@zarazhangrui](https://github.com/zarazhangrui)）
 
-Built on Feishu/Lark's `@larksuite/cli` and `@larksuite/whiteboard-cli`.
+基于飞书/Lark 的 `@larksuite/cli` 与 `@larksuite/whiteboard-cli`。
