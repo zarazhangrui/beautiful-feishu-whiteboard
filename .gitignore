@@ -9,3 +9,4 @@ AUTHORING-PROMPT.md
 data/
 diagrams/
 *.png
+!assets/styles/*.png
