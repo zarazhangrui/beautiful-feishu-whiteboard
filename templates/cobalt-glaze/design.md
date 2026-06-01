@@ -3,7 +3,6 @@ version: 1.0
 name: Cobalt Glaze
 renderer: feishu-svg-whiteboard
 description: >
-  >
   A serene blue-and-white ceramic system built entirely from native shapes: a warm matte
   off-white canvas carrying ONE loud cobalt that speaks through crisp cobalt-on-white
   rounded-rect tiles, checker grids of small squares, and circles — with a whisper of muted
