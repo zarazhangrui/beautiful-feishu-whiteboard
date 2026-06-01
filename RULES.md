@@ -16,6 +16,25 @@ the real board (the image export and the GUI behave differently — see notes be
   as a minor accent, never structural. **No freeform / organic / illustrative shapes** (blobs,
   leaves, petals, waves, coral, fans, flowers, stars, confetti, doodles, mascots, "hand-cut"
   silhouettes). If a reference is organic, keep only its **palette** and rebuild with rects + circles.
+- **Arrows = native connectors, never hand-drawn heads.** To put an arrowhead on a line, give the
+  `<line>` or `<polyline>` a **`marker-end`** (and `marker-start` for a double-headed arrow)
+  pointing at a `<marker>` in `<defs>`. The board converts these into **native connectors with a
+  clean built-in arrowhead**, and the arrow takes the line's `stroke` colour. **Never draw an
+  arrowhead as a separate `<polygon>` / triangle** — a polygon embeds as a flat image and renders
+  rough, squiggly, and hand-drawn (unprofessional). One marker definition serves the whole board:
+  ```svg
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="4"
+            orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 4 L0 8 z"/></marker>
+  </defs>
+  <line x1="100" y1="80" x2="360" y2="80" stroke="#0D4FA8" stroke-width="3" marker-end="url(#arrow)"/>
+  <!-- right-angled connector: polyline (H/V points) + marker-end -->
+  <polyline points="100,140 240,140 240,220" fill="none" stroke="#0D4FA8" stroke-width="3" marker-end="url(#arrow)"/>
+  <!-- double-headed (e.g. read/write): add marker-start too -->
+  <line x1="100" y1="280" x2="360" y2="280" stroke="#0D4FA8" stroke-width="3" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  ```
+  (The marker's own shape/colour is ignored on the board; it just signals "put a native arrowhead
+  here." Keep the line straight or right-angled — those map to clean `straight` / `right_angled` connectors.)
 - **Forbidden** (break or flatten to a static image): any gradient, `<filter>`, `<pattern>`,
   `<clipPath>`, `<mask>`, blur.
 - **Opacity is ignored.** `opacity` / `fill-opacity` / `stroke-opacity` all render fully opaque.

@@ -25,7 +25,7 @@ colors:
 stroke:
   structural: "4px solid #1E1E1E"   # panels, cards, the board frame
   rule:       "2px solid #1E1E1E"   # dividers, pill outlines, connector lines
-  radius: 18  # generously rounded rects/pills; arrowheads stay small sharp polygons
+  radius: 18  # generously rounded rects/pills
 ---
 
 # Burst Panel — Feishu SVG Whiteboard Design System
