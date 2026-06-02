@@ -16,6 +16,7 @@ restrained / refined / institutional.
 | [Bold Poster](templates/bold-poster/) | Medium | loud, print poster, single red accent |
 | [Burst Panel](templates/burst-panel/) | Low | loud, energetic, dashboard |
 | [Cartesian](templates/cartesian/) | High | quiet, architectural, warm neutral, precise |
+| [Checker Bloom](templates/checker-bloom/) | Low | playful, hand painted, folk, cheerful |
 | [Cobalt Bloom](templates/cobalt-bloom/) | Medium | oversized type, fashion editorial, confident |
 | [Cobalt Glaze](templates/cobalt-glaze/) | High | refined, calm, ceramic blue and white |
 | [Confetti Wedge](templates/confetti-wedge/) | Low | playful, breezy, celebratory pastel |

@@ -2,7 +2,7 @@
 
 [中文 README](./README.zh.md)
 
-**A library of 34 curated colour palette styles for building gorgeous, *editable* Feishu / Lark
+**A library of 35 curated colour palette styles for building gorgeous, *editable* Feishu / Lark
 (飞书) whiteboards.**
 
 This is an agent **skill** (for Claude Code and other agents that read `SKILL.md`). It is not an
