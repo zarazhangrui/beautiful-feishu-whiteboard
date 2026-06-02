@@ -36,7 +36,7 @@ restrained / refined / institutional.
 | [Monochrome](templates/monochrome/) | High | quiet, minimal, text first, no accent |
 | [Neo-Grid Bold](templates/neo-grid-bold/) | Medium | editorial grid, bold, structured |
 | [Papier Bleu](templates/papier-bleu/) | Medium | Matisse calm, artful, airy |
-| [Pin & Paper](templates/pin-and-paper/) | Low | bulletin board, loud yellow, handmade |
+| [Pin & Paper](templates/pin-and-paper/) | Medium | clean, graphic, white with yellow and blue pop |
 | [Raw Grid](templates/raw-grid/) | Medium | system native, sharp, digital brutalism |
 | [Reading Room](templates/reading-room/) | High | quiet, literary, restrained, institutional |
 | [Riptide Cobalt](templates/riptide-cobalt/) | Medium | bold poster, low density, high impact |
