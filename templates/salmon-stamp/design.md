@@ -3,51 +3,51 @@ version: 1.0
 name: Salmon Stamp
 renderer: feishu-svg-whiteboard
 description: >
-  A neobrutalist stamp system on a warm salmon canvas. Big black-outlined frames hold oversized green display letterforms, and a flat black backer panel sits offset behind each block to read as hard depth — never a shadow, always a solid role-swapped panel. Ink is pure black; the one loud accent is a saturated green. The register is heavy, squared, all-caps and confident. Built for explainers, processes, comparisons, and bold system maps that want a poster-like punch.
+  A clean stamp-poster palette on a white page: a warm salmon-peach and a saturated grass green as
+  the two accents, with black for type and minimal structure. Salmon color-blocks (header bands,
+  chips) carry the layout; green is the single loud accent (big numerals, a stamp block, key marks);
+  black is the type and the few rules. Bold and characterful but airy. Use the color blocks as the
+  structure, not heavy nested frames. Flat color only, no gradients.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  salmon:  "#F0AE9E"   # warm salmon-peach — the canvas
-  ink:     "#000000"   # pure black — frames, ALL structure, backer panels, body text
-  green:   "#049550"   # saturated grass-green — the single loud accent: display letters, numerals, fills
-  green-2: "#04964E"   # one step of green (near-identical) — secondary green fills if two greens needed
-  paper:   "#FFFFFF"   # clean white — small-text panels that need maximum contrast
-  # ONE accent per scene (green) over salmon + black ink. The green-on-salmon clash IS the identity.
+  white:   "#FFFFFF"   # universal canvas: clean white page
+  salmon:  "#F0AE9E"   # warm salmon-peach: the main accent — header bands, chips, color blocks
+  green:   "#049550"   # saturated grass green: the single loud accent — big numerals, stamp block, key fills
+  ink:     "#000000"   # black: all body/label text, plus the few rules and any minimal framing
+  green-2: "#04964E"   # one step of green (near-identical) — only if two greens must abut
+  # White page + two accents (salmon blocks, green accent) + black type. One loud accent per scene:
+  # the green-on-salmon clash is the identity. Keep it airy; let salmon blocks do the structure.
 
-# ── TEXT COLOR (critical on a colored canvas) ────────────────
+# ── TEXT COLOR ───────────────────────────────────────────────
 text-rules:
-  on-salmon: "BLACK (ink) for any size — always reliable. GREEN only for LARGE display (≥ ~40px). Never small green text on salmon (low contrast)."
-  on-ink:    "SALMON or WHITE for LARGE/bold text; never small body on black — move small text to a salmon or white panel."
-  on-white:  "BLACK text — always crisp. Best home for any small body/label."
-  on-green:  "BLACK text — always crisp."
-
-# ── DEPTH ────────────────────────────────────────────────────
-# FLAT system — NO shadows of any kind (not blurred, not the duplicate-offset trick).
-# The signature "offset block" is a SOLID black backer panel placed behind a forward panel —
-# a panel role-swap, not a shadow. Depth = flat color blocks, black frames, backer panels, scale.
+  rule: "Body and labels are black on white and on salmon. The big display numerals and the stamp block are green. White text only on the dark outcome bar."
+  note: "Light text on the dark outcome bar reads on the live board. The image export renders text color unreliably, so judge color via --output_as raw or the live board, not the exported PNG."
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
-  frame:  "4px solid ink"    # the square outline frame around hero/stamp blocks
-  border: "3px solid ink"    # cards, banners, step boxes
-  rule:   "3px solid ink"    # divider lines
-  radius: 0                  # everything squared — hard corners are the whole point
+  structural: "minimal. Prefer salmon color-blocks and thin rules over heavy frames; if a card needs an edge use a single 2px black border, not nested boxes"
+  rule:       "thin salmon or black rules for row dividers"
+  radius:     "low (rx 0 to 8); crisp, poster-like"
 ---
 
 # Salmon Stamp — Feishu SVG Whiteboard Design System
 
-A neobrutalist poster you can read across the room. A warm salmon field, black-outlined square
-frames, oversized green stamped letterforms, and a flat black backer panel offset behind each
-block to fake the hard "drop" of brutalist print — without any shadow.
+A clean stamp-poster on a white page: warm salmon color-blocks, a saturated grass-green accent, and
+black type. Let the salmon header bands and chips carry the structure, spend the green on the big
+numerals and a stamp block, and keep the page open. Bold and characterful, but airy, not boxed-in.
 
 ## Color
 
-The **salmon field** (`#F0AE9E`) is the canvas. **Ink** (`#000000`) is the structural color —
-every frame, border, divider, backer panel, and all body/label text. **Green** (`#049550`) is the
-single loud accent: the oversized stamp letters, big numerals, and a few key fills. **White**
-(`#FFFFFF`) is the high-contrast home for any small body text. Use only **one accent per scene** —
-the green-on-salmon clash is the whole identity; do not dilute it with extra hues. A near-identical
-`#04964E` exists only if you genuinely need two greens to abut.
+- **White** (`#FFFFFF`): The universal canvas. Clean and open. The default background.
+- **Salmon** (`#F0AE9E`): Warm salmon-peach. The main accent: stage header bands, the kicker chip, and color blocks. It does the structural work so you do not need heavy frames.
+- **Green** (`#049550`): Saturated grass green. The single loud accent: big stage numerals, a "stamp" block, and a few key fills or marks. One accent per scene, the green-on-salmon clash is the identity.
+- **Ink** (`#000000`): Black. All body and label text, the few thin rules, and any minimal framing.
+- **Green 2** (`#04964E`): A near-identical green, only if two greens must sit beside each other.
+
+Keep it airy: use the salmon color-blocks and a little black type as the structure, not nested boxes.
+Text is black on white and on salmon; the display numerals and stamp are green; white text only on a
+dark outcome bar.
 
 ## Rules
 

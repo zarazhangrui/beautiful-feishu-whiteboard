@@ -47,7 +47,7 @@ restrained / refined / institutional.
 | [Pin & Paper](templates/pin-and-paper/) | Medium | clean, graphic, white with yellow and blue pop |
 | [Raw Grid](templates/raw-grid/) | Medium | system native, sharp, digital brutalism |
 | [Riptide Cobalt](templates/riptide-cobalt/) | Medium | bold poster, low density, high impact |
-| [Salmon Stamp](templates/salmon-stamp/) | Low | stamp and poster, bold, characterful |
+| [Salmon Stamp](templates/salmon-stamp/) | Low | clean stamp poster, white with salmon and green |
 | [Soft Editorial](templates/soft-editorial/) | Medium | warm magazine, soft pastels, gentle |
 | [Violet Marker](templates/violet-marker/) | Low | lavender, highlighter, friendly modern |
 
