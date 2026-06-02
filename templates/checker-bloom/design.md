@@ -4,9 +4,8 @@ name: Checker Bloom
 renderer: feishu-svg-whiteboard
 description: >
   A playful, hand-painted folk palette taken from a gouache still life: a pale mint-green page with
-  two confident accents, a cobalt blue and a grass green, plus warm-black ink and a single tiny red
-  for punctuation. Cheerful and naive-art, like a painted poster of blue blooms. Flat color only,
-  no gradients.
+  two confident accents, a cobalt blue and a grass green, plus warm-black ink. Cheerful and
+  naive-art, like a painted poster of blue blooms. Flat color only, no gradients.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
@@ -14,14 +13,13 @@ colors:
   ink:   "#151515"   # all text, borders, and rules
   blue:  "#2C6EE0"   # primary accent: cobalt. Hero fills, key blocks, the loudest note
   green: "#5E9E4A"   # secondary accent: grass green. Supporting fills, dividers, stems-equivalent
-  red:   "#D93A2A"   # punctuation ONLY: a small dot, a center, a highlight. Never a surface or text
   white: "#FFFFFF"   # card fills, and a large-bold text option on blue
   # Mint page + two accents (cobalt blue, grass green). Use blue as the lead and green as support,
-  # two accents per scene. Red is a single tiny spark, never a fill or a text color.
+  # two accents per scene. No red, no third accent.
 
 # ── TEXT COLOR ───────────────────────────────────────────────
 text-rules:
-  rule: "Text is ink on the mint page and on white cards. On a blue or green fill, use large bold white. Keep red out of text entirely."
+  rule: "Text is ink on the mint page and on white cards. On a blue or green fill, use large bold white."
   note: "Large bold white text on the cobalt blue reads well on the live board. The image export renders text color unreliably, so judge color via --output_as raw or the live board, not the exported PNG."
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
@@ -33,9 +31,9 @@ stroke:
 
 # Checker Bloom — Feishu SVG Whiteboard Design System
 
-A pale mint page with cobalt-blue and grass-green accents, warm-black ink, and one tiny red spark. The
-mood is a hand-painted folk still life: cheerful, naive, and confident. Lead with the cobalt blue,
-support with the green, keep the page mint and airy, and spend the red on a single dot.
+A pale mint page with cobalt-blue and grass-green accents and warm-black ink. The mood is a
+hand-painted folk still life: cheerful, naive, and confident. Lead with the cobalt blue, support with
+the green, and keep the page mint and airy.
 
 ## Color
 
@@ -43,12 +41,10 @@ support with the green, keep the page mint and airy, and spend the red on a sing
 - **Ink** (`#151515`): Warm near-black. All text, borders, and rules.
 - **Blue** (`#2C6EE0`): Cobalt. The primary accent: hero fills, key blocks, the boldest note on the page. Lead with it.
 - **Green** (`#5E9E4A`): Grass green. The secondary accent: supporting fills, dividers, and the green that pairs with the blue.
-- **Red** (`#D93A2A`): Punctuation only. A small dot, a center, a single highlight. Never a surface fill, never text.
 - **White** (`#FFFFFF`): Card fills, and a large-bold text option on the cobalt blue.
 
-Use two accents per scene, blue leading and green supporting, on the mint page. The red is a single
-spark, not a third accent. Text stays in ink on mint and white, and switches to large bold white on a
-blue or green fill.
+Use two accents per scene, blue leading and green supporting, on the mint page. Text stays in ink on
+mint and white, and switches to large bold white on a blue or green fill.
 
 ## Rules
 
