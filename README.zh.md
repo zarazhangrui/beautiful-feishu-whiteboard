@@ -10,29 +10,29 @@
 
 ## 风格画廊（Gallery）
 
-每个风格画的都是**同一份内容**（LLM 训练的三个阶段），方便直接对比配色。36 个风格按**从克制（restrained）到大胆（bold）**分为三档，点击风格名可打开对应模板。
+每个风格画的都是**同一份内容**（LLM 训练的三个阶段），方便直接对比配色。35 个风格按**从克制（restrained）到大胆（bold）**分为三档，点击风格名可打开对应模板。
 
 ### 克制 · Restrained
 
 <table>
 <tr>
 <td width="50%"><a href="templates/avocado-press/"><img src="assets/styles/avocado-press.png" alt="Avocado Press"/></a><br/><sub><a href="templates/avocado-press/"><b>Avocado Press</b></a></sub></td>
-<td width="50%"><a href="templates/cobalt-glaze/"><img src="assets/styles/cobalt-glaze.png" alt="Cobalt Glaze"/></a><br/><sub><a href="templates/cobalt-glaze/"><b>Cobalt Glaze</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/grove/"><img src="assets/styles/grove.png" alt="Grove"/></a><br/><sub><a href="templates/grove/"><b>Grove</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/jade-lens/"><img src="assets/styles/jade-lens.png" alt="Jade Lens"/></a><br/><sub><a href="templates/jade-lens/"><b>Jade Lens</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/long-table/"><img src="assets/styles/long-table.png" alt="Long Table"/></a><br/><sub><a href="templates/long-table/"><b>Long Table</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/macchiato/"><img src="assets/styles/macchiato.png" alt="Macchiato"/></a><br/><sub><a href="templates/macchiato/"><b>Macchiato</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/monochrome/"><img src="assets/styles/monochrome.png" alt="Monochrome"/></a><br/><sub><a href="templates/monochrome/"><b>Monochrome</b></a></sub></td>
-<td width="50%"><a href="templates/papier-bleu/"><img src="assets/styles/papier-bleu.png" alt="Papier Bleu"/></a><br/><sub><a href="templates/papier-bleu/"><b>Papier Bleu</b></a></sub></td>
 </tr>
 <tr>
+<td width="50%"><a href="templates/papier-bleu/"><img src="assets/styles/papier-bleu.png" alt="Papier Bleu"/></a><br/><sub><a href="templates/papier-bleu/"><b>Papier Bleu</b></a></sub></td>
 <td width="50%"><a href="templates/reading-room/"><img src="assets/styles/reading-room.png" alt="Reading Room"/></a><br/><sub><a href="templates/reading-room/"><b>Reading Room</b></a></sub></td>
+</tr>
+<tr>
+<td width="50%"><a href="templates/salmon-stamp/"><img src="assets/styles/salmon-stamp.png" alt="Salmon Stamp"/></a><br/><sub><a href="templates/salmon-stamp/"><b>Salmon Stamp</b></a></sub></td>
 </tr>
 </table>
 
@@ -56,19 +56,15 @@
 <td width="50%"><a href="templates/editorial-forest/"><img src="assets/styles/editorial-forest.png" alt="Editorial Forest"/></a><br/><sub><a href="templates/editorial-forest/"><b>Editorial Forest</b></a></sub></td>
 </tr>
 <tr>
-<td width="50%"><a href="templates/grove-block/"><img src="assets/styles/grove-block.png" alt="Grove Block"/></a><br/><sub><a href="templates/grove-block/"><b>Grove Block</b></a></sub></td>
 <td width="50%"><a href="templates/lime-slab/"><img src="assets/styles/lime-slab.png" alt="Lime Slab"/></a><br/><sub><a href="templates/lime-slab/"><b>Lime Slab</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/linen-cut/"><img src="assets/styles/linen-cut.png" alt="Linen Cut"/></a><br/><sub><a href="templates/linen-cut/"><b>Linen Cut</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/pin-and-paper/"><img src="assets/styles/pin-and-paper.png" alt="Pin & Paper"/></a><br/><sub><a href="templates/pin-and-paper/"><b>Pin & Paper</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/raw-grid/"><img src="assets/styles/raw-grid.png" alt="Raw Grid"/></a><br/><sub><a href="templates/raw-grid/"><b>Raw Grid</b></a></sub></td>
-<td width="50%"><a href="templates/riptide-cobalt/"><img src="assets/styles/riptide-cobalt.png" alt="Riptide Cobalt"/></a><br/><sub><a href="templates/riptide-cobalt/"><b>Riptide Cobalt</b></a></sub></td>
 </tr>
 <tr>
-<td width="50%"><a href="templates/salmon-stamp/"><img src="assets/styles/salmon-stamp.png" alt="Salmon Stamp"/></a><br/><sub><a href="templates/salmon-stamp/"><b>Salmon Stamp</b></a></sub></td>
+<td width="50%"><a href="templates/riptide-cobalt/"><img src="assets/styles/riptide-cobalt.png" alt="Riptide Cobalt"/></a><br/><sub><a href="templates/riptide-cobalt/"><b>Riptide Cobalt</b></a></sub></td>
 <td width="50%"><a href="templates/soft-editorial/"><img src="assets/styles/soft-editorial.png" alt="Soft Editorial"/></a><br/><sub><a href="templates/soft-editorial/"><b>Soft Editorial</b></a></sub></td>
 </tr>
 <tr>
@@ -89,14 +85,17 @@
 </tr>
 <tr>
 <td width="50%"><a href="templates/crayon-stack/"><img src="assets/styles/crayon-stack.png" alt="Crayon Stack"/></a><br/><sub><a href="templates/crayon-stack/"><b>Crayon Stack</b></a></sub></td>
+<td width="50%"><a href="templates/grove-block/"><img src="assets/styles/grove-block.png" alt="Grove Block"/></a><br/><sub><a href="templates/grove-block/"><b>Grove Block</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/mint-brut/"><img src="assets/styles/mint-brut.png" alt="Mint Brut"/></a><br/><sub><a href="templates/mint-brut/"><b>Mint Brut</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/neo-grid-bold/"><img src="assets/styles/neo-grid-bold.png" alt="Neo-Grid Bold"/></a><br/><sub><a href="templates/neo-grid-bold/"><b>Neo-Grid Bold</b></a></sub></td>
-<td width="50%"><a href="templates/riso-brut/"><img src="assets/styles/riso-brut.png" alt="Riso Brut"/></a><br/><sub><a href="templates/riso-brut/"><b>Riso Brut</b></a></sub></td>
 </tr>
 <tr>
+<td width="50%"><a href="templates/riso-brut/"><img src="assets/styles/riso-brut.png" alt="Riso Brut"/></a><br/><sub><a href="templates/riso-brut/"><b>Riso Brut</b></a></sub></td>
 <td width="50%"><a href="templates/specimen-bold/"><img src="assets/styles/specimen-bold.png" alt="Specimen Bold"/></a><br/><sub><a href="templates/specimen-bold/"><b>Specimen Bold</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/stencil-tablet/"><img src="assets/styles/stencil-tablet.png" alt="Stencil & Tablet"/></a><br/><sub><a href="templates/stencil-tablet/"><b>Stencil & Tablet</b></a></sub></td>
 </tr>
 </table>

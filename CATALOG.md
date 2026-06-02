@@ -5,7 +5,7 @@ the **formality**, and the **vibe** they want. Any style can carry almost any co
 feel. If the user named a style or a clear preference, honour it. Otherwise infer from the tone they
 want and propose one. After generating, always tell the user they can switch to any other style.
 
-The 36 styles are grouped into three levels, from restrained to bold:
+The 35 styles are grouped into three levels, from restrained to bold:
 
 - **Restrained** — monochrome, two-tone, calm and muted; not colourful. For serious, quiet, editorial boards.
 - **Balanced** — a confident accent or two on a clean ground; the versatile middle. Most general work lives here.
@@ -19,7 +19,6 @@ restrained / refined / institutional.
 | Style | Formality | Vibe |
 |---|---|---|
 | [Avocado Press](templates/avocado-press/) | Medium | clean duotone, white with blue and lime |
-| [Cobalt Glaze](templates/cobalt-glaze/) | High | refined, calm, ceramic blue and white |
 | [Grove](templates/grove/) | High | editorial, grounded, parchment and forest green |
 | [Jade Lens](templates/jade-lens/) | High | calm, harmonious, minimal green |
 | [Long Table](templates/long-table/) | Medium | warm, rustic, single rust ink, menu like |
@@ -27,6 +26,7 @@ restrained / refined / institutional.
 | [Monochrome](templates/monochrome/) | High | quiet, minimal, text first, no accent |
 | [Papier Bleu](templates/papier-bleu/) | Medium | Matisse calm, artful, airy |
 | [Reading Room](templates/reading-room/) | High | quiet, literary, restrained, institutional |
+| [Salmon Stamp](templates/salmon-stamp/) | Low | clean stamp poster, white with salmon and green |
 
 ## Balanced
 
@@ -40,15 +40,13 @@ restrained / refined / institutional.
 | [Coral](templates/coral/) | Medium | warm, friendly, clean, signature coral |
 | [Cut Bloom](templates/cut-bloom/) | Medium | calm, warm, soft colour blocks |
 | [Editorial Forest](templates/editorial-forest/) | High | literary, bookish, forest green and rose |
-| [Grove Block](templates/grove-block/) | Medium | brand forward, flat, confident green |
 | [Lime Slab](templates/lime-slab/) | Medium | electric, bold, modern SaaS |
 | [Linen Cut](templates/linen-cut/) | High | mid century modernist, tasteful, calm |
 | [Pin & Paper](templates/pin-and-paper/) | Medium | clean, graphic, white with yellow and blue pop |
 | [Raw Grid](templates/raw-grid/) | Medium | system native, sharp, digital brutalism |
 | [Riptide Cobalt](templates/riptide-cobalt/) | Medium | bold poster, low density, high impact |
-| [Salmon Stamp](templates/salmon-stamp/) | Low | clean stamp poster, white with salmon and green |
 | [Soft Editorial](templates/soft-editorial/) | Medium | warm magazine, soft pastels, gentle |
-| [Violet Marker](templates/violet-marker/) | Low | lavender, highlighter, friendly modern |
+| [Violet Marker](templates/violet-marker/) | Low | highlighter, white with violet and lime, modern |
 
 ## Bold
 
@@ -59,6 +57,7 @@ restrained / refined / institutional.
 | [Confetti Wedge](templates/confetti-wedge/) | Low | playful, breezy, celebratory pastel |
 | [Court Press](templates/court-press/) | Low | sporty, athletic, energetic clash |
 | [Crayon Stack](templates/crayon-stack/) | Low | primary crayon brights, loud, fun |
+| [Grove Block](templates/grove-block/) | Medium | brand forward, flat, confident green |
 | [Mint Brut](templates/mint-brut/) | Low | candy, friendly, app like |
 | [Neo-Grid Bold](templates/neo-grid-bold/) | Medium | editorial grid, bold, structured |
 | [Riso Brut](templates/riso-brut/) | Medium | neo brutalist editorial, confident, designed |

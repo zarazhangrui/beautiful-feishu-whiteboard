@@ -3,54 +3,51 @@ version: 1.0
 name: Violet Marker
 renderer: feishu-svg-whiteboard
 description: >
-  A flat neobrutalist landing-page system — a bright lavender outer field framing a warm cream card with heavy black borders and hard squared corners. Panels abut flush like a web nav bar, a lime highlighter block sits behind one keyword, and a chunky purple button-tile carries the call to action. Type is heavy and mixed-case, ink-black on cream. NO shadows: depth is flat color blocks, thick black frames, panel role-swaps, and scale. Built for explainers, product/process walkthroughs, comparisons, and confident hero-and-steps system maps.
+  A friendly highlighter palette on a white page: a bright lavender-violet and an acid lime-green as
+  the two accents, with black type. Violet does the colour-blocks (header bands, chips); lime is the
+  single highlighter punch (a marker block behind a keyword, accent ticks, an underline). Black carries
+  the type; a warm grey softens body copy. Clean, modern, and airy: colour-blocks and whitespace do the
+  structure, not heavy frames. Flat color only, no gradients.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  field:   "#C5A1FF"   # bright lavender-purple — the outer field / top band / banners
-  field-2: "#E9DFFE"   # pale lavender — recessed / quiet panels, secondary fills
-  cream:   "#F9F5F2"   # warm off-white — the main card, all body panels, large text on purple
-  ink:     "#000000"   # pure black — borders, headlines, ALL structural & label text
-  slate:   "#666463"   # warm grey — body / paragraph text on cream
-  lime:    "#CFEE30"   # acid-lime highlighter — the single punch: marker block behind a keyword, accents
-  grape:   "#C29EFC"   # mid purple — the CTA button-tile and key fills
-  # 2–3 accents per scene: cream + ink everywhere, then ONE of {lime, grape} as the punch. Dark text on light fills.
+  white:  "#FFFFFF"   # universal canvas: clean white page
+  violet: "#C5A1FF"   # bright lavender-violet: the main accent — header bands, chips, colour blocks (light enough for black text)
+  lime:   "#CFEE30"   # acid lime-green: the single highlighter PUNCH — a marker block behind a keyword, accent ticks, an underline
+  ink:    "#000000"   # black: all headlines, labels, and structural rules
+  slate:  "#666463"   # warm grey: body / paragraph text on white
+  # White page + two accents. Violet carries the colour-blocks; lime is the one highlighter punch.
+  # Black is the type. Keep it airy; one lime highlight per scene, not many.
 
-# ── TEXT COLOR (critical on a colored canvas) ────────────────
+# ── TEXT COLOR ───────────────────────────────────────────────
 text-rules:
-  on-cream:    "INK for headings/labels; SLATE for body. Always crisp."
-  on-purple:   "INK for any size — always reliable. CREAM only for LARGE bold display (≥ ~28px). Never small cream text on purple."
-  on-lime:     "INK text — always crisp (lime is the keyword highlight; keep the word black)."
-  on-grape:    "INK text — always crisp."
-
-# ── DEPTH ────────────────────────────────────────────────────
-# FLAT system — NO shadows of any kind (not blurred, not the offset-duplicate trick).
-# Depth = the heavy black frame, flat color blocks, panel role-swaps, and scale.
+  rule: "Text is black (or slate for body) on white and on violet. Lime is only a highlighter fill behind black text or a small mark, never text itself."
+  note: "Black text on violet reads fine on the live board. The image export renders text color unreliably, so judge color via --output_as raw or the live board, not the exported PNG."
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
-  structural: "3px solid ink"   # the main card frame, nav bar, cards, button-tiles
-  rule:       "2px solid ink"   # internal dividers / nav underline
-  radius: 0                     # hard squared corners throughout — no rounding
+  structural: "minimal. Prefer violet colour-blocks and thin rules over heavy frames; no big outer frame"
+  rule:       "thin violet or lime rules for row dividers"
+  radius:     "low (rx 0 to 10); clean and modern"
 ---
 
 # Violet Marker — Feishu SVG Whiteboard Design System
 
-A flat neobrutalist landing page you can read at a glance: a bright lavender field, a heavy
-black-framed cream card sitting on it, a lime highlighter slashed behind one word, and a
-purple button-tile to act on. Confident, mixed-case, ink-on-cream — never heavy with chrome,
-never shadowed.
+A clean white page with bright violet colour-blocks and one acid-lime highlighter. Lead with black
+type, let the violet header bands and chips carry the structure, and spend the lime on a single
+highlighter move (a marker block behind a keyword, an underline, a few ticks). Keep the white open and
+airy, not boxed-in.
 
 ## Color
 
-The **lavender field** (`#C5A1FF`) is the outer canvas and the top band — the thing the cream
-card sits on. **Cream** (`#F9F5F2`) is the working surface: the main card, every body panel, and
-the only color allowed for *large* display text on purple. **Ink** (`#000000`) is the structural
-voice — every 3px border, every headline, every label. **Slate** (`#666463`) carries paragraph
-body on cream. The punch is a single accent per scene: **lime** (`#CFEE30`) as a highlighter block
-behind one keyword (the signature move), or **grape** (`#C29EFC`) as the CTA button-tile and key
-fills. Pale **field-2** (`#E9DFFE`) only recesses a quiet panel. Keep it to cream + ink plus ONE
-loud accent — don't run lime and grape loud in the same scene.
+- **White** (`#FFFFFF`): The universal canvas. Clean and open. The default background.
+- **Violet** (`#C5A1FF`): Bright lavender-violet. The main accent: stage header bands, chips, and colour blocks. Light enough that black text reads on it.
+- **Lime** (`#CFEE30`): Acid lime-green. The single highlighter punch: a marker block behind a keyword, an accent underline, small ticks. Very light, so use it as a fill behind black text, never as text.
+- **Ink** (`#000000`): Black. All headlines, labels, and the few structural rules.
+- **Slate** (`#666463`): Warm grey. Body and paragraph text on white, where pure black would be too heavy.
+
+Two accents on a clean white page: violet for the blocks, lime for one highlighter punch. Text is black
+or slate; the violet and lime are fills and marks, not text.
 
 ## Rules
 
