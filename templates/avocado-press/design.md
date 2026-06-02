@@ -3,33 +3,45 @@ version: 1.0
 name: Avocado Press
 renderer: feishu-svg-whiteboard
 description: >
-  An editorial two-tone color-combo system built on a single loud clash — pale avocado lime against deep French blue. Each scene is a stack of full-bleed solid color bands, no borders, where one band's fill becomes the next band's text color (role-swap). Type is a quiet/elegant register — large, calm display lines plus tiny UPPER tracked spec tags reading like a swatch card. Color does all the work; depth is pure flat color-blocking. Best for comparisons, paired concepts, before/after, and palette/spec breakdowns.
+  A crisp duotone on a white page: a deep French blue and a pale avocado lime as the two accents,
+  with the blue carrying the type. Blue leads as both the ink and the bold surface (header bands, key
+  fills); lime is the punch (big numerals, a highlight chip, thin rules). Clean, modern, and airy:
+  colour-blocks and whitespace do the structure, not heavy frames. Flat color only, no gradients.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  avocado: "#DCF4A2"   # canvas / band-A fill — pale lime (ref-labeled #DCF4A2; sampled #DDF4A2)
-  french:  "#0055A4"   # band-B fill / ink-on-avocado — deep French blue (sampled #0055A6)
-  ink:     "#0157A4"   # display + label text when on avocado (the blue, used as ink)
-  paper:   "#DCF4A2"   # display + label text when on french (the lime, used as ink) — same as avocado
-  # Two hues only. They TRADE roles band to band: blue is ink on lime, lime is ink on blue.
-  # Rule: 2 colors, used loudly and exclusively. No third accent. Always dark-enough text on its band.
+  white: "#FFFFFF"   # universal canvas: clean white page
+  blue:  "#0055A4"   # deep French blue: PRIMARY accent and the ink — text, header bands, key surface fills
+  lime:  "#DCF4A2"   # pale avocado lime: SECONDARY accent — big numerals, highlight chips, thin rules, large text on blue
+  # White page + two accents. Blue leads and carries the text; lime is the punch. Two accents per
+  # scene; let the white breathe. Lime is too light for text on white, never use it there.
 
-# ── DEPTH ────────────────────────────────────────────────────
-# FLAT system — no shadows of any kind. Depth = full-bleed solid bands, color role-swaps between bands, scale.
+# ── TEXT COLOR ───────────────────────────────────────────────
+text-rules:
+  rule: "On the white page, text is blue. On a blue fill, text is lime (large display) or white (body). Never use lime for text on white."
+  note: "Large bold lime/white text on the blue fill reads well on the live board. The image export renders text color unreliably, so judge color via --output_as raw or the live board, not the exported PNG."
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
-  structural: "0 — bands abut flush, no borders; the color edge IS the divider"
-  rule:       "3px solid <opposite band color>"   # only when a hairline is truly needed inside a band
-  radius: 0
+  structural: "minimal. Prefer blue colour-blocks and thin rules over heavy frames; no big outer frame"
+  rule:       "thin lime or blue rules for row dividers"
+  radius:     "low (rx 0 to 8); crisp and modern"
 ---
 
 # Avocado Press — Feishu SVG Whiteboard Design System
 
-A duotone editorial color-combo board: full-bleed avocado-lime and French-blue bands stacked flush, where each band speaks in the other band's color. Calm, large type; tiny tracked spec tags. No borders, no shadows — the color edge does everything.
+A clean white page with a deep French blue that is both the ink and a bold surface, and a pale avocado
+lime for the punch. Lead with blue (title, body, header bands), let lime snap in on the big numerals, a
+highlight chip, and the thin rules, and keep the white open so the duotone pops. Airy, not boxed-in.
 
 ## Color
-Exactly **two hues, used loudly and exclusively**: pale **avocado** `#DCF4A2` and deep **French blue** `#0055A4`. There is no third accent — restraint is the identity. The structural move is a **role-swap**: on an avocado band, all type and rules are blue (`#0157A4`); on a blue band, all type and rules are lime (`#DCF4A2`). Both pairings clear strong contrast in both directions, so display text, body text, and small spec tags are all safe on either fill. Because there are no borders, the **color boundary between two flush bands is the only divider** — keep band fills fully saturated and edges hard. Never put avocado text on a lighter avocado or blue-on-blue; text always reads in the opposite hue.
+
+- **White** (`#FFFFFF`): The universal canvas. Clean and open. The default background.
+- **Blue** (`#0055A4`): Deep French blue. Does double duty: it is all text on the white page, and it is also the bold surface (stage header bands, the outcome bar, key fills). The structural identity of the system.
+- **Lime** (`#DCF4A2`): Pale avocado lime. The punch: big stage numerals, a highlight chip, thin row rules, and large display text on a blue fill. Too light for text on white, so keep it to fills and accents.
+
+Two accents on a clean white page: blue leads and carries the text, lime is the punch. Use colour-blocks
+and whitespace as the structure, not heavy frames.
 
 ## Rules
 

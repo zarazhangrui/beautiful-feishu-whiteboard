@@ -1,11 +1,11 @@
 ---
 version: 1.0
-name: Soft Serve
+name: Macchiato
 renderer: feishu-svg-whiteboard
 description: >
   A warm monochrome palette with no accent color: a soft milky-almond page and a warm espresso
   near-black for everything, plus two warm taupe greys for quieter copy. Cozy, creamy, and
-  understated, like a hand-lettered ice-cream sign. Hierarchy comes from scale, weight, and spacing,
+  understated, like espresso stirred into warm cream. Hierarchy comes from scale, weight, and spacing,
   never from color. Flat only, no gradients or shadows.
 
 # ── COLOR ────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ stroke:
   radius:     "low to soft (rx 0 to 14); quiet and warm, neither sharp nor bubbly"
 ---
 
-# Soft Serve — Feishu SVG Whiteboard Design System
+# Macchiato — Feishu SVG Whiteboard Design System
 
 One warm almond surface, one espresso ink, two taupe greys. No accent. The restraint is the point:
 build the board so hierarchy comes from size, weight, and space, and let the milky almond and the warm

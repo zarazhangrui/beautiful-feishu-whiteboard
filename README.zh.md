@@ -10,13 +10,13 @@
 
 ## 风格画廊（Gallery）
 
-每个风格画的都是**同一份内容**（LLM 训练的三个阶段），方便直接对比配色。37 个风格按**从克制（restrained）到大胆（bold）**分为三档，点击风格名可打开对应模板。
+每个风格画的都是**同一份内容**（LLM 训练的三个阶段），方便直接对比配色。36 个风格按**从克制（restrained）到大胆（bold）**分为三档，点击风格名可打开对应模板。
 
 ### 克制 · Restrained
 
 <table>
 <tr>
-<td width="50%"><a href="templates/cartesian/"><img src="assets/styles/cartesian.png" alt="Cartesian"/></a><br/><sub><a href="templates/cartesian/"><b>Cartesian</b></a></sub></td>
+<td width="50%"><a href="templates/avocado-press/"><img src="assets/styles/avocado-press.png" alt="Avocado Press"/></a><br/><sub><a href="templates/avocado-press/"><b>Avocado Press</b></a></sub></td>
 <td width="50%"><a href="templates/cobalt-glaze/"><img src="assets/styles/cobalt-glaze.png" alt="Cobalt Glaze"/></a><br/><sub><a href="templates/cobalt-glaze/"><b>Cobalt Glaze</b></a></sub></td>
 </tr>
 <tr>
@@ -24,8 +24,8 @@
 <td width="50%"><a href="templates/jade-lens/"><img src="assets/styles/jade-lens.png" alt="Jade Lens"/></a><br/><sub><a href="templates/jade-lens/"><b>Jade Lens</b></a></sub></td>
 </tr>
 <tr>
-<td width="50%"><a href="templates/linen-cut/"><img src="assets/styles/linen-cut.png" alt="Linen Cut"/></a><br/><sub><a href="templates/linen-cut/"><b>Linen Cut</b></a></sub></td>
 <td width="50%"><a href="templates/long-table/"><img src="assets/styles/long-table.png" alt="Long Table"/></a><br/><sub><a href="templates/long-table/"><b>Long Table</b></a></sub></td>
+<td width="50%"><a href="templates/macchiato/"><img src="assets/styles/macchiato.png" alt="Macchiato"/></a><br/><sub><a href="templates/macchiato/"><b>Macchiato</b></a></sub></td>
 </tr>
 <tr>
 <td width="50%"><a href="templates/monochrome/"><img src="assets/styles/monochrome.png" alt="Monochrome"/></a><br/><sub><a href="templates/monochrome/"><b>Monochrome</b></a></sub></td>
@@ -33,7 +33,6 @@
 </tr>
 <tr>
 <td width="50%"><a href="templates/reading-room/"><img src="assets/styles/reading-room.png" alt="Reading Room"/></a><br/><sub><a href="templates/reading-room/"><b>Reading Room</b></a></sub></td>
-<td width="50%"><a href="templates/soft-serve/"><img src="assets/styles/soft-serve.png" alt="Soft Serve"/></a><br/><sub><a href="templates/soft-serve/"><b>Soft Serve</b></a></sub></td>
 </tr>
 </table>
 
@@ -42,26 +41,26 @@
 <table>
 <tr>
 <td width="50%"><a href="templates/apricot-arc/"><img src="assets/styles/apricot-arc.png" alt="Apricot Arc"/></a><br/><sub><a href="templates/apricot-arc/"><b>Apricot Arc</b></a></sub></td>
-<td width="50%"><a href="templates/avocado-press/"><img src="assets/styles/avocado-press.png" alt="Avocado Press"/></a><br/><sub><a href="templates/avocado-press/"><b>Avocado Press</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/berry-pop/"><img src="assets/styles/berry-pop.png" alt="Berry Pop"/></a><br/><sub><a href="templates/berry-pop/"><b>Berry Pop</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/bold-poster/"><img src="assets/styles/bold-poster.png" alt="Bold Poster"/></a><br/><sub><a href="templates/bold-poster/"><b>Bold Poster</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/checker-bloom/"><img src="assets/styles/checker-bloom.png" alt="Checker Bloom"/></a><br/><sub><a href="templates/checker-bloom/"><b>Checker Bloom</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/cobalt-bloom/"><img src="assets/styles/cobalt-bloom.png" alt="Cobalt Bloom"/></a><br/><sub><a href="templates/cobalt-bloom/"><b>Cobalt Bloom</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/coral/"><img src="assets/styles/coral.png" alt="Coral"/></a><br/><sub><a href="templates/coral/"><b>Coral</b></a></sub></td>
+</tr>
+<tr>
 <td width="50%"><a href="templates/cut-bloom/"><img src="assets/styles/cut-bloom.png" alt="Cut Bloom"/></a><br/><sub><a href="templates/cut-bloom/"><b>Cut Bloom</b></a></sub></td>
-</tr>
-<tr>
 <td width="50%"><a href="templates/editorial-forest/"><img src="assets/styles/editorial-forest.png" alt="Editorial Forest"/></a><br/><sub><a href="templates/editorial-forest/"><b>Editorial Forest</b></a></sub></td>
-<td width="50%"><a href="templates/grove-block/"><img src="assets/styles/grove-block.png" alt="Grove Block"/></a><br/><sub><a href="templates/grove-block/"><b>Grove Block</b></a></sub></td>
 </tr>
 <tr>
+<td width="50%"><a href="templates/grove-block/"><img src="assets/styles/grove-block.png" alt="Grove Block"/></a><br/><sub><a href="templates/grove-block/"><b>Grove Block</b></a></sub></td>
 <td width="50%"><a href="templates/lime-slab/"><img src="assets/styles/lime-slab.png" alt="Lime Slab"/></a><br/><sub><a href="templates/lime-slab/"><b>Lime Slab</b></a></sub></td>
+</tr>
+<tr>
+<td width="50%"><a href="templates/linen-cut/"><img src="assets/styles/linen-cut.png" alt="Linen Cut"/></a><br/><sub><a href="templates/linen-cut/"><b>Linen Cut</b></a></sub></td>
 <td width="50%"><a href="templates/pin-and-paper/"><img src="assets/styles/pin-and-paper.png" alt="Pin & Paper"/></a><br/><sub><a href="templates/pin-and-paper/"><b>Pin & Paper</b></a></sub></td>
 </tr>
 <tr>
