@@ -3,46 +3,55 @@ version: 1.0
 name: Court Press
 renderer: feishu-svg-whiteboard
 description: >
-  A flat sports-poster system on a grass-green field. Off-white "court lines" divide the canvas, dusty-pink circles read as balls, and deep-forest type carries every label. The mood is editorial-athletic — minimal, confident, a pink-on-green complementary clash. No borders-heavy brutalism and NO shadows: depth comes from flat color blocks, chalk rules, and scale. Built for explainers, processes, and playful step-by-step boards.
+  A flat sports-poster system on a warm off-white page, with grass green and dusty pink as the two
+  accents. Green carries the header bands, number balls, headings, and the closing banner; pink is the
+  punch (balls, dividers, badges); deep-forest type does the talking on the cream. The mood is
+  editorial-athletic, a pink-and-green complementary clash on a clean page. No shadows: depth comes
+  from flat colour blocks, chalk-line rules, and scale. Built for explainers, processes, and playful
+  step-by-step boards.
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  court:   "#66914C"   # grass-green — the canvas / field
-  court-2: "#5A8043"   # one step deeper green — recessed panels
-  forest:  "#2F4224"   # deep green-black — lines, borders, ALL body & label text
-  pink:    "#DA9EB7"   # dusty pink — the punch accent: balls, fills, the closing banner
-  chalk:   "#F2EFE6"   # warm off-white — court lines, cards/panels, LARGE display text on green
-  # Two accents in play (pink + chalk) over the green field. Pink-on-green is the signature clash.
+  chalk:  "#F2EFE6"   # warm off-white — the page canvas, and large display text on a green fill
+  green:  "#66914C"   # grass green — PRIMARY accent: header bands, number balls, headings, closing banner
+  pink:   "#DA9EB7"   # dusty pink — SECONDARY accent: balls, divider rules, badges
+  forest: "#2F4224"   # deep green-black — body & label text on the cream page and white panels
+  white:  "#FFFFFF"   # content panels on the cream page (give them a thin green border so they read)
+  # Cream page + two accents (green leads, pink punches). Pink-against-green is the signature clash.
 
-# ── TEXT COLOR (critical on a colored canvas) ────────────────
+# ── TEXT COLOR (critical for contrast) ───────────────────────
 text-rules:
-  on-green:  "Use FOREST (dark) for any size — always reliable. CHALK only for LARGE, bold display (≥ ~28px). Never small chalk text on green."
-  on-chalk:  "FOREST text — always crisp."
+  on-cream:  "FOREST for body, GREEN for headings — both dark, always readable on the off-white page."
+  on-white:  "FOREST body, GREEN headings — always crisp."
+  on-green:  "CHALK / white for LARGE bold display (≥ ~28px). Never small chalk text on green."
   on-pink:   "FOREST text — always crisp."
 
 # ── DEPTH ────────────────────────────────────────────────────
-# FLAT system — NO shadows of any kind. Depth = flat color blocks, chalk court-lines, and scale.
+# FLAT system — NO shadows of any kind. Depth = flat colour blocks, chalk-line rules, and scale.
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
-  border: "3px solid forest"   # cards, banners (used sparingly — this style is light on borders)
-  line:   "3px solid chalk"    # the signature court-line divider on the green field
+  border: "2px solid green"    # thin border on white panels so they read on the cream page
+  line:   "3px solid pink or green"  # divider rules / court-line motif
   radius: 0                    # squared cards; circles (balls) are the curved motif
 ---
 
 # Court Press — Feishu SVG Whiteboard Design System
 
-A flat sports poster you can read at a glance. A grass-green field, off-white court lines
-dividing it, dusty-pink balls as the recurring motif, and deep-forest type doing the talking.
-Minimal and athletic — never heavy, never shadowed.
+A flat sports poster you can read at a glance. A warm off-white page, white panels with thin green
+borders, dusty-pink balls as the recurring motif, and grass-green header bands and number balls
+carrying the energy. Deep-forest type does the talking on the cream. Minimal and athletic, a
+pink-and-green clash on a clean page, never heavy, never shadowed.
 
 ## Color
 
-The **green field** (`#66914C`) is the canvas. **Forest** (`#2F4224`) is the structural ink —
-every line, border, and body label. **Chalk** (`#F2EFE6`) draws the court lines, fills the cards,
-and is the only color allowed for *large* display text on the green. **Pink** (`#DA9EB7`) is the
-punch: balls, accent fills, and the closing banner. Pink against green is the whole identity —
-let it clash. Use a deeper green (`#5A8043`) only to recess a panel.
+The **cream page** (`#F2EFE6`) is the canvas. **Green** (`#66914C`) is the primary accent: stage
+header bands, the number balls, headings, and the closing banner. **Pink** (`#DA9EB7`) is the punch:
+balls, divider rules, and badges. **Forest** (`#2F4224`) is the ink for body and labels on the cream
+page and on white panels. **White** (`#FFFFFF`) fills the content panels, with a thin green border so
+they read on the cream. Pink against green is the whole identity, on a clean cream ground. Large
+display text on a green fill uses chalk/white; everywhere on cream and white, text is dark
+(forest body, green headings) so nothing is light-on-light.
 
 ## Rules
 
