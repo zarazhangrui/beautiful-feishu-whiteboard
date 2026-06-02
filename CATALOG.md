@@ -44,12 +44,9 @@ restrained / refined / institutional.
 | [Editorial Forest](templates/editorial-forest/) | High | literary, bookish, forest green and rose |
 | [Grove Block](templates/grove-block/) | Medium | brand forward, flat, confident green |
 | [Lime Slab](templates/lime-slab/) | Medium | electric, bold, modern SaaS |
-| [Mint Brut](templates/mint-brut/) | Low | candy, friendly, app like |
-| [Neo-Grid Bold](templates/neo-grid-bold/) | Medium | editorial grid, bold, structured |
 | [Pin & Paper](templates/pin-and-paper/) | Medium | clean, graphic, white with yellow and blue pop |
 | [Raw Grid](templates/raw-grid/) | Medium | system native, sharp, digital brutalism |
 | [Riptide Cobalt](templates/riptide-cobalt/) | Medium | bold poster, low density, high impact |
-| [Riso Brut](templates/riso-brut/) | Medium | neo brutalist editorial, confident, designed |
 | [Salmon Stamp](templates/salmon-stamp/) | Low | stamp and poster, bold, characterful |
 | [Soft Editorial](templates/soft-editorial/) | Medium | warm magazine, soft pastels, gentle |
 | [Violet Marker](templates/violet-marker/) | Low | lavender, highlighter, friendly modern |
@@ -63,6 +60,9 @@ restrained / refined / institutional.
 | [Confetti Wedge](templates/confetti-wedge/) | Low | playful, breezy, celebratory pastel |
 | [Court Press](templates/court-press/) | Low | sporty, athletic, energetic clash |
 | [Crayon Stack](templates/crayon-stack/) | Low | primary crayon brights, loud, fun |
+| [Mint Brut](templates/mint-brut/) | Low | candy, friendly, app like |
+| [Neo-Grid Bold](templates/neo-grid-bold/) | Medium | editorial grid, bold, structured |
+| [Riso Brut](templates/riso-brut/) | Medium | neo brutalist editorial, confident, designed |
 | [Specimen Bold](templates/specimen-bold/) | Low | type specimen, graphic, loud |
 | [Stencil & Tablet](templates/stencil-tablet/) | Low | skate poster, retro print blocks, bold |
 
