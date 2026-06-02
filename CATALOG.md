@@ -12,6 +12,7 @@ restrained / refined / institutional.
 |---|---|---|
 | [Apricot Arc](templates/apricot-arc/) | Medium | warm, retro, geometric, friendly |
 | [Avocado Press](templates/avocado-press/) | Medium | bold duotone, punchy, editorial |
+| [Berry Pop](templates/berry-pop/) | Medium | bold, fruity, fresh, brand pop |
 | [BlockFrame](templates/block-frame/) | Low | maximalist, candy, playful, sticker book |
 | [Bold Poster](templates/bold-poster/) | Medium | loud, print poster, single red accent |
 | [Burst Panel](templates/burst-panel/) | Low | loud, energetic, dashboard |
@@ -42,6 +43,7 @@ restrained / refined / institutional.
 | [Riso Brut](templates/riso-brut/) | Medium | neo brutalist editorial, confident, designed |
 | [Salmon Stamp](templates/salmon-stamp/) | Low | stamp and poster, bold, characterful |
 | [Soft Editorial](templates/soft-editorial/) | Medium | warm magazine, soft pastels, gentle |
+| [Soft Serve](templates/soft-serve/) | High | warm monochrome, milky almond, quiet |
 | [Specimen Bold](templates/specimen-bold/) | Low | type specimen, graphic, loud |
 | [Stencil & Tablet](templates/stencil-tablet/) | Low | skate poster, retro print blocks, bold |
 | [Violet Marker](templates/violet-marker/) | Low | lavender, highlighter, friendly modern |
