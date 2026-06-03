@@ -35,6 +35,15 @@ the real board (the image export and the GUI behave differently — see notes be
   ```
   (The marker's own shape/colour is ignored on the board; it just signals "put a native arrowhead
   here." Keep the line straight or right-angled — those map to clean `straight` / `right_angled` connectors.)
+  **The classic defect** is a `<line>` plus a separate little `<polyline>` / `<polygon>` chevron drawn
+  at its tip — that chevron IS a hand-drawn arrowhead. Delete it and put `marker-end` on the line.
+  **Mandatory self-check before you write the board:** run
+  `grep -nE '<polygon|<polyline' <dir>/diagram.svg` — every `<polygon>`, and every short `<polyline>`
+  shaped like a triangle/chevron at a line's endpoint, is a defect to convert. (A `<polyline>` is fine
+  ONLY as a right-angled connector path that itself carries `marker-end` and has no separate chevron.)
+  **This matters most when you START FROM or EDIT an existing SVG** (a gallery template, a previous
+  board, a translation): its arrows may predate this rule and still be hand-drawn — re-check and
+  convert them, don't just edit the text around them.
 - **Forbidden** (break or flatten to a static image): any gradient, `<filter>`, `<pattern>`,
   `<clipPath>`, `<mask>`, blur.
 - **Opacity is ignored.** `opacity` / `fill-opacity` / `stroke-opacity` all render fully opaque.
@@ -88,6 +97,9 @@ the real board (the image export and the GUI behave differently — see notes be
      - **overlaps** — shapes or labels colliding unintentionally (a duplicate-offset shadow or an
        intentional overlap is fine; an accidental one is not),
      - **clipping** — anything cut off on the right/bottom.
+     - **hand-drawn arrowheads** — run `grep -nE '<polygon|<polyline' <dir>/diagram.svg` and convert any
+       chevron/triangle arrowhead to a `marker-end` (see the Arrows rule above). Do this every time,
+       and especially when you started from an existing SVG whose arrows may predate the rule.
    - (`--check` flags `text-overflow`/`node-overlap`; intentional overlaps, off-canvas bleed, or a
      centered long Latin headline may report as warnings — judge with your eyes, not just the linter.)
 4. **Write it into Feishu as an editable whiteboard**, then **look at the real board too:**
