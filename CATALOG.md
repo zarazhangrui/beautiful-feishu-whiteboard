@@ -70,6 +70,6 @@ restrained / refined / institutional.
    high-energy leans **Bold**; most general work sits comfortably in **Balanced**.
 2. **Formality second.** Within the level, match how formal it should read (Low / Medium / High).
 3. **Vibe third.** Narrow by the user's mood or colour preference (the Vibe column).
-4. **When unsure, default to a versatile Balanced style.** Riso Brut is the safe, designed default.
+4. **When unsure, default to a safe or balanced style.**
 5. Always offer to switch afterwards. Swapping style means re rendering the same content in a
    different template's palette.
