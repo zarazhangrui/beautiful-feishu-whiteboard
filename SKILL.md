@@ -52,13 +52,18 @@ authenticate, then stop. You cannot write a board without it.
    - Compose the SVG in a logical space about 1600 to 1700 wide, in that palette, with **native
      shapes only** (rect, rounded rect, circle, ellipse, connectors, text). Lay the content out
      however reads best. Every label is a `<text>`; never set `font-family`.
+   - For dense architecture maps, workflows, graph diagrams, or org charts, split the board into
+     clear regions before drawing: for example main flow + worker pool + state machine, or product
+     surface + application core + external systems. Keep labels short and move long explanations
+     into note panels instead of connector labels or node boxes.
    - **Only the content goes on the board, never the instruction behind it.** Do not print the
      user's prompt, scope notes, source citations, the chosen style name, or any "summary of… /
      来源… / 风格…" meta line onto the canvas — that looks like a homework header. Such context
      belongs in your chat reply. (See the "Never echo the user's instructions" rule in `RULES.md`.)
    - **Render it, then look at the image and correct yourself**: fix text overflow, tight margins or
-     padding, numerals touching edges, accidental overlaps, and clipping. Iterate render, view, fix
-     until it is clean. (Commands and the full checklist are in `RULES.md`.)
+     padding, numerals touching edges, accidental overlaps, connector lines crossing labels, and
+     clipping. Treat `--check` text-overflow errors as blocking. Iterate render, view, fix until it
+     is clean. (Commands and the full checklist are in `RULES.md`.)
    - Write it into a Feishu doc as an editable whiteboard, then view the live board image too and fix
      any remaining layout issues.
 5. **Deliver.** Give the user **both**: the **Feishu doc link** and the **rendered image** itself, so

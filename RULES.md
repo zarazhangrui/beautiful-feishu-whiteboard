@@ -80,12 +80,29 @@ the real board (the image export and the GUI behave differently — see notes be
   let content define the bounds.
 - **Text reflows by character** (CJK ≈ 1em, Latin ≈ 0.6em). Pad boxes generously; never fit text to
   the pixel; wrap long lines across `<tspan>`s rather than shrinking.
+- **Dense diagrams need a layout pass before SVG.** For architecture maps, graphs, org charts, and
+  other many-node diagrams, do not start by drawing every edge. First split the board into 2-4
+  clear regions such as **main flow**, **parallel workers**, **state machine**, **data stores**, or
+  **external systems**. Keep each region visually separate with whitespace or a light dashed frame.
+  Prefer short local arrows inside a region; avoid long cross-board connectors unless they explain a
+  primary flow.
+- **Box labels must be deliberately short.** A node label should normally be one or two lines. Use
+  `<tspan>` line breaks for anything longer than about 12 CJK characters or 18 Latin characters per
+  line. Do not shrink labels below readable size to make them fit. If a concept needs a sentence,
+  move that sentence into a separate note panel instead of putting it inside the node.
+- **Connector labels are high risk.** Do not put long explanations on arrows. Short labels such as
+  "pass", "retry", "all steps done", or "feedback" are fine; full sentences usually collide with
+  arrows or nearby boxes. Put detailed routing rules in a side panel.
+- **`--check` errors are blocking.** Before writing a board, `text-overflow` and unintended
+  `node-overlap` from `--check` must be fixed. If a warning is intentional, verify it by looking at
+  the rendered image and explain why it is intentional in your own reasoning, not on the board.
 
 ## Workflow
 
 1. Pick a **template** (`templates/<slug>/design.md`) for the palette + mood, and read it.
 2. Pick the narrative shape (pipeline / stages / comparison / system map / timeline) and write the
    SVG in a logical coord space (≈1600–1700 wide); **native shapes only**; every label a `<text>`.
+   For dense diagrams, sketch the regions first and cap node labels before drawing connectors.
 3. **Render and LOOK at it — then fix what you see.** This is the most important step:
    - `npx -y @larksuite/whiteboard-cli@^0.2.11 -i <dir>/diagram.svg -o <dir>/diagram.png -f svg`
    - `npx -y @larksuite/whiteboard-cli@^0.2.11 -i <dir>/diagram.svg -f svg --check`
