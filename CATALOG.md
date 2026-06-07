@@ -5,11 +5,12 @@ the **formality**, and the **vibe** they want. Any style can carry almost any co
 feel. If the user named a style or a clear preference, honour it. Otherwise infer from the tone they
 want and propose one. After generating, always tell the user they can switch to any other style.
 
-The 35 styles are grouped into three levels, from restrained to bold:
+The 41 styles are grouped into three levels (restrained → bold), plus a **Design Systems** set:
 
 - **Restrained** — monochrome, two-tone, calm and muted; not colourful. For serious, quiet, editorial boards.
 - **Balanced** — a confident accent or two on a clean ground; the versatile middle. Most general work lives here.
 - **Bold** — loud, maximalist, lots of bright colour. For playful, high-energy, attention-grabbing boards.
+- **Design Systems** — palettes lifted from real product design systems (Stripe, Linear, Nord, Catppuccin, Tokyo Night…), including the catalogue's first **dark-canvas** styles.
 
 **Formality key:** **Low** = playful / casual, **Medium** = confident / modern, **High** =
 restrained / refined / institutional.
@@ -63,6 +64,19 @@ restrained / refined / institutional.
 | [Riso Brut](templates/riso-brut/) | Medium | neo brutalist editorial, confident, designed |
 | [Specimen Bold](templates/specimen-bold/) | Low | type specimen, graphic, loud |
 | [Stencil & Tablet](templates/stencil-tablet/) | Low | skate poster, retro print blocks, bold |
+
+## Design Systems
+
+Palettes drawn from real product design systems. Includes the catalogue's first **dark-canvas** styles (marked ☾). The signature accent carries the cell outlines and connectors; on dark styles, offset shadows sink into the base.
+
+| Style | Formality | Vibe |
+|---|---|---|
+| [Stripe](templates/stripe/) | Medium | fintech-modern, navy + #635BFF indigo, clean & trustworthy |
+| [Linear](templates/linear/) | Medium | near-monochrome, woodsmoke + indigo, product-design calm |
+| [Nord](templates/nord/) | Medium | arctic, polar night + frost blue, cool & engineered |
+| [Cobalt Pop](templates/cobalt-pop/) | Medium | electric cobalt outlines, hard navy shadows, punchy yet clean |
+| [Catppuccin Mocha](templates/catppuccin-mocha/) ☾ | Medium | dark, soft pastels, mauve outlines, developer-cozy |
+| [Tokyo Night](templates/tokyo-night/) ☾ | Medium | dark, midnight navy + blue, downtown-at-night |
 
 ## How to choose
 
