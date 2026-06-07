@@ -2,7 +2,7 @@
 name: beautiful-feishu-whiteboard
 version: 1.1.0
 description: >
-  A library of 35 curated colour palette styles for building beautiful, editable Feishu / Lark
+  A library of 41 curated colour palette styles for building beautiful, editable Feishu / Lark
   (飞书) whiteboards from SVG. Use this whenever the user wants to create or draw a Feishu whiteboard,
   infographic, diagram, poster, or visual explainer and wants it to look polished, on brand, or in a
   particular aesthetic, or when they name a style. The agent figures out what board the user wants,
@@ -13,7 +13,7 @@ description: >
 
 # Beautiful Feishu Whiteboard
 
-A design system skill: **35 colour palette styles** plus the verified **hard rules** of the Feishu
+A design system skill: **41 colour palette styles** plus the verified **hard rules** of the Feishu
 SVG whiteboard medium, so you can build gorgeous, on brand, *editable* whiteboards.
 
 This is **not** an auto layout chart generator. **You** compose the layout. A template gives you a

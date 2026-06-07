@@ -2,7 +2,7 @@
 
 [中文 README](./README.zh.md)
 
-**A library of 35 curated colour palette styles for building gorgeous, *editable* Feishu / Lark
+**A library of 41 curated colour palette styles for building gorgeous, *editable* Feishu / Lark
 (飞书) whiteboards.**
 
 See the [Feishu doc version of this intro](https://bytedance.us.larkoffice.com/docx/AldcdypvjoEqQDxcSVeu37ixs0d) (with usage-scenario showcases).
@@ -19,8 +19,9 @@ auto layout chart tool. Your agent composes the layout, and these templates give
 ## Gallery
 
 Every style renders the **same content**, the three stages of LLM training, so you can compare
-palettes directly. The 35 styles are grouped from **restrained** to **bold**. Click a name to
-open its template.
+palettes directly. The 41 styles are grouped from **restrained** to **bold** — plus a **Design Systems**
+set (palettes drawn from real product design systems, including the gallery's first **dark-canvas**
+styles). Click a name to open its template.
 
 ### Restrained
 
@@ -107,6 +108,25 @@ open its template.
 </tr>
 <tr>
 <td width="50%"><a href="templates/stencil-tablet/"><img src="assets/styles/stencil-tablet.png" alt="Stencil & Tablet"/></a><br/><sub><a href="templates/stencil-tablet/"><b>Stencil & Tablet</b></a></sub></td>
+</tr>
+</table>
+
+### Design Systems
+
+Palettes drawn from well-known product design systems — including the gallery's first **dark-canvas** styles (Catppuccin Mocha, Tokyo Night). The signature accent carries the cell outlines and connectors; shadows are soft grey on light grounds and sink into the base on dark ones.
+
+<table>
+<tr>
+<td width="50%"><a href="templates/stripe/"><img src="assets/styles/stripe.png" alt="Stripe"/></a><br/><sub><a href="templates/stripe/"><b>Stripe</b></a></sub></td>
+<td width="50%"><a href="templates/linear/"><img src="assets/styles/linear.png" alt="Linear"/></a><br/><sub><a href="templates/linear/"><b>Linear</b></a></sub></td>
+</tr>
+<tr>
+<td width="50%"><a href="templates/nord/"><img src="assets/styles/nord.png" alt="Nord"/></a><br/><sub><a href="templates/nord/"><b>Nord</b></a></sub></td>
+<td width="50%"><a href="templates/cobalt-pop/"><img src="assets/styles/cobalt-pop.png" alt="Cobalt Pop"/></a><br/><sub><a href="templates/cobalt-pop/"><b>Cobalt Pop</b></a></sub></td>
+</tr>
+<tr>
+<td width="50%"><a href="templates/catppuccin-mocha/"><img src="assets/styles/catppuccin-mocha.png" alt="Catppuccin Mocha"/></a><br/><sub><a href="templates/catppuccin-mocha/"><b>Catppuccin Mocha</b></a></sub></td>
+<td width="50%"><a href="templates/tokyo-night/"><img src="assets/styles/tokyo-night.png" alt="Tokyo Night"/></a><br/><sub><a href="templates/tokyo-night/"><b>Tokyo Night</b></a></sub></td>
 </tr>
 </table>
 
