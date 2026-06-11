@@ -7,30 +7,31 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  black:    "#000000"   # all borders, shadows, primary text
-  white:    "#FFFFFF"
-  offwhite: "#FFFDF5"   # default warm canvas
-  pink:     "#FE90E8"   # candy magenta
-  blue:     "#C0F7FE"   # ice blue
-  green:    "#99E885"   # lime
-  yellow:   "#F7CB46"   # marigold
-  cream:    "#FFDC8B"   # warm cream
-  # UNLIKE most systems: use the candy pastels LOUDLY and TOGETHER. Cycle pink → blue →
-  # green → yellow → cream across adjacent regions with deliberate juxtaposition. More is more.
+  black: "#000000" # all borders, shadows, primary text
+  white: "#FFFFFF"
+  offwhite: "#FFFDF5" # default warm canvas
+  pink: "#FE90E8" # candy magenta
+  blue: "#C0F7FE" # ice blue
+  green: "#99E885" # lime
+  yellow: "#F7CB46" # marigold
+  cream: "#FFDC8B" # warm cream
+  # UNLIKE most systems and the usual "use 2–3 accents" rule: here use the candy pastels LOUDLY and
+  # TOGETHER. Cycle pink → blue → green → yellow → cream across adjacent cards/badges with deliberate
+  # clash/juxtaposition. More is more — the joy comes from the juxtaposition, don't tone it down.
 
 # ── SHADOW ───────────────────────────────────────────────────
 shadow:
-  recipe:   "redraw the shape behind the real one, offset on x and y"
-  default:  "+8px black"    # the signature chunky shadow
-  small:    "+4px black"
-  featured: "+12px yellow"  # closing / hero block — colored offset is allowed here
+  recipe: "redraw the shape behind the real one, offset on x and y"
+  default: "+8px black" # the signature chunky shadow
+  small: "+4px black"
+  featured: "+12px yellow" # closing / hero block — colored offset is allowed here
   # Never blurred.
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   primary: "4px solid black"
-  thin:    "3px solid black"
-  radius: 0   # squared (a single rounded pill badge is the only exception)
+  thin: "3px solid black"
+  radius: 0 # squared (a single rounded pill badge is the only exception)
 ---
 
 # BlockFrame — Feishu SVG Whiteboard Design System
@@ -38,13 +39,6 @@ stroke:
 Loud, joyful neo-brutalism. Thick black borders, chunky 8px offset shadows, and a candy
 palette piled on without restraint. Tilted badges and blocks puncture the grid. The board
 should feel like a sticker book or toy package — graphic, playful, a little chaotic.
-
-## Color
-
-The exception to every "use 2–3 accents" rule: here you **use them all, loudly**. A warm
-**offwhite** (`#FFFDF5`) canvas, then **pink / blue / green / yellow / cream** cycling
-through adjacent cards and badges with deliberate clash. Black is structure and text. The
-joy comes from the juxtaposition — don't tone it down.
 
 ## Rules
 

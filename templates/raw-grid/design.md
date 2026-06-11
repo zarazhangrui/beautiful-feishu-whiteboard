@@ -7,40 +7,33 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  black:    "#0A0A0A"   # all borders, rules, shadows, primary text
-  white:    "#FFFFFF"   # universal canvas + default cell fill
-  pink:     "#F2D4CF"   # muted blush accent fill
-  green:    "#E5EDD6"   # muted sage accent fill
-  gray:     "#F5F5F5"   # neutral recessed cell
-  darkgray: "#333333"   # secondary text
+  black: "#0A0A0A" # all borders, rules, shadows, primary text
+  white: "#FFFFFF" # universal canvas + default cell fill
+  pink: "#F2D4CF" # muted blush accent fill
+  green: "#E5EDD6" # muted sage accent fill
+  gray: "#F5F5F5" # neutral recessed cell
+  darkgray: "#333333" # secondary text
   # Quiet palette: white + black structure + 1–2 pastels per scene. The pastels
   # warm the high contrast; they never shout. Never put pink and green in the same cell.
 
 # ── SHADOW ───────────────────────────────────────────────────
 shadow:
-  recipe:  "redraw the shape in BLACK behind the real shape, offset on x and y"
-  default: "+6px"   # featured blocks
-  small:   "+4px"   # secondary blocks
+  recipe: "redraw the shape in BLACK behind the real shape, offset on x and y"
+  default: "+6px" # featured blocks
+  small: "+4px" # secondary blocks
   # Always black. Never colored. Never blurred.
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
-  primary: "3px solid black"   # every cell, panel, box — borders meet flush, no gaps
-  radius: 0                    # squared corners always
+  primary: "3px solid black" # every cell, panel, box — borders meet flush, no gaps
+  radius: 0 # squared corners always
 ---
 
 # Raw Grid — Feishu SVG Whiteboard Design System
 
-The borders *are* the design. Build the board as a tight grid of black-bordered cells
+The borders _are_ the design. Build the board as a tight grid of black-bordered cells
 that meet flush, fill them with white and muted pastels, and anchor each step with a giant
 solid numeral in its own zone. The effect is sharp, system-native, digital.
-
-## Color
-
-White is the canvas and the default fill. Black carries every border, rule, and shadow.
-Two muted pastels — **blush** (`#F2D4CF`) and **sage** (`#E5EDD6`) — plus a neutral
-**gray** (`#F5F5F5`) tint cells to break the white. Use one or two pastels per scene; they
-warm the contrast without ever shouting. Secondary text is **darkgray** (`#333333`).
 
 ## Rules
 

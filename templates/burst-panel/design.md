@@ -7,15 +7,16 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  canvas:    "#FBD65A"   # marigold-yellow canvas / background
-  ink:       "#1E1E1E"   # near-black ink: borders, dark cards, structure, big numerals
-  panel:     "#CFACE8"   # lavender — major content panels sit on the yellow
-  violet:    "#BD89E4"   # deep violet — secondary band / role-swap fill
-  mint:      "#AAE4BA"   # mint-green accent — active/selected pills, "go" states
-  orange:    "#FFA76D"   # orange — action buttons, stamps, call-to-action dots
-  cream:     "#FFFAF0"   # cream — high-contrast surface for small text & light cards
-  # Rule: 2–3 accents per scene (mint OR orange as the "live" accent; lavender+violet as the
+  canvas: "#FBD65A" # marigold-yellow canvas / background — reserve for large fields and graphic shapes, never small labels
+  ink: "#1E1E1E" # near-black ink: every border, every divider, dark "feature" sub-cards, structure, big numerals
+  panel: "#CFACE8" # lavender — major content panels/zones sit on the yellow
+  violet: "#BD89E4" # deep violet — deeper sibling of lavender for a secondary band / role-swap fill; never put small dark text on it (too low-contrast — promote to a cream inner card)
+  mint: "#AAE4BA" # mint-green "live" accent — active/selected/go pills & states
+  orange: "#FFA76D" # orange "live" accent — action buttons, stamps, call-to-action dots
+  cream: "#FFFAF0" # cream — safe high-contrast surface for any body text & small labels / light cards
+  # Rule: 2–3 accents per scene (mint OR orange as the one dominant "live" accent; lavender+violet as the
   # structural pair). Dark ink text on cream/lavender/mint/yellow; cream/yellow text only on ink/violet.
+  # Temperature is warm-loud (marigold + orange) cooled by the lavender/mint pair — it clashes on purpose.
 
 # ── DEPTH ────────────────────────────────────────────────────
 # FLAT system — no shadows of any kind. Depth = flat color blocks, chunky borders, panel
@@ -23,20 +24,14 @@ colors:
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
-  structural: "4px solid #1E1E1E"   # panels, cards, the board frame
-  rule:       "2px solid #1E1E1E"   # dividers, pill outlines, connector lines
-  radius: 18  # generously rounded rects/pills
+  structural: "4px solid #1E1E1E" # panels, cards, the board frame
+  rule: "2px solid #1E1E1E" # dividers, pill outlines, connector lines
+  radius: 18 # generously rounded rects/pills
 ---
 
 # Burst Panel — Feishu SVG Whiteboard Design System
 
 A high-energy neobrutalist dashboard look: marigold canvas, fat black borders, lavender and ink panels nested by role-swap, mint/orange accents for "live" states, and oversized numeral cells as the graphic punctuation. Everything is flat and editable.
-
-## Color
-
-Seven roles. **`canvas` (#FBD65A)** is the loud yellow ground everything sits on — reserve it for large fields and graphic shapes, never small labels. **`ink` (#1E1E1E)** does all the structural work: every border, every divider, and the dark "feature" sub-cards. **`panel` (#CFACE8)** is the lavender that carves the canvas into major content zones; **`violet` (#BD89E4)** is its deeper sibling for a secondary band or a role-swapped panel. **`mint` (#AAE4BA)** and **`orange` (#FFA76D)** are the two "live" accents — mint for selected/active/go states, orange for actions, stamps, and CTA dots; use only one as the dominant accent per scene. **`cream` (#FFFAF0)** is the safe high-contrast surface for any body text or small labels.
-
-Temperature is warm-loud (marigold + orange) cooled by the lavender/mint pair — it clashes on purpose. Contrast pairing: **dark ink text** on cream, lavender, mint, and yellow; **cream or yellow text** only on ink or violet fills. Never put small dark text on violet (too low-contrast) — promote it to a cream inner card.
 
 ## Rules
 

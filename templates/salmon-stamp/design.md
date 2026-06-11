@@ -11,11 +11,11 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  white:   "#FFFFFF"   # universal canvas: clean white page
-  salmon:  "#F0AE9E"   # warm salmon-peach: the main accent — header bands, chips, color blocks
-  green:   "#049550"   # saturated grass green: the single loud accent — big numerals, stamp block, key fills
-  ink:     "#000000"   # black: all body/label text, plus the few rules and any minimal framing
-  green-2: "#04964E"   # one step of green (near-identical) — only if two greens must abut
+  white: "#FFFFFF" # universal canvas: clean white page
+  salmon: "#F0AE9E" # warm salmon-peach: the main accent — header bands, chips, color blocks
+  green: "#049550" # saturated grass green: the single loud accent — big numerals, stamp block, key fills
+  ink: "#000000" # black: all body/label text, plus the few rules and any minimal framing
+  green-2: "#04964E" # one step of green (near-identical) — only if two greens must abut
   # White page + two accents (salmon blocks, green accent) + black type. One loud accent per scene:
   # the green-on-salmon clash is the identity. Keep it airy; let salmon blocks do the structure.
 
@@ -27,8 +27,8 @@ text-rules:
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   structural: "minimal. Prefer salmon color-blocks and thin rules over heavy frames; if a card needs an edge use a single 2px black border, not nested boxes"
-  rule:       "thin salmon or black rules for row dividers"
-  radius:     "low (rx 0 to 8); crisp, poster-like"
+  rule: "thin salmon or black rules for row dividers"
+  radius: "low (rx 0 to 8); crisp, poster-like"
 ---
 
 # Salmon Stamp — Feishu SVG Whiteboard Design System
@@ -36,18 +36,6 @@ stroke:
 A clean stamp-poster on a white page: warm salmon color-blocks, a saturated grass-green accent, and
 black type. Let the salmon header bands and chips carry the structure, spend the green on the big
 numerals and a stamp block, and keep the page open. Bold and characterful, but airy, not boxed-in.
-
-## Color
-
-- **White** (`#FFFFFF`): The universal canvas. Clean and open. The default background.
-- **Salmon** (`#F0AE9E`): Warm salmon-peach. The main accent: stage header bands, the kicker chip, and color blocks. It does the structural work so you do not need heavy frames.
-- **Green** (`#049550`): Saturated grass green. The single loud accent: big stage numerals, a "stamp" block, and a few key fills or marks. One accent per scene, the green-on-salmon clash is the identity.
-- **Ink** (`#000000`): Black. All body and label text, the few thin rules, and any minimal framing.
-- **Green 2** (`#04964E`): A near-identical green, only if two greens must sit beside each other.
-
-Keep it airy: use the salmon color-blocks and a little black type as the structure, not nested boxes.
-Text is black on white and on salmon; the display numerals and stamp are green; white text only on a
-dark outcome bar.
 
 ## Rules
 

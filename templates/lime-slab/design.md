@@ -7,12 +7,12 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  lime:    "#EEFA79"   # canvas / hero field — signature electric chartreuse
-  cream:   "#FFFFF2"   # canvas / body section — warm off-white
-  white:   "#FFFFFF"   # cards / search bar / panels — pure white on lime or cream
-  ink:     "#0A0A05"   # ink / structure / display text — near-black (sampled #000500)
-  rule:    "#2F2E25"   # accent / borders / chip outlines / fine rules — warm charcoal
-  # Rule: 2 accents per scene (one canvas + ink, plus white cards). Dark text on light fills always.
+  lime: "#EEFA79" # canvas / signature electric chartreuse hero field
+  cream: "#FFFFF2" # canvas / calmer warm off-white body section
+  white: "#FFFFFF" # cards / search bar / panels — pure white, sits on lime OR cream to carry detail
+  ink: "#0A0A05" # ink / structure / all display type / connectors — near-black (sampled #000500)
+  rule: "#2F2E25" # accent / warm charcoal for thin borders, chip/pill outlines, fine rules — use instead of pure black on small chips so the outline reads warm, not stark
+  # Rule: 2 accents per scene — pick ONE canvas (lime OR cream) as the field, then ink + white cards; never stack lime+cream+white in one cluster. Dark text on light fills always (export can't be trusted for text color anyway).
 
 # ── DEPTH ────────────────────────────────────────────────────
 # FLAT system — no shadows of any kind. Depth = flat color blocks (lime vs cream vs white),
@@ -21,16 +21,13 @@ colors:
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   structural: "2px solid #2F2E25"
-  rule:       "2px solid #2F2E25"
-  radius: 12   # squared-soft: pills/chips use full radius (height/2); cards use 12; hero blocks 0
+  rule: "2px solid #2F2E25"
+  radius: 12 # squared-soft: pills/chips use full radius (height/2); cards use 12; hero blocks 0
 ---
 
 # Lime Slab — Feishu SVG Whiteboard Design System
 
 A neobrutalist landing-page look: one electric lime field, heavy black slab-weight display, and crisp white cards with thin charcoal outlines on a warm cream body. Loud but tidy.
-
-## Color
-Five solids, two of them canvases. `lime #EEFA79` is the signature hero field; `cream #FFFFF2` is the calmer body canvas. `white #FFFFFF` cards sit on either canvas to carry detail. `ink #0A0A05` is the near-black used for all display type, structure, and connectors; `rule #2F2E25` is a warm charcoal for thin borders and pill outlines (use it instead of pure black on small chips so the outline reads warm, not stark). Temperature is cool-bright (acidic lime) warmed by the cream — a deliberately loud-but-friendly clash. **Two accents per scene:** pick one canvas (lime OR cream) as the field, then ink + white cards; never stack lime on cream on white all at once in one cluster. Dark text on light fills, always — never light text, since the export can't be trusted for text color anyway.
 
 ## Rules
 

@@ -10,9 +10,9 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  white:  "#FFFFFF"   # universal canvas: clean white page
-  blue:   "#2A3C99"   # royal cobalt: PRIMARY accent and the ink. Text, borders, header bands, key surface fills
-  yellow: "#F1E84E"   # canary yellow: SECONDARY accent. Big numerals, highlight swipes, thin rules, small marks
+  white: "#FFFFFF" # universal canvas: clean white page
+  blue: "#2A3C99" # royal cobalt: PRIMARY accent and the ink. Text, borders, dividers, header bands, key surface fills (stage header bands, outcome bar); white cards are delineated on the white page by a 2px blue border
+  yellow: "#F1E84E" # canary yellow: SECONDARY accent (the punch). Big stage numerals, highlight swipe under the title, thin row rules, small accent marks, large headings on a blue fill
   # White page + two accents. Blue leads (and carries text); yellow supports as the punch. Two
   # accents per scene; let the white breathe. Yellow is too light for text on white, never use it there.
 
@@ -24,8 +24,8 @@ text-rules:
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   structural: "2 to 3px solid blue for cards and panel outlines, so a white card reads on the white page; the blue header band is a borderless flat fill"
-  rule:       "thin blue or yellow rules for row dividers"
-  radius:     "low (rx 0 to 10); crisp and graphic"
+  rule: "thin blue or yellow rules for row dividers"
+  radius: "low (rx 0 to 10); crisp and graphic"
 ---
 
 # Pin & Paper — Feishu SVG Whiteboard Design System
@@ -34,15 +34,6 @@ A clean white page with a royal cobalt that is both the ink and a bold surface, 
 the punch. Lead with blue (title, body, header bands, card borders), let yellow snap in on the big
 numerals, a highlight swipe under the title, and the thin row rules, and keep the white open so the two
 accents pop.
-
-## Color
-
-- **White** (`#FFFFFF`): The universal canvas. Clean and bright. The default background.
-- **Blue / Royal Cobalt** (`#2A3C99`): Does double duty. It is all text, borders, and dividers on the white page, and it is also a hero surface fill (the stage header bands, the outcome bar). The structural identity of the system.
-- **Yellow / Canary** (`#F1E84E`): The punch. Big stage numerals, a highlight swipe under the title, thin row rules, small accent marks, and large headings on a blue fill. Too light for text on white, so keep it to fills and accents.
-
-Two accents on a clean white page: blue leads and carries the text, yellow supports as the punch.
-White cards are delineated on the white page by a 2px blue border.
 
 ## Rules
 

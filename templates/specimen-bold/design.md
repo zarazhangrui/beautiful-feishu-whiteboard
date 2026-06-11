@@ -7,14 +7,15 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  paper:   "#F3F3F3"   # canvas background — bright off-white paper, never pure #FFF
-  ink:     "#2E302E"   # all heavy display words, body text, rules — warm charcoal (not pure black)
-  green:   "#3EC06A"   # accent block — grass green
-  yellow:  "#FBEF4A"   # accent block — acid yellow (punchiest; carries ink only)
-  blue:    "#30A1E5"   # accent block — sky blue
+  paper: "#F3F3F3" # canvas background — bright off-white paper, never pure #FFF
+  ink: "#2E302E" # all heavy display words, body text, rules — warm charcoal (not pure black)
+  green: "#3EC06A" # accent block — grass green
+  yellow: "#FBEF4A" # accent block — acid yellow (punchiest; carries ink only)
+  blue: "#30A1E5" # accent block — sky blue
   # Use 2–3 accent blocks per scene. All three may co-appear (the reference stacks all three),
   # but never tile them edge-to-edge into a flag — let paper breathe between blocks.
-  # Dark ink text on every accent fill (green/yellow/blue) reads crisply at display scale.
+  # Dark ink text on every accent fill (green/yellow/blue) reads crisply at display scale; use NO white/light text — always dark word on a loud block.
+  # Small body text goes only inside paper-colored or light panels, never small on a saturated block.
 
 # ── DEPTH ────────────────────────────────────────────────────
 # FLAT system — NO shadows of any kind (no blur, no duplicate-offset trick).
@@ -23,9 +24,9 @@ colors:
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   structural: "0 — blocks are borderless; the flat color is the boundary"
-  outline:    "3px solid ink"   # OPTIONAL: only when a block sits on another color or needs a hard edge
-  rule:       "3px solid ink"   # dividers, axes, connectors
-  radius: 0                     # squared rects; ellipse is the one curved primitive
+  outline: "3px solid ink" # OPTIONAL: only when a block sits on another color or needs a hard edge
+  rule: "3px solid ink" # dividers, axes, connectors
+  radius: 0 # squared rects; ellipse is the one curved primitive
 ---
 
 # Specimen Bold — Feishu SVG Whiteboard Design System
@@ -35,14 +36,6 @@ written in SVG. The aesthetic is a print **type-specimen poster**: a bright pape
 loud flat color-blocks used like peel-off labels, and ONE heavy charcoal word centered in each.
 The blocks are borderless — the saturated color is the frame. It looks designed, not templated,
 and stays fully editable.
-
-## Color
-
-- **Paper** (`#F3F3F3`) is the universal background — a bright off-white, never pure white, never warm cream.
-- **Ink** (`#2E302E`) is a warm near-charcoal (not pure black). It carries every heavy display word, all body text, and every rule.
-- Three accent blocks fire at full saturation: **green** (`#3EC06A`), **yellow** (`#FBEF4A`, the punchiest), **blue** (`#30A1E5`). Each is a flat fill that hosts ONE big ink word.
-- Use **two or three** blocks per scene. The reference stacks all three vertically — that is allowed — but always leave a **paper gap** between blocks so each reads as its own label; never tile them edge-to-edge into a solid flag.
-- **Ink text sits on every accent** at display scale and stays crisp. The reference deliberately uses NO white/light text — keep it that way: dark word on a loud block. Small body text goes only inside paper-colored or light panels, never small on a saturated block.
 
 ## Rules
 

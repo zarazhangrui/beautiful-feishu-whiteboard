@@ -11,11 +11,11 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  white:      "#FFFFFF"   # universal canvas: clean bright white
-  berry:      "#9E2B50"   # PRIMARY accent: deep raspberry-wine. Hero fills, headers, key blocks
-  berry-deep: "#6E1E3A"   # darker wine: body/structural text on white, borders, hard shadows (the in-family "ink")
-  peri:       "#C7D2F0"   # SECONDARY accent: pale periwinkle. Soft panels/fills, and large text on a berry fill
-  peri-deep:  "#9DB0E8"   # stronger periwinkle: small accents, rules, dots where the pale tone is too faint
+  white: "#FFFFFF" # universal canvas: clean bright white
+  berry: "#9E2B50" # PRIMARY accent: deep raspberry-wine. Hero fills, headers, key blocks
+  berry-deep: "#6E1E3A" # darker wine: body/structural text on white, borders, hard shadows (the in-family "ink")
+  peri: "#C7D2F0" # SECONDARY accent: pale periwinkle. Soft panels/fills, and large text on a berry fill
+  peri-deep: "#9DB0E8" # stronger periwinkle: small accents, rules, dots where the pale tone is too faint
   # White page + two accent families. Berry leads, periwinkle supports; both share a scene. Berry-deep
   # is the text color on white. Keep two accents per scene; let the white breathe.
 
@@ -27,8 +27,8 @@ text-rules:
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   structural: "2 to 3px solid berry or berry-deep for cards and panels; many fills can be borderless flat color"
-  rule:       "2px solid berry-deep for dividers"
-  radius:     "rounded (rx 12 to 22) suits the soft, poppy mood; sharp (rx 0) is fine for crisp blocks"
+  rule: "2px solid berry-deep for dividers"
+  radius: "rounded (rx 12 to 22) suits the soft, poppy mood; sharp (rx 0) is fine for crisp blocks"
 ---
 
 # Berry Pop — Feishu SVG Whiteboard Design System
@@ -36,17 +36,6 @@ stroke:
 A bright white page with a raspberry-wine hero and a pale periwinkle counter. Lead with the berry on
 fills and headers, support with the soft periwinkle, and write text in the deep wine so it reads like
 ink while staying in the family. Keep the white open and let the two pops do the work.
-
-## Color
-
-- **White** (`#FFFFFF`): The universal canvas. Clean and bright. The default background.
-- **Berry** (`#9E2B50`): Deep raspberry-wine. The primary accent: bold fills, headers, hero blocks, the loudest note. Lead with it.
-- **Berry Deep** (`#6E1E3A`): A darker wine. The text color on white (it reads like a warm ink), plus borders and hard offset shadows. Keeps the structure in the berry family.
-- **Peri** (`#C7D2F0`): Pale periwinkle. The secondary accent: soft panels and fills, and large text on a berry fill. The cool counter to the warm berry.
-- **Peri Deep** (`#9DB0E8`): A stronger periwinkle for small accents, rules, and dots where the pale tone would disappear.
-
-Use two accents per scene, berry leading and periwinkle supporting, on the white page. Text is
-berry-deep on white, and large bold white or periwinkle on a berry fill.
 
 ## Rules
 

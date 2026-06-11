@@ -7,14 +7,14 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  mint:     "#D0FDE4"   # universal canvas background — bright minty green
-  cream:    "#FFFBF3"   # card / panel body fill — warm near-white
-  ink:      "#000000"   # all borders, body text, rules — pure black
-  pink:     "#F888C8"   # dominant accent: header bands, big numerals
-  green:    "#70F0A8"   # secondary accent: money-bill stamps, highlights
-  gold:     "#F0DE4E"   # punctuation accent: coin stamps, badges, dots
-  pale-pink: "#F8E0F0"   # soft note / aside panel fill (solid light, not opacity)
-  # Use 2–3 accents per scene, never all at once. Colors pop flat against mint — never blend.
+  mint: "#D0FDE4" # universal canvas background — bright minty green, friendly, never white
+  cream: "#FFFBF3" # card / panel body fill — warm near-white; the surface ink text sits on
+  ink: "#000000" # all borders, rules, body text — pure, chunky black
+  pink: "#F888C8" # dominant accent: header bands, big numerals; large fills/graphic stamps only, never a field under small text
+  green: "#70F0A8" # secondary accent: money-bill stamps, highlights; large fills/graphic stamps only, never a field under small text
+  gold: "#F0DE4E" # punctuation accent: coin stamps, badges, dots; large fills/graphic stamps only, never a field under small text
+  pale-pink: "#F8E0F0" # soft note / aside panel fill (solid light, not opacity); carries dark ink text
+  # Use 2–3 accents per scene, never all at once. Colors pop flat against mint — never blend. Keep dark (ink) text on the light cream/pale-pink fills.
 
 # ── DEPTH ────────────────────────────────────────────────────
 # FLAT system — no shadows of any kind. Depth = flat color blocks (pink band on cream card),
@@ -22,9 +22,9 @@ colors:
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
-  structural: "4px solid ink"   # cards, panels, badges, stamps
-  rule:       "3px solid ink"   # dividers, input fields, connectors
-  radius: 12                    # softly rounded corners on cards/inputs; 0 acceptable on small stamps
+  structural: "4px solid ink" # cards, panels, badges, stamps
+  rule: "3px solid ink" # dividers, input fields, connectors
+  radius: 12 # softly rounded corners on cards/inputs; 0 acceptable on small stamps
 ---
 
 # Mint Brut — Feishu SVG Whiteboard Design System
@@ -34,14 +34,6 @@ whiteboards written in SVG. The aesthetic is candy neo-brutalism: flat cream car
 hot-pink header bands on a bright mint canvas, bound by heavy black borders with gently
 rounded corners, punctuated by bold accent chips. It looks playful and
 hand-built, not corporate-templated.
-
-## Color
-
-- **Mint** (`#D0FDE4`) is the universal background — bright and friendly, never white.
-- **Cream** (`#FFFBF3`) fills every card and panel body, giving the warm surface that ink text sits on.
-- **Ink** (`#000000`) carries every border, rule, and body text — pure, chunky black.
-- Three accents pop flat against the mint: **pink** (`#F888C8`, dominant — header bands and big numerals), **green** (`#70F0A8`, money-bill stamps and highlights), **gold** (`#F0DE4E`, coin stamps and badges). **Pale-pink** (`#F8E0F0`) is a soft solid for aside/note panels.
-- Use **two or three accents per scene**, never all at once. Keep dark (ink) text on the light cream/pale-pink fills; reserve pink/green/gold for large fills and graphic stamps, never as a field under small text.
 
 ## Rules
 

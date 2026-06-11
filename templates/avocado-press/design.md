@@ -10,9 +10,9 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  white: "#FFFFFF"   # universal canvas: clean white page
-  blue:  "#0055A4"   # deep French blue: PRIMARY accent and the ink — text, header bands, key surface fills
-  lime:  "#DCF4A2"   # pale avocado lime: SECONDARY accent — big numerals, highlight chips, thin rules, large text on blue
+  white: "#FFFFFF" # universal canvas: clean white page
+  blue: "#0055A4" # deep French blue: PRIMARY accent and the ink — all text on white, header bands, the outcome bar, key surface fills; the structural identity
+  lime: "#DCF4A2" # pale avocado lime: SECONDARY accent / the punch — big stage numerals, highlight chips, thin row rules, large display text on a blue fill
   # White page + two accents. Blue leads and carries the text; lime is the punch. Two accents per
   # scene; let the white breathe. Lime is too light for text on white, never use it there.
 
@@ -24,8 +24,8 @@ text-rules:
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   structural: "minimal. Prefer blue colour-blocks and thin rules over heavy frames; no big outer frame"
-  rule:       "thin lime or blue rules for row dividers"
-  radius:     "low (rx 0 to 8); crisp and modern"
+  rule: "thin lime or blue rules for row dividers"
+  radius: "low (rx 0 to 8); crisp and modern"
 ---
 
 # Avocado Press — Feishu SVG Whiteboard Design System
@@ -33,15 +33,6 @@ stroke:
 A clean white page with a deep French blue that is both the ink and a bold surface, and a pale avocado
 lime for the punch. Lead with blue (title, body, header bands), let lime snap in on the big numerals, a
 highlight chip, and the thin rules, and keep the white open so the duotone pops. Airy, not boxed-in.
-
-## Color
-
-- **White** (`#FFFFFF`): The universal canvas. Clean and open. The default background.
-- **Blue** (`#0055A4`): Deep French blue. Does double duty: it is all text on the white page, and it is also the bold surface (stage header bands, the outcome bar, key fills). The structural identity of the system.
-- **Lime** (`#DCF4A2`): Pale avocado lime. The punch: big stage numerals, a highlight chip, thin row rules, and large display text on a blue fill. Too light for text on white, so keep it to fills and accents.
-
-Two accents on a clean white page: blue leads and carries the text, lime is the punch. Use colour-blocks
-and whitespace as the structure, not heavy frames.
 
 ## Rules
 

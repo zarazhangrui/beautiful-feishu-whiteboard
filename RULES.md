@@ -65,16 +65,17 @@ the real board (the image export and the GUI behave differently — see notes be
   **content** — never the request that produced it, the inputs you read, or how you built it. A
   whiteboard is a finished artifact, not a homework submission, so it carries no "here's what you
   asked for" framing. Cut every meta / process line, for example:
-  - scope or task notes — *"整理范围：仅总结张睿发言；问答部分按她的回答归纳"*, *"本图涵盖第 3-5 章"*
-  - source citations — *"来源：会议逐字稿 00:06:28–00:52:58 的张睿发言"*, *"based on the attached doc"*
-  - the chosen style / template name — *"风格：Specimen Bold"*, *"Riso Brut template"*
-  - audience / format directions, restatements of the prompt, and *"summary of… / 总结自…"* framing
+  - scope or task notes — _"整理范围：仅总结张睿发言；问答部分按她的回答归纳"_, _"本图涵盖第 3-5 章"_
+  - source citations — _"来源：会议逐字稿 00:06:28–00:52:58 的张睿发言"_, _"based on the attached doc"_
+  - the chosen style / template name — _"风格：Specimen Bold"_, _"Riso Brut template"_
+  - audience / format directions, restatements of the prompt, and _"summary of… / 总结自…"_ framing
   - dates, tokens, file paths, or tooling you were not explicitly asked to display
 
-  A **title may name the subject** (e.g. *"张睿 · 发言总结"* is fine — that is the topic), but nothing
+  A **title may name the subject** (e.g. _"张睿 · 发言总结"_ is fine — that is the topic), but nothing
   on the board may describe the task, the source material, or the tool. **Litmus test:** if a line is
   addressed to the person who asked (or to a grader) rather than being a real part of the artifact,
   delete it. Put that kind of context in your chat reply to the user, never on the canvas.
+
 - **Transforms:** `translate` / `rotate` / `scale` are safe; avoid `skewX` / `skewY` / `matrix(...)`.
 - **No fixed canvas.** No 16:9, no scaler. Work in a logical coordinate space (≈1600–1700 wide) and
   let content define the bounds.
@@ -102,6 +103,10 @@ the real board (the image export and the GUI behave differently — see notes be
        and especially when you started from an existing SVG whose arrows may predate the rule.
    - (`--check` flags `text-overflow`/`node-overlap`; intentional overlaps, off-canvas bleed, or a
      centered long Latin headline may report as warnings — judge with your eyes, not just the linter.)
+   - **Fix by editing the `.svg` in place with small targeted edits** (nudge a box, widen a panel,
+     rewrap a label) — never regenerate the whole SVG to fix a local issue, and apply every fix you
+     spotted in one view in a single edit pass before re-rendering. This keeps the iterate loop cheap
+     without losing any pass.
 4. **Write it into Feishu as an editable whiteboard**, then **look at the real board too:**
    `npx -y @larksuite/whiteboard-cli@^0.2.11 -i <dir>/diagram.svg --to openapi --format json | lark-cli whiteboard +update --whiteboard-token <tok> --source - --input_format raw --idempotent-token <unique> --overwrite --as user`
    then `lark-cli whiteboard +query --whiteboard-token <tok> --output_as image --output <dir> --as user`,
@@ -111,11 +116,13 @@ the real board (the image export and the GUI behave differently — see notes be
 ### Creating the doc + whiteboard block to write into
 
 If the user didn't give a target whiteboard, create one:
+
 ```bash
 # new doc with an empty whiteboard block; grab the block_token from the response
 lark-cli docs +create --api-version v2 \
   --content '<title>My board</title><whiteboard type="blank"></whiteboard>' --as user
 ```
+
 Then write the SVG to that `block_token` with the `whiteboard +update` command in step 4. To add a
 board to an existing doc the user gave, fetch it (`lark-cli docs +fetch`) or append a
 `<whiteboard type="blank"></whiteboard>` block, and use that block's token.

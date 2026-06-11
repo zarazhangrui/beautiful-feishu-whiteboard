@@ -1,6 +1,6 @@
 ---
 name: beautiful-feishu-whiteboard
-version: 1.1.0
+version: 1.1.1
 description: >
   A library of 35 curated colour palette styles for building beautiful, editable Feishu / Lark
   (飞书) whiteboards from SVG. Use this whenever the user wants to create or draw a Feishu whiteboard,
@@ -14,13 +14,14 @@ description: >
 # Beautiful Feishu Whiteboard
 
 A design system skill: **35 colour palette styles** plus the verified **hard rules** of the Feishu
-SVG whiteboard medium, so you can build gorgeous, on brand, *editable* whiteboards.
+SVG whiteboard medium, so you can build gorgeous, on brand, _editable_ whiteboards.
 
 This is **not** an auto layout chart generator. **You** compose the layout. A template gives you a
 **palette and mood**; [`RULES.md`](RULES.md) gives you the medium's hard limits. The board you
 produce is a real, editable Feishu whiteboard inside a doc, not a screenshot.
 
 ## When to use
+
 - The user wants a Feishu / Lark whiteboard, infographic, diagram, poster, or visual explainer that
   should look good, branded, or in a specific aesthetic.
 - The user names a style, or points at one of the templates.
@@ -28,7 +29,9 @@ produce is a real, editable Feishu whiteboard inside a doc, not a screenshot.
   visual and editable inside Feishu.
 
 ## Step 0: prerequisites (check before doing anything)
+
 Run [`scripts/preflight.sh`](scripts/preflight.sh), or check manually:
+
 - **Node 20 or newer.**
 - **`lark-cli`** (npm package **`@larksuite/cli`**), installed **and authenticated**. If missing:
   `npm install -g @larksuite/cli`, then `lark-cli config init` (scan the QR), then `lark-cli auth login`.
@@ -46,9 +49,11 @@ authenticate, then stop. You cannot write a board without it.
    professional, any colour or mood preference, or a brand to match. Offer to pick for them if they
    have no preference. If they already named a style, skip ahead.
 3. **Pick a style.** Use [`CATALOG.md`](CATALOG.md) to match the content type and the requested vibe
-   and formality to one of the 35 styles. Tell the user which style you chose and why, in one line.
-4. **Build it.** Read [`RULES.md`](RULES.md) and the chosen [`templates/<slug>/design.md`](templates/),
-   then:
+   and formality to one of the 35 styles. The catalogue lists each style's palette signature, so
+   **choose from it alone** — don't open several `design.md` files to compare. Tell the user which
+   style you chose and why, in one line.
+4. **Build it.** Read [`RULES.md`](RULES.md) and **only the one** chosen
+   [`templates/<slug>/design.md`](templates/), then:
    - Compose the SVG in a logical space about 1600 to 1700 wide, in that palette, with **native
      shapes only** (rect, rounded rect, circle, ellipse, connectors, text). Lay the content out
      however reads best. Every label is a `<text>`; never set `font-family`.
@@ -58,7 +63,10 @@ authenticate, then stop. You cannot write a board without it.
      belongs in your chat reply. (See the "Never echo the user's instructions" rule in `RULES.md`.)
    - **Render it, then look at the image and correct yourself**: fix text overflow, tight margins or
      padding, numerals touching edges, accidental overlaps, and clipping. Iterate render, view, fix
-     until it is clean. (Commands and the full checklist are in `RULES.md`.)
+     until it is clean. (Commands and the full checklist are in `RULES.md`.) **When fixing, edit the
+     `.svg` file in place with small targeted edits** (move a box, widen a panel, rewrap a label) —
+     do not regenerate the whole SVG each pass; and batch the fixes you see in one view into a single
+     edit pass before re-rendering, rather than one fix per render.
    - Write it into a Feishu doc as an editable whiteboard, then view the live board image too and fix
      any remaining layout issues.
 5. **Deliver.** Give the user **both**: the **Feishu doc link** and the **rendered image** itself, so
@@ -66,6 +74,7 @@ authenticate, then stop. You cannot write a board without it.
    any time, and you will re render the same content in the new palette.
 
 ## Files
+
 - **[`RULES.md`](RULES.md)**: the hard rules and the exact build, write, and verify commands. Always read this.
 - **[`CATALOG.md`](CATALOG.md)**: every style with its vibe, formality, and what it is good for. Use it to choose.
 - **[`templates/<slug>/design.md`](templates/)**: one per style, the colour palette and how to use it.

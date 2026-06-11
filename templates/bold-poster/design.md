@@ -12,23 +12,23 @@ description: >
 
 # ── COLOR ────────────────────────────────────────────────────
 colors:
-  bg:    "#FFFFFF"   # pure white canvas: the default ground, reads as fresh newsprint
-  dark:  "#1C1410"   # deep brown-black: ALL body text, borders, labels, and dark panel grounds
-  red:   "#D8000F"   # saturated tomato red: the single accent, for emphasis moments only
-  light: "#F5F2EF"   # warm off-white: alternating panel backgrounds and chrome, subtly warmer than bg
+  bg: "#FFFFFF" # pure white canvas: the default ground for most surfaces, reads as fresh newsprint
+  dark: "#1C1410" # deep brown-black with a warm bias (not pure black — warmth sets it apart from a generic editorial black): ALL body text, borders, small labels, and full-bleed dark panel grounds
+  red: "#D8000F" # saturated tomato red: the single accent, emphasis moments only — numerals, section eyebrows, the active emphasis rule, bullet glyphs, the progress bar, calls to action, full-bleed statement panels
+  light: "#F5F2EF" # warm off-white: stripe alternating panels and small chrome backgrounds; subtly warmer than bg so a surface differentiates without breaking the printed-paper register
   # Two-color identity: brown-black ink on white, with red as the sole accent. Red is never body
   # text, never a tint, never a card fill without overlaid text.
 
 # ── SHADOW ───────────────────────────────────────────────────
 shadow:
   recipe: "redraw the shape or word once in dark behind the real red display text, offset on x and y"
-  use:    "only behind large red display numerals or words; everything else stays flat"
+  use: "only behind large red display numerals or words; everything else stays flat"
 
 # ── STROKE & CORNERS ─────────────────────────────────────────
 stroke:
   structural: "1.5 to 3px solid dark for borders and rules"
-  rule:       "the active emphasis rule is red; structural rules are dark"
-  radius:     "0; squared print-poster corners"
+  rule: "the active emphasis rule is red; structural rules are dark"
+  radius: "0; squared print-poster corners"
 ---
 
 # Bold Poster — Feishu SVG Whiteboard Design System
@@ -37,13 +37,6 @@ White paper, brown-black ink, one tomato red. The discipline is the point: every
 red and nothing else is, so the red has to be earned. Use the warm off-white only to stripe alternating
 panels, keep borders and body in the brown-black, and let a single hard offset shadow sit behind a red
 display word for poster weight.
-
-## Color
-
-- **Bg** (`#FFFFFF`): Pure white canvas. The default ground for most surfaces. Reads as fresh newsprint.
-- **Dark** (`#1C1410`): A deep brown-black with a warm bias, not pure black. Every line of body text, every border, every small label, and any full-bleed dark panel. The warmth distinguishes it from a generic editorial black.
-- **Red** (`#D8000F`): Saturated tomato red. The single accent. Use it for numerals, section eyebrows, the active emphasis rule, bullet glyphs, the progress bar, calls to action, and full-bleed statement panels. Never use it as body text, as a tint, or as a card fill without text on top.
-- **Light** (`#F5F2EF`): Warm off-white. Use it to stripe alternating panels and for small chrome backgrounds. Subtly warmer than the white canvas, so it differentiates a surface without breaking the printed-paper register.
 
 ## Rules
 
