@@ -5,7 +5,9 @@ import {
   analyzeSnapshot,
   buildRenderReport,
   discoverChrome,
+  isAllowedRenderRequest,
   normalizeWidths,
+  screenFontSize,
 } from "../scripts/lib/browser-render.mjs";
 
 test("discovers the first executable system Chrome candidate", () => {
@@ -24,6 +26,18 @@ test("returns null when no supported Chrome is executable", () => {
 test("normalizes configured widths into sorted unique positive viewports", () => {
   assert.deepEqual(normalizeWidths("1000,720,820,820"), [720, 820, 1000]);
   assert.throws(() => normalizeWidths("820,nope"), /positive integers/);
+});
+
+test("uses the smaller screen axis and rendered height for font readability", () => {
+  assert.equal(screenFontSize(16, { a: 1, b: 0, c: 0, d: 0.01 }, 16), 0.16);
+  assert.equal(screenFontSize(16, { a: 2, b: 0, c: 0, d: 2 }, 18), 18);
+});
+
+test("allows only the exact input file request", () => {
+  const input = "file:///tmp/widget.html";
+  assert.equal(isAllowedRenderRequest(input, input), true);
+  assert.equal(isAllowedRenderRequest("file:///etc/passwd", input), false);
+  assert.equal(isAllowedRenderRequest("data:text/plain,x", input), false);
 });
 
 test("calculates text-size and clipping violations from screen measurements", () => {

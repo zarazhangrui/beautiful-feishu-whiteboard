@@ -67,6 +67,20 @@ test("rejects event handlers and external URL schemes", () => {
   );
 });
 
+test("rejects unknown attributes under the SVG allowlist", () => {
+  expectViolation(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><rect mystery="value" width="20" height="20"/></svg>',
+    "disallowed-attribute",
+  );
+});
+
+test("normalizes fatal XML parser failures into policy violations", () => {
+  expectViolation(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><text font-size="24">x</svg>',
+    "invalid-xml",
+  );
+});
+
 test("rejects an external entity declaration", () => {
   expectViolation(
     '<!DOCTYPE svg [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><text font-size="24">&xxe;</text></svg>',

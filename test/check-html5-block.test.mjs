@@ -41,6 +41,37 @@ test("rejects missing required metadata and CSP", () => {
   );
 });
 
+test("accepts either supported height mode and rejects unknown modes", () => {
+  const viewport = validHtml().replace(
+    'name="html-box-height-mode" content="auto"',
+    'name="html-box-height-mode" content="viewport"',
+  );
+  assert.equal(checkHtml5Block(viewport).ok, true);
+  assert.throws(
+    () => checkHtml5Block(viewport.replace('content="viewport"', 'content="fill"')),
+    (error) => error.violations.some(({ code }) => code === "required-meta"),
+  );
+});
+
+test("rejects executable markup, event attributes and relaxed CSP", () => {
+  const cases = [
+    validHtml().replace("</body>", "<script>alert(1)</script></body>"),
+    validHtml().replace("<main ", '<main onclick="alert(1)" '),
+    validHtml().replace("</body>", '<iframe srcdoc="x"></iframe></body>'),
+    validHtml().replace("script-src 'none'", "script-src 'none' 'unsafe-inline'"),
+  ];
+  for (const html of cases) {
+    assert.throws(
+      () => checkHtml5Block(html),
+      (error) =>
+        error instanceof HtmlCheckError &&
+        error.violations.some(({ code }) =>
+          ["executable-markup", "event-attribute", "csp"].includes(code),
+        ),
+    );
+  }
+});
+
 test("rejects malformed artifact and source hashes", () => {
   const html = validHtml()
     .replace('content="project-architecture-v1"', 'content="bad id"')
@@ -69,6 +100,15 @@ test("enforces maximum artifact bytes", () => {
     () => checkHtml5Block(validHtml(), { maxBytes: 100 }),
     (error) => error.violations.some(({ code }) => code === "html-too-large"),
   );
+});
+
+test("rejects invalid maximum byte limits", () => {
+  for (const maxBytes of [Number.NaN, 0, -1, 12.5]) {
+    assert.throws(
+      () => checkHtml5Block(validHtml(), { maxBytes }),
+      (error) => error.violations.some(({ code }) => code === "invalid-max-bytes"),
+    );
+  }
 });
 
 test("normalizes line endings and trailing whitespace before hashing", () => {

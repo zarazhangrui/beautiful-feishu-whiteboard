@@ -3,9 +3,9 @@ name: beautiful-feishu-whiteboard
 version: 1.2.0
 description: >
   Use when a user wants a polished Feishu / Lark whiteboard, infographic, diagram, poster, or visual
-  explainer; names one of the bundled colour styles; explicitly asks to publish SVG as a Feishu/Lark
-  document HTML5 Block or HTML block; or asks for both whiteboard and HTML5 Block outputs. HTML output
-  requires explicit Feishu/Lark document context and must not trigger for ordinary websites or dashboards.
+  explainer; requests a bundled colour style for a Feishu/Lark visual; explicitly asks to publish SVG
+  as a Feishu/Lark document HTML5 Block or HTML block; or asks for both whiteboard and HTML5 Block
+  outputs. Do not use for ordinary websites, web apps, or dashboards without explicit Feishu/Lark context.
 ---
 
 # Beautiful Feishu Whiteboard
@@ -59,7 +59,7 @@ Generate a separate SVG for the measured document width, then run:
 1. `scripts/svg-to-html.mjs`
 2. `scripts/check-html5-block.mjs`
 3. `scripts/render-html5-block.mjs`
-4. `lark-cli docs +create` or `docs +update` with `<html5-block path="@./...">`
+4. `lark-cli docs +create` with `<html5-block path="@./...">`
 5. `docs +fetch` and verify the `data-ref`, `reference_map`, artifact ID, and normalized hash
 
 ### Dual
@@ -67,6 +67,9 @@ Generate a separate SVG for the measured document width, then run:
 Create one Feishu document containing both resource blocks. Use one shared content outline and
 palette, a whiteboard SVG sized for editability, and an HTML SVG sized for document readability.
 Verify both blocks independently after the write.
+
+The experimental HTML route is create-only. Do not insert into or replace blocks in an existing
+document until the remaining update, conflict, multi-block, and trusted-client POC gates are complete.
 
 Use one combined DocxXML release candidate so block order is deterministic:
 

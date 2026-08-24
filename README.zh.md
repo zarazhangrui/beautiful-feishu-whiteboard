@@ -10,13 +10,14 @@
 
 ## 实验性 HTML5 Block 输出
 
-1.2 版本增加了仅在明确飞书/Lark 文档上下文中触发的 HTML5 Block 路由。它与白板共享内容清单、配色和视觉气质，但会针对文档宽度生成另一份 SVG，而不是把 1600–1700px 白板直接缩小。HTML 输出是静态展示，不能像白板节点一样编辑。
+1.2 版本增加了仅在明确飞书/Lark 文档上下文中触发、且只支持新建文档的实验性 HTML5 Block 路由。它与白板共享内容清单、配色和视觉气质，但会针对文档宽度生成另一份 SVG，而不是把 1600–1700px 白板直接缩小。HTML 输出是静态展示，不能像白板节点一样编辑。
 
 - 白板仍是默认输出。
 - 只有用户明确要求飞书/Lark 文档 HTML5 Block、HTML 块或双输出时才进入 HTML 路由。
 - 720px 及以上保证正文实际字号至少 16px；更窄时使用块内横向滚动。
 - 写入前执行解析器允许列表、default-deny CSP、500KB 限制、artifact hash 和真实 Chrome 检查。
 - 当前已验证 CLI 门禁为 `lark-cli >= 1.0.89`。
+- 已有文档的插入/替换在完整传输与受信客户端 POC 完成前保持禁用。
 
 发布前运行 `bash scripts/preflight.sh --mode html5-block`。详见
 [`RULES-html5-block.md`](RULES-html5-block.md) 与[传输 POC](examples/html5-block/POC.md)。

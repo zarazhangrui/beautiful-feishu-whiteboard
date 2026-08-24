@@ -15,6 +15,16 @@ import { buildHtmlDocument } from "./lib/html-wrapper.mjs";
 
 function parseArguments(argv) {
   const options = { force: false };
+  const allowed = new Set([
+    "input",
+    "output",
+    "title",
+    "description",
+    "artifact-id",
+    "min-width",
+    "max-bytes",
+    "height-mode",
+  ]);
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === "--force") {
@@ -25,6 +35,7 @@ function parseArguments(argv) {
       throw new Error(`unexpected argument: ${argument}`);
     }
     const key = argument.slice(2);
+    if (!allowed.has(key)) throw new Error(`unknown option: ${argument}`);
     const value = argv[index + 1];
     if (!value || value.startsWith("--")) {
       throw new Error(`missing value for ${argument}`);
@@ -79,6 +90,7 @@ export async function main(argv = process.argv.slice(2)) {
       ? Number(options["min-width"])
       : 720,
     maxBytes: options["max-bytes"] ? Number(options["max-bytes"]) : 500_000,
+    heightMode: options["height-mode"] ?? "auto",
   });
 
   await writeAtomically(outputPath, result.html, options.force);

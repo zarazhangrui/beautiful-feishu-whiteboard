@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 import { validateSvg } from "./svg-policy.mjs";
 
@@ -38,12 +39,23 @@ function escapeAttribute(value) {
 function addSvgAccessibility(svg, { title, description, artifactId }) {
   const titleId = `${artifactId}-title`;
   const descriptionId = `${artifactId}-desc`;
-  return svg.replace(
-    /<svg\b([^>]*)>/,
-    `<svg$1 role="img" aria-labelledby="${titleId} ${descriptionId}" tabindex="0" focusable="true">` +
-      `<title id="${titleId}">${escapeText(title)}</title>` +
-      `<desc id="${descriptionId}">${escapeText(description)}</desc>`,
-  );
+  const document = new DOMParser().parseFromString(svg, "image/svg+xml");
+  const root = document.documentElement;
+  root.setAttribute("role", "img");
+  root.setAttribute("aria-labelledby", `${titleId} ${descriptionId}`);
+  root.setAttribute("tabindex", "0");
+  root.setAttribute("focusable", "true");
+
+  const titleElement = document.createElementNS(root.namespaceURI, "title");
+  titleElement.setAttribute("id", titleId);
+  titleElement.appendChild(document.createTextNode(String(title)));
+  const descriptionElement = document.createElementNS(root.namespaceURI, "desc");
+  descriptionElement.setAttribute("id", descriptionId);
+  descriptionElement.appendChild(document.createTextNode(String(description)));
+  root.insertBefore(descriptionElement, root.firstChild);
+  root.insertBefore(titleElement, descriptionElement);
+
+  return new XMLSerializer().serializeToString(root);
 }
 
 export function buildHtmlDocument({
@@ -53,6 +65,7 @@ export function buildHtmlDocument({
   artifactId,
   minSupportedWidth = 720,
   maxBytes = 500_000,
+  heightMode = "auto",
 }) {
   if (!ARTIFACT_ID.test(artifactId ?? "")) {
     throw new HtmlWrapperError(
@@ -72,6 +85,18 @@ export function buildHtmlDocument({
       "minSupportedWidth must be positive",
     );
   }
+  if (!Number.isInteger(maxBytes) || maxBytes <= 0 || maxBytes > 500_000) {
+    throw new HtmlWrapperError(
+      "invalid-max-bytes",
+      "maxBytes must be a positive integer no greater than 500000",
+    );
+  }
+  if (!["auto", "viewport"].includes(heightMode)) {
+    throw new HtmlWrapperError(
+      "invalid-height-mode",
+      "heightMode must be auto or viewport",
+    );
+  }
 
   const policy = validateSvg(svg, { minSupportedWidth });
   const sourceSvgSha256 = createHash("sha256").update(svg).digest("hex");
@@ -87,7 +112,7 @@ export function buildHtmlDocument({
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="use-iframe" content="true">
-  <meta name="html-box-height-mode" content="auto">
+  <meta name="html-box-height-mode" content="${heightMode}">
   <meta name="description" content="${escapeAttribute(description)}">
   <meta name="artifact-id" content="${escapeAttribute(artifactId)}">
   <meta name="source-svg-sha256" content="${sourceSvgSha256}">

@@ -68,7 +68,7 @@ function detectDependencies() {
 
 function detectLarkCliVersion() {
   try {
-    const output = execFileSync("lark-cli", ["--version"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    const output = execFileSync("lark-cli", ["--version"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 10_000 });
     return output.match(/(\d+\.\d+\.\d+)/)?.[1] ?? null;
   } catch {
     return null;
@@ -80,6 +80,7 @@ export function detectAuthentication(execute = execFileSync) {
     const output = execute("lark-cli", ["auth", "status"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      timeout: 10_000,
     });
     const status = JSON.parse(output);
     return status?.identities?.user?.available === true;

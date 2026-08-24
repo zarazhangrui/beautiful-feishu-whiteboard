@@ -61,6 +61,31 @@ test("escapes metadata and adds accessible SVG semantics", () => {
   );
 });
 
+test("adds accessibility through the XML DOM when root attributes contain greater-than signs", () => {
+  const quotedAttributeSvg = svg.replace(
+    "<svg ",
+    '<svg aria-label="a > b" ',
+  );
+  const { html } = buildHtmlDocument({ ...input, svg: quotedAttributeSvg });
+
+  assert.match(html, /aria-label="a &gt; b"/);
+  assert.match(html, /role="img"/);
+  assert.match(html, /<title id="artifact-123-title">/);
+});
+
+test("supports the explicit viewport height mode", () => {
+  const { html } = buildHtmlDocument({ ...input, heightMode: "viewport" });
+  assert.match(
+    html,
+    /<meta name="html-box-height-mode" content="viewport">/,
+  );
+  assert.throws(
+    () => buildHtmlDocument({ ...input, heightMode: "fill" }),
+    (error) =>
+      error instanceof HtmlWrapperError && error.code === "invalid-height-mode",
+  );
+});
+
 test("adds a static CSP, system fonts and narrow-width scroll fallback", () => {
   const { html } = buildHtmlDocument(input);
 
@@ -114,4 +139,14 @@ test("enforces the final HTML byte limit", () => {
     (error) =>
       error instanceof HtmlWrapperError && error.code === "html-too-large",
   );
+});
+
+test("rejects non-finite and non-positive byte limits", () => {
+  for (const maxBytes of [Number.NaN, 0, -1, 12.5]) {
+    assert.throws(
+      () => buildHtmlDocument({ ...input, maxBytes }),
+      (error) =>
+        error instanceof HtmlWrapperError && error.code === "invalid-max-bytes",
+    );
+  }
 });

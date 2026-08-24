@@ -37,9 +37,10 @@ node scripts/svg-to-html.mjs \
   --output widget.html \
   --title "Visual title" \
   --description "Concise accessible description" \
-  --artifact-id "stable-artifact-id"
+  --artifact-id "stable-artifact-id" \
+  --height-mode auto
 
-node scripts/check-html5-block.mjs --input widget.html
+node scripts/check-html5-block.mjs --input widget.html --source-svg diagram-html.svg
 
 node scripts/render-html5-block.mjs \
   --input widget.html \
@@ -68,8 +69,9 @@ lark-cli docs +create --doc-format xml --content @./document.xml --as user
 lark-cli docs +fetch --doc DOC_TOKEN --detail full --as user
 ```
 
-For existing documents, fetch the latest revision and block IDs before `block_insert_after` or
-`block_replace`; fetch again after every write. Verify:
+The experimental route creates a new document only. Inserting into or replacing blocks in an existing
+document is blocked until the remaining update, conflict, multi-block, and trusted-client POC gates
+are complete. After creation, fetch again and verify:
 
 - the body contains `<html5-block data-ref="...">`;
 - `document.reference_map["html5-block"]` contains that key and its HTML data;
@@ -77,8 +79,8 @@ For existing documents, fetch the latest revision and block IDs before `block_in
 - structure and normalized content hash match the local artifact; record raw length only as a
   diagnostic because the service may normalize encoding or whitespace.
 
-On an ambiguous timeout, fetch and search for the stable artifact ID before retrying. Never blindly
-insert a second copy.
+On an ambiguous timeout, search the newly created document result for the stable artifact ID before
+retrying. Never blindly create a second copy.
 
 ## Deliverables
 

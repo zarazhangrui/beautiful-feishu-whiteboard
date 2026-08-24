@@ -1,6 +1,6 @@
 # 设计方案：为 beautiful-feishu-whiteboard 增加 HTML5 Block 输出后端
 
-> 状态：实验性能力已实施；传输与服务端回查通过，真实受信客户端 UI 验收待完成
+> 状态：create-only 实验性能力已实施；传输与服务端回查通过，已有文档更新与真实受信客户端 UI 验收待完成
 > 日期：2026-08-24  
 > 设计结论：保留 SVG 作为唯一的视觉中间产物，共享内容与风格，但按目标介质分别排版 SVG；一期提供桌面优先的静态 SVG HTML5 Block 发布能力，在窄屏下以内部横向滚动保证文字可读。
 
@@ -285,7 +285,8 @@ POC 必须记录内联 `<script>`、事件处理和 iframe sandbox 的真实行�
 
 ### 7.3 写入后回查
 
-写入成功不等于 HTML Block 可用。每次 create、insert 或 replace 后必须执行最小范围 `docs +fetch` 回查：
+写入成功不等于 HTML Block 可用。当前实验能力每次 create 后必须执行最小范围 `docs +fetch`
+回查；未来开放 insert/replace 时沿用同一门禁：
 
 1. 检查 `ok/result`、`warnings` 和 `tips`。
 2. 获取新 block 的 `block_id`。
@@ -305,7 +306,7 @@ POC 必须记录内联 `<script>`、事件处理和 iframe sandbox 的真实行�
   → docs +fetch 回查 content + reference_map
 ```
 
-### 8.2 插入已有文档
+### 8.2 插入已有文档（未来能力，当前禁用）
 
 ```text
 docs +fetch 获取最新 block ID 和 revision
@@ -314,7 +315,7 @@ docs +fetch 获取最新 block ID 和 revision
   → 使用最新 revision 再次 fetch 验证
 ```
 
-### 8.3 更新已有 HTML Block
+### 8.3 更新已有 HTML Block（未来能力，当前禁用）
 
 HTML 内容不能在飞书中局部编辑。更新流程为：
 
@@ -328,7 +329,9 @@ fetch 定位目标 html5-block
 
 所有示例最终都应显式使用目标身份（通常为 `--as user`），并遵循锁定版本对 `--api-version` 的要求。
 
-wrapper 还应写入稳定的 `artifact-id` 和 `source-svg-sha256` meta。insert/replace 请求超时或返回不确定结果时，先 fetch 并在 `reference_map` 中查找相同 `artifact-id`；已存在则不重试插入。revision 冲突时重新 fetch、重新定位 block 并重新评估，不能沿用旧 block ID。
+wrapper 还应写入稳定的 `artifact-id` 和 `source-svg-sha256` meta。未来开放 insert/replace
+前，请求超时去重和 revision 冲突处理必须按上述完整 POC 验证：先 fetch 并查找相同
+`artifact-id`，不能盲目重试或沿用旧 block ID。
 
 ## 9. 实现依赖
 
@@ -375,7 +378,9 @@ wrapper 还应写入稳定的 `artifact-id` 和 `source-svg-sha256` meta。inser
 
 ## 12. POC 清单
 
-在改动 `SKILL.md` 和 README 之前完成：
+当前 create-only 实验门禁要求完成 1、2、3、6、8（仅新建混排）、10（本地浏览器）、12；
+这些项目已经通过并记录在 `examples/html5-block/POC.md`。在开放已有文档更新或去掉
+“实验性”标记前，必须完成以下全量清单的其余项目：
 
 1. 找出并记录最低可用的 lark-cli 发布版本。
 2. 验证 `path` 能展开为 `reference_map`，而不是原样发送。
@@ -439,15 +444,19 @@ POC 结果写入 `examples/html5-block/POC.md`，包括版本号、命令、返�
 
 ## 14. 发布门槛与实施阶段
 
-P0 只验证传输链路，不修改正式 `SKILL.md` description。完成安全、宽度、浏览器和幂等能力后，P4 才加入实验性 HTML 路由。正式对外宣传前至少验证一个 HTML Block 独有价值，例如 SVG 渲染保真、CSS hover/highlight，或用户明确要求 HTML Block 作为交付格式。
+create-only 实验路由可在 P0–P2 及 P3 的 create/mixed/fetch 子集通过后启用，并必须明确
+禁用已有文档 insert/replace。完成全量 P3、真实受信客户端和幂等能力后，才可开放更新路由
+或移除“实验性”标记。正式对外宣传前至少验证一个 HTML Block 独有价值，例如 SVG 渲染
+保真，或用户明确要求 HTML Block 作为交付格式。
 
 | 阶段 | 内容 | 完成标准 |
 |---|---|---|
 | P0 | CLI/租户 POC | 固化最低版本、命令和兼容性记录 |
 | P1 | SVG→HTML wrapper 与静态检查 | 本地确定性生成，安全和大小测试通过 |
 | P2 | 浏览器验证 | 截图、console、network 检查通过 |
-| P3 | lark-cli 发布与 fetch 回查 | create/insert/replace/mixed blocks 通过 |
-| P4 | 修改 SKILL.md 和规则文件 | 路由测试通过，默认白板无回归 |
+| P3a | create-only 发布与 fetch 回查 | create/mixed blocks 通过；允许实验路由 |
+| P3b | 已有文档发布与幂等 | insert/replace/conflict/multi-block 通过；才允许更新路由 |
+| P4 | 修改 SKILL.md 和规则文件 | 路由测试通过，默认白板无回归，能力范围与 P3 阶段一致 |
 | P5 | README、示例和端到端试用 | 用户可理解两种输出的差异和限制 |
 
 ## 15. 交付要求

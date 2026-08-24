@@ -43,6 +43,17 @@ export function normalizeWidths(widths) {
   return [...new Set(parsed)].sort((a, b) => a - b);
 }
 
+export function screenFontSize(cssFontSize, matrix, renderedHeight) {
+  const scaleX = matrix ? Math.hypot(matrix.a, matrix.b) : 1;
+  const scaleY = matrix ? Math.hypot(matrix.c, matrix.d) : 1;
+  const scaled = cssFontSize * Math.min(scaleX, scaleY);
+  return Number(Math.min(scaled, renderedHeight || scaled).toFixed(3));
+}
+
+export function isAllowedRenderRequest(requestUrl, inputUrl) {
+  return requestUrl === inputUrl;
+}
+
 export function analyzeSnapshot(snapshot, { minBodyFontSize = 16, minSecondaryFontSize = 14 } = {}) {
   const boundaryRight = Math.max(snapshot.width, snapshot.canvasClientWidth ?? 0);
   const boundaryBottom = snapshot.canvasHeight ?? Number.POSITIVE_INFINITY;
@@ -109,12 +120,14 @@ async function measurePage(page, { width, minSupportedWidth }) {
       const text = [...document.querySelectorAll("svg text, svg tspan")].map((element) => {
         const rect = element.getBoundingClientRect();
         const matrix = element.getScreenCTM?.();
-        const scale = matrix ? Math.hypot(matrix.a, matrix.b) : 1;
         const cssFontSize = Number.parseFloat(getComputedStyle(element).fontSize);
+        const scaleX = matrix ? Math.hypot(matrix.a, matrix.b) : 1;
+        const scaleY = matrix ? Math.hypot(matrix.c, matrix.d) : 1;
+        const scaledFontSize = cssFontSize * Math.min(scaleX, scaleY);
         return {
           text: element.textContent?.trim() ?? "",
           role: element.getAttribute("data-text-role") === "secondary" ? "secondary" : "body",
-          fontSize: Number((cssFontSize * scale).toFixed(3)),
+          fontSize: Number(Math.min(scaledFontSize, rect.height || scaledFontSize).toFixed(3)),
           left: rect.left,
           right: rect.right,
           top: rect.top,
@@ -156,6 +169,7 @@ export async function renderHtmlFile({
   const pageErrors = [];
   const requestErrors = [];
   const snapshots = [];
+  const inputUrl = pathToFileURL(resolve(input)).href;
   try {
     const page = await browser.newPage();
     page.on("console", (message) => {
@@ -164,8 +178,7 @@ export async function renderHtmlFile({
     page.on("pageerror", (error) => pageErrors.push(error.message));
     page.on("requestfailed", (request) => requestErrors.push(`${request.url()}: ${request.failure()?.errorText}`));
     await page.route("**/*", async (route) => {
-      const protocol = new URL(route.request().url()).protocol;
-      if (["file:", "data:", "about:"].includes(protocol)) await route.continue();
+      if (isAllowedRenderRequest(route.request().url(), inputUrl)) await route.continue();
       else {
         requestErrors.push(`blocked external request: ${route.request().url()}`);
         await route.abort("blockedbyclient");
@@ -173,7 +186,7 @@ export async function renderHtmlFile({
     });
     for (const width of viewports) {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto(pathToFileURL(resolve(input)).href, { waitUntil: "load" });
+      await page.goto(inputUrl, { waitUntil: "load" });
       const snapshot = await measurePage(page, { width, minSupportedWidth });
       const screenshot = resolve(outputDir, `${basename(input, ".html")}-${width}.png`);
       await page.screenshot({ path: screenshot, fullPage: true });

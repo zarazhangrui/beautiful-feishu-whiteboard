@@ -14,7 +14,7 @@ auto layout chart tool. Your agent composes the layout, and these templates give
 
 ## Experimental HTML5 Block output
 
-Version 1.2 adds an explicit Feishu/Lark document HTML5 Block route. It shares the content outline,
+Version 1.2 adds an experimental, create-only Feishu/Lark document HTML5 Block route. It shares the content outline,
 palette, and visual tone with whiteboard output, but generates a separate SVG around document width
 instead of shrinking a 1600–1700px board. HTML output is static and not node-editable.
 
@@ -24,6 +24,7 @@ instead of shrinking a 1600–1700px board. HTML output is static and not node-e
 - Static allowlist validation, deny-by-default CSP, a 500KB limit, artifact hashes, and real Chrome
   checks run before publishing.
 - The verified CLI gate is `lark-cli >= 1.0.89`.
+- Existing-document insert/replace remains disabled pending the full transport and trusted-client POC.
 
 Run `bash scripts/preflight.sh --mode html5-block` before publishing. See
 [`RULES-html5-block.md`](RULES-html5-block.md) and the [transport POC](examples/html5-block/POC.md).
