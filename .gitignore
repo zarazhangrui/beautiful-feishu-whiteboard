@@ -13,3 +13,7 @@ diagrams/
 
 # local dependencies
 node_modules/
+
+# generated HTML5 Block browser reports
+examples/html5-block/render/
+doc-fetch-resources/
