@@ -3,6 +3,7 @@ import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 import { validateSvg } from "./svg-policy.mjs";
 import { canonicalizeSvgElement } from "./svg-canonical.mjs";
+import { buildStaticStyle } from "./html-template.mjs";
 
 const ARTIFACT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const SHA256 = /^[a-f0-9]{64}$/;
@@ -178,13 +179,27 @@ function collectMetadata(document, head, violations) {
   for (const meta of metas) {
     const name = (meta.getAttribute("name") ?? "").toLowerCase();
     const httpEquiv = (meta.getAttribute("http-equiv") ?? "").toLowerCase();
-    const isCharset = meta.hasAttribute("charset");
-    const isNamed = allowedNames.has(name);
-    const isCsp = httpEquiv === "content-security-policy";
-    if (![isCharset, isNamed, isCsp].filter(Boolean).length) {
+    const attributeNames = new Set();
+    for (let index = 0; index < meta.attributes.length; index += 1) {
+      attributeNames.add(meta.attributes.item(index).name);
+    }
+    const isCharset =
+      meta.hasAttribute("charset") &&
+      attributeNames.size === 1;
+    const isNamed =
+      allowedNames.has(name) &&
+      attributeNames.size === 2 &&
+      attributeNames.has("name") &&
+      attributeNames.has("content");
+    const isCsp =
+      httpEquiv === "content-security-policy" &&
+      attributeNames.size === 2 &&
+      attributeNames.has("http-equiv") &&
+      attributeNames.has("content");
+    if ([isCharset, isNamed, isCsp].filter(Boolean).length !== 1) {
       violations.push({
         code: "forbidden-meta",
-        message: "only charset, required named metadata, and CSP meta are allowed",
+        message: "meta variants must use exact, mutually exclusive attribute sets",
       });
     }
   }
@@ -262,7 +277,11 @@ export function normalizedContentSha256(html) {
 
 export function checkHtml5Block(
   html,
-  { maxBytes = 500_000, expectedSourceSvgSha256 } = {},
+  {
+    maxBytes = 500_000,
+    expectedSourceSvgSha256,
+    expectedSourceSvgCanonicalSha256,
+  } = {},
 ) {
   const text = String(html);
   const violations = [];
@@ -350,6 +369,16 @@ export function checkHtml5Block(
   ) {
     violations.push({ code: "source-hash-mismatch", message: "source SVG hash does not match" });
   }
+  if (
+    expectedSourceSvgCanonicalSha256 &&
+    canonicalSourceSvgSha256 !== null &&
+    canonicalSourceSvgSha256 !== expectedSourceSvgCanonicalSha256
+  ) {
+    violations.push({
+      code: "source-canonical-hash-mismatch",
+      message: "canonical source SVG hash does not match",
+    });
+  }
 
   const svgElements = allElements.filter(
     (element) => element.localName.toLowerCase() === "svg",
@@ -403,6 +432,21 @@ export function checkHtml5Block(
     .filter((element) => element.localName.toLowerCase() === "style")
     .map((element) => element.textContent ?? "")
     .join("\n");
+  const styleElements = allElements.filter(
+    (element) =>
+      element.namespaceURI === HTML_NAMESPACE && element.localName === "style",
+  );
+  if (
+    !Number.isInteger(minSupportedWidth) ||
+    styleElements.length !== 1 ||
+    styleElements[0].attributes.length !== 0 ||
+    styleElements[0].textContent !== buildStaticStyle(minSupportedWidth)
+  ) {
+    violations.push({
+      code: "style-template",
+      message: "exactly one unmodified static style template is required",
+    });
+  }
   if (
     Number.isInteger(minSupportedWidth) &&
     !styleText.includes(`min-width: ${minSupportedWidth}px`)

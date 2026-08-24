@@ -25,7 +25,7 @@ export function canonicalizeSvgElement(element) {
   for (let child = element.firstChild; child; child = child.nextSibling) {
     if (child.nodeType === 1) {
       children += canonicalizeSvgElement(child);
-    } else if (child.nodeType === 3) {
+    } else if (child.nodeType === 3 || child.nodeType === 4) {
       const keepWhitespace = element.localName === "text" || element.localName === "tspan";
       if (keepWhitespace || child.data.trim() !== "") children += escapeText(child.data);
     }

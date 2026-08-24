@@ -3,6 +3,7 @@ import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 import { validateSvg } from "./svg-policy.mjs";
 import { canonicalizeSvg } from "./svg-canonical.mjs";
+import { buildStaticStyle } from "./html-template.mjs";
 
 const ARTIFACT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const STATIC_CSP = [
@@ -109,6 +110,7 @@ export function buildHtmlDocument({
     description,
     artifactId,
   });
+  const staticStyle = buildStaticStyle(minSupportedWidth);
 
   const html = `<!doctype html>
 <html lang="zh-CN">
@@ -124,20 +126,7 @@ export function buildHtmlDocument({
   <meta name="min-supported-width" content="${minSupportedWidth}">
   <meta http-equiv="Content-Security-Policy" content="${escapeAttribute(STATIC_CSP)}">
   <title>${escapeText(title)}</title>
-  <style>
-    :root {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      color-scheme: light;
-    }
-    * { box-sizing: border-box; }
-    html, body { width: 100%; margin: 0; padding: 0; }
-    body { overflow-x: hidden; }
-    .html5-scroll { width: 100%; overflow-x: auto; }
-    .html5-canvas { width: 100%; min-width: ${minSupportedWidth}px; }
-    .html5-canvas svg { display: block; width: 100%; height: auto; max-width: none; }
-    .html5-canvas svg text, .html5-canvas svg tspan { font-family: inherit; }
-    .html5-canvas svg:focus-visible { outline: 3px solid #2563EB; outline-offset: -3px; }
-  </style>
+  <style>${staticStyle}</style>
 </head>
 <body>
   <main class="html5-scroll" aria-label="${escapeAttribute(title)}">

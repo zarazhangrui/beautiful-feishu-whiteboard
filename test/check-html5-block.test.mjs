@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test from "node:test";
 
 import { buildHtmlDocument } from "../scripts/lib/html-wrapper.mjs";
@@ -7,6 +8,7 @@ import {
   checkHtml5Block,
   normalizedContentSha256,
 } from "../scripts/lib/html-check.mjs";
+import { canonicalizeSvg } from "../scripts/lib/svg-canonical.mjs";
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400"><rect width="720" height="400" fill="#fff"/><text x="40" y="80" font-size="20">Architecture</text></svg>`;
 
@@ -66,6 +68,10 @@ test("requires metadata in the HTML head with the correct namespace", () => {
       "</head>",
       '<meta http-equiv="refresh" content="30;url=file:///etc/passwd"></head>',
     ),
+    validHtml().replace(
+      '<meta name="description"',
+      '<meta http-equiv="refresh" name="description"',
+    ),
   ];
   for (const html of cases) {
     assert.throws(
@@ -85,6 +91,10 @@ test("rejects executable markup, event attributes and relaxed CSP", () => {
     validHtml().replace("<main ", '<main onclick="alert(1)" '),
     validHtml().replace("</body>", '<iframe srcdoc="x"></iframe></body>'),
     validHtml().replace("script-src 'none'", "script-src 'none' 'unsafe-inline'"),
+    validHtml().replace(
+      "</head>",
+      '<style>.html5-canvas:active{background-image:image-set("https://evil.example/x" 1x)}</style></head>',
+    ),
   ];
   for (const html of cases) {
     assert.throws(
@@ -92,7 +102,7 @@ test("rejects executable markup, event attributes and relaxed CSP", () => {
       (error) =>
         error instanceof HtmlCheckError &&
         error.violations.some(({ code }) =>
-          ["executable-markup", "event-attribute", "csp"].includes(code),
+          ["executable-markup", "event-attribute", "csp", "style-template"].includes(code),
         ),
     );
   }
@@ -156,6 +166,43 @@ test("binds the actual embedded SVG to the canonical source hash", () => {
     () => checkHtml5Block(modified),
     (error) => error.violations.some(({ code }) => code === "embedded-svg-hash"),
   );
+});
+
+test("binds expected raw and canonical hashes to the same source", () => {
+  const sourceA = svg.replace("#fff", "#111");
+  const sourceB = svg.replace("#fff", "#222");
+  const htmlB = buildHtmlDocument({
+    svg: sourceB,
+    title: "Architecture",
+    description: "Project architecture",
+    artifactId: "project-architecture-v1",
+  }).html.replace(
+    /(<meta name="source-svg-sha256" content=")[a-f0-9]+/,
+    `$1${createHash("sha256").update(sourceA).digest("hex")}`,
+  );
+  assert.throws(
+    () =>
+      checkHtml5Block(htmlB, {
+        expectedSourceSvgSha256: createHash("sha256").update(sourceA).digest("hex"),
+        expectedSourceSvgCanonicalSha256: createHash("sha256")
+          .update(canonicalizeSvg(sourceA))
+          .digest("hex"),
+      }),
+    (error) =>
+      error.violations.some(
+        ({ code }) => code === "source-canonical-hash-mismatch",
+      ),
+  );
+});
+
+test("canonicalization includes CDATA text", () => {
+  const before = canonicalizeSvg(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400"><text font-size="20"><![CDATA[SECRET-A]]></text></svg>',
+  );
+  const after = canonicalizeSvg(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400"><text font-size="20"><![CDATA[SECRET-B]]></text></svg>',
+  );
+  assert.notEqual(before, after);
 });
 
 test("validates custom minimum widths under the artifact contract", () => {
