@@ -10,3 +10,6 @@ data/
 diagrams/
 *.png
 !assets/styles/*.png
+
+# local dependencies
+node_modules/
