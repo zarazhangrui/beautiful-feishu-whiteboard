@@ -12,6 +12,22 @@ auto layout chart tool. Your agent composes the layout, and these templates give
 **colour palette and mood** plus the whiteboard medium's hard rendering rules. The result is a real,
 **editable** Feishu whiteboard inside a doc, not a screenshot.
 
+## Experimental HTML5 Block output
+
+Version 1.2 adds an explicit Feishu/Lark document HTML5 Block route. It shares the content outline,
+palette, and visual tone with whiteboard output, but generates a separate SVG around document width
+instead of shrinking a 1600–1700px board. HTML output is static and not node-editable.
+
+- Whiteboard remains the default output.
+- HTML only triggers when the request explicitly names a Feishu/Lark document HTML5 Block or HTML block.
+- At 720px and wider, body text remains at least 16px; narrower clients use internal horizontal scroll.
+- Static allowlist validation, deny-by-default CSP, a 500KB limit, artifact hashes, and real Chrome
+  checks run before publishing.
+- The verified CLI gate is `lark-cli >= 1.0.89`.
+
+Run `bash scripts/preflight.sh --mode html5-block` before publishing. See
+[`RULES-html5-block.md`](RULES-html5-block.md) and the [transport POC](examples/html5-block/POC.md).
+
 > Built from hard won, on board verified knowledge of what the Feishu SVG whiteboard renderer can and
 > cannot do (native shapes only, no opacity, the text colour export quirk, and more), all captured in
 > [`RULES.md`](RULES.md).
@@ -150,6 +166,9 @@ git clone https://github.com/zarazhangrui/beautiful-feishu-whiteboard \
 
 Run the bundled check any time: `bash scripts/preflight.sh`
 
+For HTML5 Block output, install repository dependencies with `npm install`, then run
+`bash scripts/preflight.sh --mode html5-block`.
+
 ## Use it
 
 Once installed, just ask your agent in plain language. You can name a style or describe a vibe:
@@ -158,6 +177,8 @@ Once installed, just ask your agent in plain language. You can name a style or d
 > - "Turn this doc into a visual **board** in Feishu, minimal **cobalt** look."
 > - "Draw the system architecture as a Feishu whiteboard, **playful candy** colours."
 > - "Explain the 3 LLM training stages as a board."
+> - "Put this SVG into a Feishu doc as an HTML5 Block."
+> - "Publish the same architecture as both an editable whiteboard and an HTML5 Block."
 
 Your agent will: ask what the board is for and what vibe you want, pick a fitting style from the
 [catalogue](CATALOG.md), compose the diagram with native shapes, render it and self correct
@@ -172,6 +193,8 @@ Your agent will: ask what the board is for and what vibe you want, pick a fittin
   can pick a style that fits the content.
 - **`RULES.md`**: the medium's hard limits (native shapes only, no opacity, no gradients or blur, the
   text colour export caveat) and the exact `lark-cli` and `whiteboard-cli` commands.
+- **`RULES-html5-block.md`**: document-width, security, browser-rendering, publishing, and fetch-back
+  rules for the experimental static HTML5 Block route.
 - **`templates/<slug>/design.md`**: one per style, just the palette and how to use its colours. The
   agent is free to lay out the content however reads best; the template only constrains colour and mood.
 

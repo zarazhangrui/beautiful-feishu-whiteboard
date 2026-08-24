@@ -8,6 +8,19 @@
 
 这是一个给 AI agent 用的 **skill**（适用于 Claude Code 等会读取 `SKILL.md` 的 agent）。它不是一个自动排版的图表工具：**布局由你的 agent 自己来排**，而这些模板只提供有品味的**配色与气质**，外加飞书画板渲染引擎的硬性规则。产出是一块真正可在文档里继续编辑的飞书画板，而不是一张截图。
 
+## 实验性 HTML5 Block 输出
+
+1.2 版本增加了仅在明确飞书/Lark 文档上下文中触发的 HTML5 Block 路由。它与白板共享内容清单、配色和视觉气质，但会针对文档宽度生成另一份 SVG，而不是把 1600–1700px 白板直接缩小。HTML 输出是静态展示，不能像白板节点一样编辑。
+
+- 白板仍是默认输出。
+- 只有用户明确要求飞书/Lark 文档 HTML5 Block、HTML 块或双输出时才进入 HTML 路由。
+- 720px 及以上保证正文实际字号至少 16px；更窄时使用块内横向滚动。
+- 写入前执行解析器允许列表、default-deny CSP、500KB 限制、artifact hash 和真实 Chrome 检查。
+- 当前已验证 CLI 门禁为 `lark-cli >= 1.0.89`。
+
+发布前运行 `bash scripts/preflight.sh --mode html5-block`。详见
+[`RULES-html5-block.md`](RULES-html5-block.md) 与[传输 POC](examples/html5-block/POC.md)。
+
 > 这套规则来自对飞书 SVG 画板渲染引擎「能做什么、不能做什么」的实测沉淀（只支持原生图形、不支持透明度、文字颜色导出会失真等），全部写在 [`RULES.md`](RULES.md) 里。
 
 ## 风格画廊（Gallery）
@@ -141,6 +154,9 @@ git clone https://github.com/zarazhangrui/beautiful-feishu-whiteboard \
 
 随时运行自检：`bash scripts/preflight.sh`
 
+HTML5 Block 模式还需先在仓库目录运行 `npm install`，再执行
+`bash scripts/preflight.sh --mode html5-block`。
+
 ## 怎么用
 
 安装后，用大白话告诉你的 agent 就行。可以指定风格，也可以描述气质：
@@ -149,6 +165,8 @@ git clone https://github.com/zarazhangrui/beautiful-feishu-whiteboard \
 > - “把这篇文档变成一块飞书画板，**极简、cobalt 蓝** 的感觉。”
 > - “把系统架构画成飞书画板，**糖果色、活泼** 一点。”
 > - “用一块画板讲清楚 LLM 训练的三个阶段。”
+> - “把这张 SVG 作为 HTML5 Block 写进飞书文档。”
+> - “把同一份架构分别写成可编辑白板和 HTML5 Block。”
 
 你的 agent 会：先问清楚这块画板是干什么的、你想要什么气质，从[风格目录](CATALOG.md)里挑一个合适的风格，用原生图形把图画出来，渲染后自我检查（溢出、留白、重叠等问题），写入飞书文档成为可编辑画板，然后把**文档链接和图片一起**发给你。你随时可以换一个风格。
 
@@ -157,6 +175,7 @@ git clone https://github.com/zarazhangrui/beautiful-feishu-whiteboard \
 - **`SKILL.md`**：agent 的入口。包含使用时机、前置自检，以及对话流程（先搞清楚要画什么、再问气质、挑风格、生成、把链接和图片一起给用户、并告知可换风格）。
 - **`CATALOG.md`**：每个风格的气质、正式程度、适合的内容类型，便于 agent 按内容挑风格。
 - **`RULES.md`**：画板的硬性限制（只用原生图形、不用透明度、不用渐变和模糊、文字颜色导出失真的注意事项），以及 `lark-cli` / `whiteboard-cli` 的具体命令。
+- **`RULES-html5-block.md`**：实验性静态 HTML5 Block 的文档宽度、安全、浏览器验证、发布与 fetch 回查规则。
 - **`templates/<slug>/design.md`**：每个风格一份，只有配色和用色说明。布局由 agent 自由发挥，模板只约束配色与气质。
 
 ## 许可

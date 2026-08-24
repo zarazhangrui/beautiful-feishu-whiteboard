@@ -1,8 +1,13 @@
 # 设计方案：为 beautiful-feishu-whiteboard 增加 HTML5 Block 输出后端
 
-> 状态：待 POC 验证，未实施  
+> 状态：实验性能力已实施；传输与服务端回查通过，真实受信客户端 UI 验收待完成
 > 日期：2026-08-24  
 > 设计结论：保留 SVG 作为唯一的视觉中间产物，共享内容与风格，但按目标介质分别排版 SVG；一期提供桌面优先的静态 SVG HTML5 Block 发布能力，在窄屏下以内部横向滚动保证文字可读。
+
+> 2026-08-24 实施结果：`lark-cli 1.0.89` 已验证支持 path → data-ref/reference_map
+> 展开；混合白板 + HTML5 Block 文档创建和 fetch 回查通过；本地四档 Chrome 与白板真实预览
+> 通过。飞书 Web 页面因租户受信设备/MDM 策略拒绝当前浏览器，真实客户端 HTML iframe
+> 宽高验收仍待在受信设备完成。详见 `examples/html5-block/POC.md`。
 
 ---
 
@@ -137,7 +142,9 @@ HTML 基础格式为：
 
 `scripts/preflight.sh` 必须在 HTML 模式下检查最低 CLI 版本和可用浏览器；旧版本直接给出升级提示并停止，不能把 `<html5-block path>` 原样发送后期待服务端处理。没有浏览器时按 §7.2 的降级规则处理。
 
-在 POC 固化最低版本之前，本文中的 lark-cli 命令只表示协议意图，不作为可复制执行的最终命令。
+当前保守门禁固定为 `lark-cli >= 1.0.89`：1.0.46 的配套文档契约不包含 HTML5 Block，
+1.0.89 已通过 dry-run、真实 create 和 fetch 回查。该值表示“已验证最低版本”，未对中间版本逐一二分。
+1.0.89 的 `docs` 已使用新版默认接口，不再需要 `--api-version v2` 参数。
 
 ## 5. 总体架构
 
