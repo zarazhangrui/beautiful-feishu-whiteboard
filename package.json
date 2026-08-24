@@ -1,0 +1,16 @@
+{
+  "name": "beautiful-feishu-whiteboard",
+  "version": "1.2.0-development",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "0.9.12",
+    "playwright-core": "1.62.1"
+  }
+}
