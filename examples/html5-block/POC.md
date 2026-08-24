@@ -42,10 +42,11 @@ response returned both `block_type: whiteboard` and `block_type: html5-block`, w
 
 The exported HTML passed the repository checker with:
 
-- bytes: 6,985
+- bytes: 7,153
 - artifact ID: `beautiful-feishu-whiteboard-architecture-v1`
 - source SVG SHA-256: `033d48496e13d66b59a8eec09e2e8fc729cdb66065c1e97112f8b69effbee524`
-- normalized HTML SHA-256: `a7856dfa04c268fddbc76915d98993fce4500ceb0595a89743607b34e80c1ba4`
+- canonical source SVG SHA-256: `6d79bbc9d85edb7b343f5cd4898a19cca0192a1ddf101b016de6e8c151a324e0`
+- normalized HTML SHA-256: `d6acd4e1e7d55df90527aa471e8b077b87e93104f491d8a60c081d5b7b20a6a8`
 
 The local and service-exported lengths and normalized hashes matched exactly.
 

@@ -1,7 +1,8 @@
 import { constants as fsConstants } from "node:fs";
-import { access, mkdir, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { DOMParser } from "@xmldom/xmldom";
 
 import { chromium } from "playwright-core";
 
@@ -41,6 +42,28 @@ export function normalizeWidths(widths) {
     throw new Error("widths must be a comma-separated list of positive integers");
   }
   return [...new Set(parsed)].sort((a, b) => a - b);
+}
+
+export function positiveInteger(value, name) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${name} must be a positive integer`);
+  }
+  return parsed;
+}
+
+function artifactMinSupportedWidth(html) {
+  const document = new DOMParser().parseFromString(html, "text/html");
+  const metas = document.getElementsByTagName("meta");
+  for (let index = 0; index < metas.length; index += 1) {
+    if (metas.item(index).getAttribute("name") === "min-supported-width") {
+      return positiveInteger(
+        metas.item(index).getAttribute("content"),
+        "artifact min-supported-width",
+      );
+    }
+  }
+  throw new Error("artifact min-supported-width metadata is required");
 }
 
 export function screenFontSize(cssFontSize, matrix, renderedHeight) {
@@ -156,14 +179,19 @@ export async function renderHtmlFile({
   outputDir,
   widths = [720, 820, 1000],
   narrowWidth = 600,
-  minSupportedWidth = 720,
+  minSupportedWidth,
   chromePath = discoverChrome(),
   launch = (options) => chromium.launch(options),
 }) {
   if (!chromePath) throw new Error("No executable system Chrome or Chromium was found");
   await access(input, fsConstants.R_OK);
   await mkdir(outputDir, { recursive: true });
-  const viewports = normalizeWidths([...normalizeWidths(widths), Number(narrowWidth)]);
+  const supportedWidth =
+    minSupportedWidth === undefined
+      ? artifactMinSupportedWidth(await readFile(input, "utf8"))
+      : positiveInteger(minSupportedWidth, "minSupportedWidth");
+  const checkedNarrowWidth = positiveInteger(narrowWidth, "narrowWidth");
+  const viewports = normalizeWidths([...normalizeWidths(widths), checkedNarrowWidth]);
   const browser = await launch({ executablePath: chromePath, headless: true });
   const consoleErrors = [];
   const pageErrors = [];
@@ -187,7 +215,10 @@ export async function renderHtmlFile({
     for (const width of viewports) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(inputUrl, { waitUntil: "load" });
-      const snapshot = await measurePage(page, { width, minSupportedWidth });
+      const snapshot = await measurePage(page, {
+        width,
+        minSupportedWidth: supportedWidth,
+      });
       const screenshot = resolve(outputDir, `${basename(input, ".html")}-${width}.png`);
       await page.screenshot({ path: screenshot, fullPage: true });
       snapshots.push({ ...snapshot, screenshot });

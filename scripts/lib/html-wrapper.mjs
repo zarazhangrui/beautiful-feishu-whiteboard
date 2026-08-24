@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 import { validateSvg } from "./svg-policy.mjs";
+import { canonicalizeSvg } from "./svg-canonical.mjs";
 
 const ARTIFACT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const STATIC_CSP = [
@@ -91,15 +92,18 @@ export function buildHtmlDocument({
       "maxBytes must be a positive integer no greater than 500000",
     );
   }
-  if (!["auto", "viewport"].includes(heightMode)) {
+  if (heightMode !== "auto") {
     throw new HtmlWrapperError(
       "invalid-height-mode",
-      "heightMode must be auto or viewport",
+      "heightMode must be auto; viewport is blocked pending trusted-client POC",
     );
   }
 
   const policy = validateSvg(svg, { minSupportedWidth });
   const sourceSvgSha256 = createHash("sha256").update(svg).digest("hex");
+  const sourceSvgCanonicalSha256 = createHash("sha256")
+    .update(canonicalizeSvg(svg))
+    .digest("hex");
   const accessibleSvg = addSvgAccessibility(svg, {
     title,
     description,
@@ -116,6 +120,8 @@ export function buildHtmlDocument({
   <meta name="description" content="${escapeAttribute(description)}">
   <meta name="artifact-id" content="${escapeAttribute(artifactId)}">
   <meta name="source-svg-sha256" content="${sourceSvgSha256}">
+  <meta name="source-svg-canonical-sha256" content="${sourceSvgCanonicalSha256}">
+  <meta name="min-supported-width" content="${minSupportedWidth}">
   <meta http-equiv="Content-Security-Policy" content="${escapeAttribute(STATIC_CSP)}">
   <title>${escapeText(title)}</title>
   <style>
@@ -156,6 +162,7 @@ ${accessibleSvg}
     bytes,
     artifactId,
     sourceSvgSha256,
+    sourceSvgCanonicalSha256,
     policy,
   };
 }

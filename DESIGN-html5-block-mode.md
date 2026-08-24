@@ -124,7 +124,7 @@ HTML 基础格式为：
 |---|---|
 | HTML 总长度 | 不超过 500KB |
 | 常见文档可用宽度 | 约 820px；必须做响应式布局，不能把 820px 当成永远固定的 iframe 宽度 |
-| 高度模式 | `auto` 或 `viewport` |
+| 高度模式 | 当前仅 `auto`；`viewport` 完成受信客户端 POC 后再开放 |
 | 高度刷新 | 页面加载后追加内容不会让 CLI 自动刷新块高度 |
 | 内容存储 | 正文使用 `data-ref`，真实 HTML 存储在 `reference_map` |
 
@@ -218,14 +218,14 @@ diagram.svg
 - wrapper 显式声明跨平台系统字体栈，例如 `-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif`，并让 `svg text` 继承。不得假设外部字体可加载。
 - wrapper 在支持宽度内使用 `width: 100%`；低于 `min_supported_width` 时让承载 SVG 的容器横向滚动，SVG 不继续缩小。
 - 默认使用 `html-box-height-mode=auto`，让内容在文档流中完整展开。
-- 只有未来出现必须单屏展示或内部滚动的明确场景时才允许 `viewport`。
+- `viewport` 在真实受信客户端完成高度与内部滚动 POC 前必须拒绝，单屏需求回退白板。
 - `meta description` 从内容摘要生成，不包含用户指令、文件路径、风格名或工具过程。
 - 包装阶段不重写 SVG 内部节点，不修改颜色、文字或几何关系；需要调整时回到 HTML 版 SVG 生成阶段。
 - wrapper 添加 `<title>`、`<desc>`、`role="img"`、`aria-labelledby` 和可见 focus 样式。
 
 第一期可以加入少量 wrapper 级增强，例如键盘可聚焦、背景适配和打印样式；不加入业务交互或远程数据加载。
 
-HTML SVG 默认最大宽高比暂定为 3:1，POC 后按真实体验调整。超限时优先拆成多个 HTML5 Block，其次回退白板；只有用户明确需要长页或内部滚动时才选择 `viewport`。
+HTML SVG 默认最大宽高比暂定为 3:1，POC 后按真实体验调整。超限时优先拆成多个 HTML5 Block，其次回退白板；`viewport` 在完成受信客户端 POC 后再评估开放。
 
 ## 6. 安全边界
 
@@ -410,7 +410,7 @@ POC 结果写入 `examples/html5-block/POC.md`，包括版本号、命令、返�
 - `url(#arrow)` 被允许，HTTP/data/javascript URL、事件属性和未允许元素被拒绝。
 - 超过最大宽高比的 SVG 被拒绝或要求拆分。
 - 大于限制的 HTML 被拒绝。
-- `auto`/`viewport` 非法值被拒绝。
+- `auto` 被接受；`viewport` 和其他未验证高度模式被拒绝。
 - 中文、XML 特殊字符和长文本不会破坏 HTML/XML。
 
 ### 13.2 Skill 路由测试

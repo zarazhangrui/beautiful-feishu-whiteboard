@@ -7,6 +7,7 @@ import {
   discoverChrome,
   isAllowedRenderRequest,
   normalizeWidths,
+  positiveInteger,
   screenFontSize,
 } from "../scripts/lib/browser-render.mjs";
 
@@ -17,6 +18,13 @@ test("discovers the first executable system Chrome candidate", () => {
     isExecutable: (path) => path.includes("Google Chrome"),
   });
   assert.equal(found, candidates[1]);
+});
+
+test("rejects invalid renderer integer options", () => {
+  assert.equal(positiveInteger("720", "minSupportedWidth"), 720);
+  for (const value of ["nope", "0", "-1", "12.5"]) {
+    assert.throws(() => positiveInteger(value, "minSupportedWidth"), /positive integer/);
+  }
 });
 
 test("returns null when no supported Chrome is executable", () => {

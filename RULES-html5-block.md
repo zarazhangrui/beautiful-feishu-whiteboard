@@ -12,8 +12,8 @@ These rules apply only when the user explicitly requests a Feishu/Lark document 
   may be 14px only when explicitly tagged `data-text-role="secondary"`.
 - The wrapper uses `width: 100%`. Below 720px it must preserve the canvas width and expose internal
   horizontal scrolling instead of shrinking text further.
-- Use `html-box-height-mode=auto` for document-flow visuals. Use `viewport` only when the user
-  explicitly asks for a single-screen or internally scrolling experience.
+- Use `html-box-height-mode=auto`. `viewport` is blocked until its height and internal-scroll
+  semantics pass the trusted-client POC; fall back to a whiteboard for a required single-screen view.
 - Declare no SVG `font-family`; the HTML wrapper supplies a cross-client system CJK font stack.
 
 ## Static security boundary
@@ -79,8 +79,9 @@ are complete. After creation, fetch again and verify:
 - structure and normalized content hash match the local artifact; record raw length only as a
   diagnostic because the service may normalize encoding or whitespace.
 
-On an ambiguous timeout, search the newly created document result for the stable artifact ID before
-retrying. Never blindly create a second copy.
+On an ambiguous timeout, fetch and inspect the result only when a document token was returned. If no
+token was returned, stop and report that creation needs manual confirmation; never retry automatically
+or blindly create a second copy.
 
 ## Deliverables
 

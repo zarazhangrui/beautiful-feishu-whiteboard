@@ -74,6 +74,17 @@ test("rejects unknown attributes under the SVG allowlist", () => {
   );
 });
 
+test("rejects CSS escapes and non-color paint values", () => {
+  expectViolation(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><rect width="20" height="20" fill="u\\72l(\\68 ttp:\\2f\\2f evil.example/a)"/></svg>',
+    "unsafe-attribute-value",
+  );
+  expectViolation(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><rect width="20" height="20" fill="var(--paint)"/></svg>',
+    "invalid-paint",
+  );
+});
+
 test("normalizes fatal XML parser failures into policy violations", () => {
   expectViolation(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><text font-size="24">x</svg>',

@@ -73,17 +73,17 @@ test("adds accessibility through the XML DOM when root attributes contain greate
   assert.match(html, /<title id="artifact-123-title">/);
 });
 
-test("supports the explicit viewport height mode", () => {
-  const { html } = buildHtmlDocument({ ...input, heightMode: "viewport" });
-  assert.match(
-    html,
-    /<meta name="html-box-height-mode" content="viewport">/,
-  );
+test("blocks viewport height mode until trusted-client POC is complete", () => {
   assert.throws(
-    () => buildHtmlDocument({ ...input, heightMode: "fill" }),
+    () => buildHtmlDocument({ ...input, heightMode: "viewport" }),
     (error) =>
       error instanceof HtmlWrapperError && error.code === "invalid-height-mode",
   );
+});
+
+test("records the SVG validation width in artifact metadata", () => {
+  const { html } = buildHtmlDocument({ ...input, minSupportedWidth: 1000 });
+  assert.match(html, /<meta name="min-supported-width" content="1000">/);
 });
 
 test("adds a static CSP, system fonts and narrow-width scroll fallback", () => {

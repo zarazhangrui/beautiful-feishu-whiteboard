@@ -2,15 +2,21 @@ import { createHash } from "node:crypto";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 import { validateSvg } from "./svg-policy.mjs";
+import { canonicalizeSvgElement } from "./svg-canonical.mjs";
 
 const ARTIFACT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const SHA256 = /^[a-f0-9]{64}$/;
+const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const REQUIRED_META = [
+  ["viewport", new Set(["width=device-width, initial-scale=1"])],
   ["use-iframe", new Set(["true"])],
-  ["html-box-height-mode", new Set(["auto", "viewport"])],
+  ["html-box-height-mode", new Set(["auto"])],
   ["description", null],
   ["artifact-id", null],
   ["source-svg-sha256", null],
+  ["source-svg-canonical-sha256", null],
+  ["min-supported-width", null],
 ];
 const REQUIRED_CSP = new Map([
   ["default-src", ["'none'"]],
@@ -46,6 +52,15 @@ const ALLOWED_HTML_ELEMENTS = new Set([
   "tspan",
   "path",
   "desc",
+]);
+const HTML_ATTRIBUTES = new Map([
+  ["html", new Set(["lang"])],
+  ["head", new Set()],
+  ["title", new Set()],
+  ["style", new Set()],
+  ["body", new Set()],
+  ["main", new Set(["class", "aria-label"])],
+  ["div", new Set(["class"])],
 ]);
 
 export class HtmlCheckError extends Error {
@@ -91,10 +106,48 @@ function parseHtml(text, violations) {
   return document;
 }
 
-function collectMetadata(document, violations) {
+function validateHtmlStructure(document, allElements, violations) {
+  const root = document?.documentElement;
+  const directChildren = elements(root).filter((element) => element.parentNode === root);
+  const heads = directChildren.filter((element) => element.localName === "head");
+  const bodies = directChildren.filter((element) => element.localName === "body");
+  if (
+    root?.localName !== "html" ||
+    root?.namespaceURI !== HTML_NAMESPACE ||
+    heads.length !== 1 ||
+    bodies.length !== 1
+  ) {
+    violations.push({
+      code: "html-structure",
+      message: "exactly one HTML head and body must be direct children of html",
+    });
+  }
+  const head = heads[0] ?? null;
+  for (const element of allElements) {
+    const expectedNamespace =
+      element.localName === "svg" || element.namespaceURI === SVG_NAMESPACE
+        ? SVG_NAMESPACE
+        : HTML_NAMESPACE;
+    if (element.namespaceURI !== expectedNamespace) {
+      violations.push({
+        code: "html-namespace",
+        message: `<${element.nodeName}> uses an unexpected namespace`,
+      });
+    }
+    if (element.localName === "meta" && element.parentNode !== head) {
+      violations.push({
+        code: "html-structure",
+        message: "all meta elements must be direct children of head",
+      });
+    }
+  }
+  return head;
+}
+
+function collectMetadata(document, head, violations) {
   const metadata = {};
   const metas = elements(document?.documentElement).filter(
-    (element) => element.localName.toLowerCase() === "meta",
+    (element) => element.localName.toLowerCase() === "meta" && element.parentNode === head,
   );
   for (const [name, allowedValues] of REQUIRED_META) {
     const matches = metas.filter(
@@ -114,7 +167,49 @@ function collectMetadata(document, violations) {
       });
     }
   }
+  const charsets = metas.filter((element) => element.hasAttribute("charset"));
+  if (
+    charsets.length !== 1 ||
+    charsets[0].getAttribute("charset").toLowerCase() !== "utf-8"
+  ) {
+    violations.push({ code: "required-meta", message: "utf-8 charset meta is required" });
+  }
+  const allowedNames = new Set(REQUIRED_META.map(([name]) => name));
+  for (const meta of metas) {
+    const name = (meta.getAttribute("name") ?? "").toLowerCase();
+    const httpEquiv = (meta.getAttribute("http-equiv") ?? "").toLowerCase();
+    const isCharset = meta.hasAttribute("charset");
+    const isNamed = allowedNames.has(name);
+    const isCsp = httpEquiv === "content-security-policy";
+    if (![isCharset, isNamed, isCsp].filter(Boolean).length) {
+      violations.push({
+        code: "forbidden-meta",
+        message: "only charset, required named metadata, and CSP meta are allowed",
+      });
+    }
+  }
   return { metadata, metas };
+}
+
+function canonicalEmbeddedSourceSha256(svgElement, artifactId) {
+  const clone = svgElement.cloneNode(true);
+  for (const name of ["role", "aria-labelledby", "tabindex", "focusable"]) {
+    clone.removeAttribute(name);
+  }
+  for (let child = clone.firstChild; child; ) {
+    const next = child.nextSibling;
+    if (
+      child.nodeType === 1 &&
+      ((child.localName === "title" && child.getAttribute("id") === `${artifactId}-title`) ||
+        (child.localName === "desc" && child.getAttribute("id") === `${artifactId}-desc`))
+    ) {
+      clone.removeChild(child);
+    }
+    child = next;
+  }
+  return createHash("sha256")
+    .update(canonicalizeSvgElement(clone))
+    .digest("hex");
 }
 
 function parseCsp(value) {
@@ -186,7 +281,8 @@ export function checkHtml5Block(
 
   const document = parseHtml(text, violations);
   const allElements = elements(document?.documentElement);
-  const { metadata, metas } = collectMetadata(document, violations);
+  const head = validateHtmlStructure(document, allElements, violations);
+  const { metadata, metas } = collectMetadata(document, head, violations);
   if (!hasExactStaticCsp(metas)) {
     violations.push({
       code: "csp",
@@ -201,6 +297,18 @@ export function checkHtml5Block(
         code: "executable-markup",
         message: `<${name}> is not allowed`,
       });
+    }
+    if (element.namespaceURI === HTML_NAMESPACE && name !== "meta") {
+      const allowedAttributes = HTML_ATTRIBUTES.get(name) ?? new Set();
+      for (let index = 0; index < element.attributes.length; index += 1) {
+        const attribute = element.attributes.item(index);
+        if (!allowedAttributes.has(attribute.name)) {
+          violations.push({
+            code: "disallowed-html-attribute",
+            message: `${attribute.name} is not allowed on <${name}>`,
+          });
+        }
+      }
     }
     for (let index = 0; index < element.attributes.length; index += 1) {
       const attribute = element.attributes.item(index);
@@ -220,6 +328,20 @@ export function checkHtml5Block(
   const sourceSvgSha256 = metadata["source-svg-sha256"];
   if (sourceSvgSha256 !== null && !SHA256.test(sourceSvgSha256)) {
     violations.push({ code: "source-svg-sha256", message: "source SVG hash is malformed" });
+  }
+  const canonicalSourceSvgSha256 = metadata["source-svg-canonical-sha256"];
+  if (canonicalSourceSvgSha256 !== null && !SHA256.test(canonicalSourceSvgSha256)) {
+    violations.push({
+      code: "source-svg-canonical-sha256",
+      message: "canonical source SVG hash is malformed",
+    });
+  }
+  const minSupportedWidth = Number(metadata["min-supported-width"]);
+  if (!Number.isInteger(minSupportedWidth) || minSupportedWidth <= 0) {
+    violations.push({
+      code: "min-supported-width",
+      message: "min-supported-width must be a positive integer",
+    });
   }
   if (
     expectedSourceSvgSha256 &&
@@ -241,9 +363,21 @@ export function checkHtml5Block(
     try {
       validateSvg(new XMLSerializer().serializeToString(svgElements[0]), {
         allowAccessibilityMetadata: true,
+        minSupportedWidth,
       });
     } catch (error) {
       violations.push({ code: "svg-policy", message: error.message });
+    }
+    if (
+      canonicalSourceSvgSha256 &&
+      ARTIFACT_ID.test(artifactId ?? "") &&
+      canonicalEmbeddedSourceSha256(svgElements[0], artifactId) !==
+        canonicalSourceSvgSha256
+    ) {
+      violations.push({
+        code: "embedded-svg-hash",
+        message: "embedded SVG does not match the canonical source hash",
+      });
     }
   }
 
@@ -269,6 +403,15 @@ export function checkHtml5Block(
     .filter((element) => element.localName.toLowerCase() === "style")
     .map((element) => element.textContent ?? "")
     .join("\n");
+  if (
+    Number.isInteger(minSupportedWidth) &&
+    !styleText.includes(`min-width: ${minSupportedWidth}px`)
+  ) {
+    violations.push({
+      code: "min-supported-width",
+      message: "canvas CSS does not match min-supported-width metadata",
+    });
+  }
   if (/@import/i.test(styleText) || /\\/.test(styleText)) {
     violations.push({
       code: "unsafe-css",
@@ -283,6 +426,8 @@ export function checkHtml5Block(
     bytes,
     artifactId,
     sourceSvgSha256,
+    canonicalSourceSvgSha256,
+    minSupportedWidth,
     normalizedContentSha256: normalizedContentSha256(text),
     svgCount: svgElements.length,
   };

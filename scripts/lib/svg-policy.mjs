@@ -57,6 +57,7 @@ const EXTERNAL_REFERENCE =
   /(?:https?:|data:|javascript:|file:|ftp:|\/\/)/i;
 const LOCAL_URL_REFERENCE = /^url\(\s*#[A-Za-z_][\w:.-]*\s*\)$/;
 const FONT_SIZE = /^(\d+(?:\.\d+)?)(?:px)?$/;
+const PAINT = /^(?:none|currentColor|#[0-9A-Fa-f]{3,8}|[A-Za-z]+)$/;
 
 export class SvgPolicyError extends Error {
   constructor(violations) {
@@ -224,6 +225,22 @@ export function validateSvg(
         violations.push({
           code: "event-attribute",
           message: `${attribute.name} is not allowed`,
+        });
+      }
+      if (attribute.value.includes("\\")) {
+        violations.push({
+          code: "unsafe-attribute-value",
+          message: `${attribute.name} contains a forbidden escape sequence`,
+        });
+      }
+      if (
+        (attribute.name === "fill" || attribute.name === "stroke") &&
+        !PAINT.test(attribute.value) &&
+        !LOCAL_URL_REFERENCE.test(attribute.value)
+      ) {
+        violations.push({
+          code: "invalid-paint",
+          message: `${attribute.name} must be a color, none, currentColor, or local marker reference`,
         });
       }
       if (attribute.name === "style") {

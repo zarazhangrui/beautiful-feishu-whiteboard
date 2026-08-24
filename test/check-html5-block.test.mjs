@@ -41,16 +41,42 @@ test("rejects missing required metadata and CSP", () => {
   );
 });
 
-test("accepts either supported height mode and rejects unknown modes", () => {
+test("rejects unverified height modes", () => {
   const viewport = validHtml().replace(
     'name="html-box-height-mode" content="auto"',
     'name="html-box-height-mode" content="viewport"',
   );
-  assert.equal(checkHtml5Block(viewport).ok, true);
   assert.throws(
-    () => checkHtml5Block(viewport.replace('content="viewport"', 'content="fill"')),
+    () => checkHtml5Block(viewport),
     (error) => error.violations.some(({ code }) => code === "required-meta"),
   );
+});
+
+test("requires metadata in the HTML head with the correct namespace", () => {
+  const cases = [
+    validHtml().replace(
+      /(<meta http-equiv="Content-Security-Policy"[^>]*>)/,
+      "</head><body>$1</body><head>",
+    ),
+    validHtml().replace(
+      '<meta name="artifact-id"',
+      '<x:meta xmlns:x="urn:test" name="artifact-id"',
+    ),
+    validHtml().replace(
+      "</head>",
+      '<meta http-equiv="refresh" content="30;url=file:///etc/passwd"></head>',
+    ),
+  ];
+  for (const html of cases) {
+    assert.throws(
+      () => checkHtml5Block(html),
+      (error) =>
+        error instanceof HtmlCheckError &&
+        error.violations.some(({ code }) =>
+          ["html-structure", "html-namespace", "forbidden-meta"].includes(code),
+        ),
+    );
+  }
 });
 
 test("rejects executable markup, event attributes and relaxed CSP", () => {
@@ -122,4 +148,24 @@ test("checks an expected source SVG hash when supplied", () => {
     () => checkHtml5Block(validHtml(), { expectedSourceSvgSha256: "0".repeat(64) }),
     (error) => error.violations.some(({ code }) => code === "source-hash-mismatch"),
   );
+});
+
+test("binds the actual embedded SVG to the canonical source hash", () => {
+  const modified = validHtml().replace('fill="#fff"', 'fill="#000"');
+  assert.throws(
+    () => checkHtml5Block(modified),
+    (error) => error.violations.some(({ code }) => code === "embedded-svg-hash"),
+  );
+});
+
+test("validates custom minimum widths under the artifact contract", () => {
+  const wideSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500"><text x="20" y="40" font-size="16">Readable</text></svg>`;
+  const html = buildHtmlDocument({
+    svg: wideSvg,
+    title: "Wide",
+    description: "Wide artifact",
+    artifactId: "wide",
+    minSupportedWidth: 1000,
+  }).html;
+  assert.equal(checkHtml5Block(html).ok, true);
 });
