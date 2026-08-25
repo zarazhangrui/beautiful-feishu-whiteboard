@@ -114,6 +114,7 @@
     },
     "node": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["id", "label"],
       "properties": {
         "id": { "$ref": "#/definitions/id" },
@@ -127,6 +128,7 @@
     },
     "edge": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["id", "source", "target"],
       "properties": {
         "id": { "$ref": "#/definitions/id" },
@@ -140,6 +142,7 @@
     },
     "metric": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["id", "label", "value"],
       "properties": {
         "id": { "$ref": "#/definitions/id" },
@@ -163,6 +166,7 @@
     },
     "series": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["id", "label", "data"],
       "properties": {
         "id": { "$ref": "#/definitions/id" },
@@ -184,6 +188,7 @@
     },
     "step": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["id", "label"],
       "properties": {
         "id": { "$ref": "#/definitions/id" },
@@ -200,6 +205,7 @@
     },
     "annotation": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["id", "text"],
       "properties": {
         "id": { "$ref": "#/definitions/id" },
