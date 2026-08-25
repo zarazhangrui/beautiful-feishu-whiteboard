@@ -1,0 +1,52 @@
+{
+  "version": "1.0",
+  "type": "network",
+  "title": "项目架构",
+  "summary": "展示内容规划、双渲染器与飞书发布链路",
+  "content": {
+    "nodes": [
+      {
+        "id": "planner",
+        "label": "内容规划",
+        "description": "生成共享语义模型"
+      },
+      {
+        "id": "renderer",
+        "label": "双渲染器",
+        "description": "分别输出白板和交互式 HTML"
+      },
+      {
+        "id": "lark",
+        "label": "飞书发布",
+        "description": "写入白板与 HTML5 Block"
+      }
+    ],
+    "edges": [
+      {
+        "id": "planning-to-rendering",
+        "source": "planner",
+        "target": "renderer",
+        "label": "VisualizationSpec"
+      },
+      {
+        "id": "rendering-to-lark",
+        "source": "renderer",
+        "target": "lark",
+        "label": "发布产物"
+      }
+    ],
+    "metrics": [],
+    "series": [],
+    "steps": [],
+    "annotations": []
+  },
+  "theme": {
+    "palette": "coastal-morning",
+    "tokens": {}
+  },
+  "interactions": ["select", "filter", "pan", "zoom"],
+  "accessibility": {
+    "alt": "项目架构关系图，内容规划经过双渲染器后发布到飞书",
+    "instructions": "选择或筛选节点查看详情，拖动画布并缩放以浏览完整关系。"
+  }
+}

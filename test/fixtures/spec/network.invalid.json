@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "type": "network",
+  "title": "无效项目架构",
+  "summary": "包含重复节点和悬空关系的测试数据",
+  "content": {
+    "nodes": [
+      {
+        "id": "planner",
+        "label": "内容规划"
+      },
+      {
+        "id": "planner",
+        "label": "重复的内容规划"
+      }
+    ],
+    "edges": [
+      {
+        "id": "missing-renderer",
+        "source": "planner",
+        "target": "renderer"
+      }
+    ],
+    "metrics": [],
+    "series": [],
+    "steps": [],
+    "annotations": []
+  },
+  "theme": {
+    "palette": "coastal-morning",
+    "tokens": {}
+  },
+  "interactions": ["select", "filter", "pan", "zoom"],
+  "accessibility": {
+    "alt": "无效项目架构关系图",
+    "instructions": "选择节点查看详情。"
+  }
+}
