@@ -1,0 +1,28 @@
+{
+  "protocolVersion": "1.0",
+  "dependencies": [
+    {
+      "id": "echarts@5.5.1",
+      "url": "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js",
+      "allowedTypes": ["dashboard", "chart", "network", "flow", "timeline"],
+      "fallback": "Keep the semantic summary and source values visible when the chart library is unavailable."
+    },
+    {
+      "id": "lucide@1.8.0",
+      "url": "https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js",
+      "allowedTypes": [
+        "dashboard",
+        "chart",
+        "network",
+        "flow",
+        "timeline",
+        "presentation",
+        "prototype",
+        "form",
+        "knowledge-tool",
+        "immersive"
+      ],
+      "fallback": "Retain text labels on every control when the icon library is unavailable."
+    }
+  ]
+}
