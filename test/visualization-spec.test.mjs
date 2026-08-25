@@ -16,6 +16,40 @@ const TYPES = [
   "immersive",
 ];
 
+const INTERACTIONS = [
+  "select",
+  "filter",
+  "pan",
+  "zoom",
+  "drag",
+  "hover",
+  "toggle",
+  "play",
+  "navigate",
+  "input",
+  "submit",
+];
+
+const ALLOWED_INTERACTIONS_BY_TYPE = {
+  dashboard: new Set(["select", "filter", "hover", "toggle"]),
+  chart: new Set(["select", "filter", "pan", "zoom", "hover"]),
+  network: new Set(["select", "filter", "pan", "zoom", "drag", "hover"]),
+  flow: new Set(["select", "filter", "pan", "zoom", "hover"]),
+  timeline: new Set(["select", "filter", "pan", "zoom", "hover", "play"]),
+  presentation: new Set(["select", "navigate", "play"]),
+  prototype: new Set(["select", "toggle", "navigate", "input", "submit"]),
+  form: new Set(["navigate", "input", "submit"]),
+  "knowledge-tool": new Set([
+    "select",
+    "filter",
+    "toggle",
+    "navigate",
+    "input",
+    "submit",
+  ]),
+  immersive: new Set(["select", "pan", "zoom", "drag", "play", "navigate"]),
+};
+
 function makeSpec(overrides = {}) {
   const base = {
     version: "1.0",
@@ -378,32 +412,29 @@ test("reports dangling edge endpoints at the exact endpoint path", () => {
   );
 });
 
-test("enforces representative interaction boundaries with stable codes", () => {
-  const allowed = [
-    ["network", "zoom"],
-    ["dashboard", "filter"],
-    ["presentation", "navigate"],
-    ["form", "submit"],
-    ["immersive", "drag"],
-  ];
-  for (const [type, interaction] of allowed) {
-    assert.equal(
-      validateVisualizationSpec(
+test("enforces the complete interaction policy matrix", () => {
+  for (const type of TYPES) {
+    const allowedInteractions = ALLOWED_INTERACTIONS_BY_TYPE[type];
+    for (const interaction of INTERACTIONS) {
+      const report = validateVisualizationSpec(
         makeSpec({ type, interactions: [interaction] }),
-      ).ok,
-      true,
-    );
-  }
+      );
+      const expectedAllowed = allowedInteractions.has(interaction);
 
-  const denied = [
-    ["dashboard", "zoom"],
-    ["presentation", "filter"],
-    ["form", "pan"],
-  ];
-  for (const [type, interaction] of denied) {
-    assert.deepEqual(
-      codes(makeSpec({ type, interactions: [interaction] })),
-      ["unsupported-interaction"],
-    );
+      assert.equal(
+        report.ok,
+        expectedAllowed,
+        `${type}/${interaction} policy mismatch`,
+      );
+      if (!expectedAllowed) {
+        assert.equal(
+          report.violations.some(
+            (violation) => violation.code === "unsupported-interaction",
+          ),
+          true,
+          `${type}/${interaction} must report unsupported-interaction`,
+        );
+      }
+    }
   }
 });
