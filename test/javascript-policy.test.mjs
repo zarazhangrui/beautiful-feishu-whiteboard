@@ -18,3 +18,83 @@ test("rejects qualified network APIs and nested location writes",()=>{reject("gl
 test("rejects resource URL property writes",()=>{reject("image.src='https://evil.example/x.png'","js-network");reject("link.href=value","js-network");});
 test("rejects secret-like literals and unsafe HTML sinks",()=>{reject("const token='sk-abcdefghijklmnopqrstuvwxyz123456';","js-secret-literal");reject("target.innerHTML=userInput;","js-unsafe-html-sink");});
 test("reports parse failures for CDATA variants",()=>reject("<![CDATA[eval('1')]]>","javascript-parse"));
+
+test("rejects equivalent global network API spellings", () => {
+  const cases = [
+    "new XMLHttpRequest()",
+    "new window.XMLHttpRequest()",
+    "new globalThis.XMLHttpRequest()",
+    "new self.XMLHttpRequest()",
+    "new WebSocket('wss://x')",
+    "new window.WebSocket('wss://x')",
+    "new globalThis.WebSocket('wss://x')",
+    "new self.WebSocket('wss://x')",
+    "navigator.sendBeacon('/x', 'x')",
+    "window.navigator.sendBeacon('/x', 'x')",
+    "globalThis.navigator.sendBeacon('/x', 'x')",
+    "self.navigator.sendBeacon('/x', 'x')",
+    "fetch('/x')",
+    "window.fetch('/x')",
+    "globalThis.fetch('/x')",
+    "self.fetch('/x')",
+  ];
+  for (const source of cases) reject(source, "js-network");
+});
+
+test("rejects equivalent window, history and form escape calls", () => {
+  const cases = [
+    "open('https://x')",
+    "window.open('https://x')",
+    "globalThis.open('https://x')",
+    "self.open('https://x')",
+    "form.submit()",
+    "form.requestSubmit()",
+    "history.pushState({}, '', '/x')",
+    "window.history.replaceState({}, '', '/x')",
+    "globalThis.history.go(-1)",
+    "self.history.back()",
+    "history.forward()",
+    "window.top.location = 'https://x'",
+    "globalThis.parent.postMessage('x', '*')",
+  ];
+  for (const source of cases) reject(source, "js-navigation");
+});
+
+test("rejects namespace script creation and executable markup parsing", () => {
+  const cases = [
+    "document.createElementNS('http://www.w3.org/1999/xhtml', 'script')",
+    "window.document.createElementNS('http://www.w3.org/2000/svg', 'script')",
+    "globalThis.document.createElementNS(namespace, tagName)",
+    "new DOMParser().parseFromString(userHtml, 'text/html')",
+    "new DOMParser().parseFromString(userHtml, 'application/xhtml+xml')",
+  ];
+  for (const source of cases) reject(source, "js-dynamic-code");
+});
+
+test("rejects dynamic CSS resource sinks", () => {
+  const cases = [
+    "node.style.backgroundImage = 'url(https://evil.example/x.png)'",
+    "node.style.background = imageValue",
+    "node.style.maskImage = 'image-set(https://evil.example/x.png 1x)'",
+    "node.style.setProperty('background-image', 'url(https://evil.example/x.png)')",
+    "node.style.setProperty('cursor', cursorValue)",
+    "node.style.setProperty(propertyName, value)",
+  ];
+  for (const source of cases) reject(source, "js-style-resource");
+});
+
+test("allows non-resource DOM and style interaction", () => {
+  assert.equal(
+    validateJavaScript(`
+      const node = document.querySelector('.card');
+      node.textContent = 'Selected';
+      node.parent.textContent = 'Container';
+      node.style.color = '#123456';
+      node.style.backgroundColor = state.active ? '#fff' : '#eee';
+      node.style.backgroundImage = 'url(#local-gradient)';
+      node.style.setProperty('color', '#123456');
+      node.style.setProperty('background-image', 'linear-gradient(#fff, #eee)');
+    `).ok,
+    true,
+  );
+});

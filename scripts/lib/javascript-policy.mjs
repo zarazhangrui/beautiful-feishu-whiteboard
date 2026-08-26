@@ -1,5 +1,38 @@
 import { parse } from "acorn";
 import * as walk from "acorn-walk";
+import { CssPolicyError, validateCss } from "./css-policy.mjs";
+
+const GLOBAL_ROOTS = new Set(["window", "globalThis", "self"]);
+const NETWORK_GLOBALS = new Set([
+  "fetch",
+  "XMLHttpRequest",
+  "WebSocket",
+  "EventSource",
+]);
+const HISTORY_METHODS = new Set([
+  "pushState",
+  "replaceState",
+  "go",
+  "back",
+  "forward",
+]);
+const RESOURCE_STYLE_PROPERTIES = new Set([
+  "background",
+  "background-image",
+  "border-image",
+  "border-image-source",
+  "content",
+  "cursor",
+  "filter",
+  "backdrop-filter",
+  "list-style",
+  "list-style-image",
+  "mask",
+  "mask-image",
+  "clip-path",
+  "shape-outside",
+  "offset-path",
+]);
 
 export class JavaScriptPolicyError extends Error {
   constructor(violations) {
@@ -37,6 +70,59 @@ function memberChain(node) {
   return names;
 }
 
+function normalizedGlobalPath(node) {
+  const chain =
+    node?.type === "Identifier" ? [node.name] : memberChain(node);
+  while (GLOBAL_ROOTS.has(chain[0])) chain.shift();
+  return chain.every((item) => typeof item === "string") ? chain : [];
+}
+
+function hasPath(path, expected) {
+  return (
+    path.length === expected.length &&
+    expected.every((item, index) => path[index] === item)
+  );
+}
+
+function networkPath(path) {
+  return (
+    (path.length === 1 && NETWORK_GLOBALS.has(path[0])) ||
+    hasPath(path, ["navigator", "sendBeacon"])
+  );
+}
+
+function navigationPath(path) {
+  return (
+    hasPath(path, ["open"]) ||
+    ["top", "parent", "location"].includes(path[0]) ||
+    hasPath(path.slice(0, 2), ["document", "location"]) ||
+    (path[0] === "history" && HISTORY_METHODS.has(path.at(-1)))
+  );
+}
+
+function staticString(node) {
+  if (node?.type === "Literal" && typeof node.value === "string") {
+    return node.value;
+  }
+  if (node?.type === "TemplateLiteral" && node.expressions.length === 0) {
+    return node.quasis
+      .map((item) => item.value.cooked ?? item.value.raw)
+      .join("");
+  }
+  if (node?.type === "BinaryExpression" && node.operator === "+") {
+    const left = staticString(node.left);
+    const right = staticString(node.right);
+    return left === null || right === null ? null : left + right;
+  }
+  return null;
+}
+
+function cssPropertyName(value) {
+  return value
+    .replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+    .toLowerCase();
+}
+
 function literalString(node) {
   return node?.type === "Literal" && typeof node.value === "string" ? node.value : null;
 }
@@ -50,7 +136,32 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
     throw new JavaScriptPolicyError([{ code: "javascript-parse", message: error.message, location: error.loc }]);
   }
 
-  const add = (code, message, node) => violations.push({ code, message, ...(location(node) ? { location: location(node) } : {}) });
+  const add = (code, message, node) =>
+    violations.push({
+      code,
+      message,
+      ...(location(node) ? { location: location(node) } : {}),
+    });
+  const validateStyleSink = (
+    property,
+    valueNode,
+    node,
+    { declarationList = false } = {},
+  ) => {
+    const value = staticString(valueNode);
+    if (value === null) {
+      add("js-style-resource", `${property} may not receive dynamic CSS`, node);
+      return;
+    }
+    try {
+      validateCss(declarationList ? value : `${property}:${value}`, {
+        context: "declarationList",
+      });
+    } catch (error) {
+      if (!(error instanceof CssPolicyError)) throw error;
+      add("js-style-resource", `${property} contains an unsafe CSS resource`, node);
+    }
+  };
   walk.ancestor(ast, {
     Literal(node) {
       if (typeof node.value === "string" && /(?:\bsk-[A-Za-z0-9_-]{20,}|\b(?:api[_-]?key|secret|token)\s*[:=]\s*[A-Za-z0-9_./+\-=]{16,}|\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.)/i.test(node.value)) {
@@ -70,11 +181,17 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       ) {
         return;
       }
-      if (["top", "parent"].includes(node.name)) {
+      if (["top", "parent", "history", "open"].includes(node.name)) {
         add("js-navigation", `${node.name} window access is not allowed`, node);
         return;
       }
-      if (!["window", "globalThis", "self", "navigator", "location", "document"].includes(node.name)) return;
+      if (
+        !["window", "globalThis", "self", "navigator", "location", "document"].includes(
+          node.name,
+        )
+      ) {
+        return;
+      }
       if (parentNode?.type === "MemberExpression" && parentNode.object === node) return;
       if (node.name === "document") {
         add("js-dynamic-code", "document aliases are not allowed", node);
@@ -93,54 +210,139 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
     MemberExpression(node, ancestors) {
       const property = propertyName(node);
       const root = rootName(node);
-      const chain = memberChain(node);
-      if (node.computed && property === null && ["window", "globalThis", "self", "navigator"].includes(root)) {
-        add("js-network", "dynamic access on network-capable globals is not allowed", node);
+      const path = normalizedGlobalPath(node);
+      if (
+        node.computed &&
+        property === null &&
+        ["window", "globalThis", "self", "navigator"].includes(root)
+      ) {
+        add(
+          "js-network",
+          "dynamic access on network-capable globals is not allowed",
+          node,
+        );
       }
       if (node.computed && property === null && root === "document") {
         add("js-dynamic-code", "dynamic document access is not allowed", node);
       }
-      if (
-        (["window", "globalThis", "self"].includes(root) && property === "fetch") ||
-        (root === "navigator" && property === "sendBeacon")
-      ) {
+      if (networkPath(path)) {
         add("js-network", "network API references are not allowed", node);
       }
-      if (
-        (root === "window" && property === "open") ||
-        chain.includes("location")
-      ) {
+      if (navigationPath(path)) {
         add("js-navigation", "navigation and window escape are not allowed", node);
       }
       const parentNode = ancestors.at(-2);
+      if (["submit", "requestSubmit"].includes(property)) {
+        add("js-navigation", "form submission references are not allowed", node);
+      }
+      if (property === "parseFromString") {
+        add("js-dynamic-code", "runtime markup parser aliases are not allowed", node);
+      }
       if (
-        root === "document" &&
-        property === "createElement" &&
+        path[0] === "document" &&
+        ["createElement", "createElementNS"].includes(property) &&
         !(parentNode?.type === "CallExpression" && parentNode.callee === node)
       ) {
-        add("js-dynamic-code", "createElement aliases are not allowed", node);
+        add("js-dynamic-code", "element-creation aliases are not allowed", node);
+      }
+      if (
+        property === "style" &&
+        !(parentNode?.type === "MemberExpression" && parentNode.object === node)
+      ) {
+        add("js-style-resource", "style object aliases are not allowed", node);
+      }
+      if (
+        property === "setProperty" &&
+        memberChain(node.object).at(-1) === "style" &&
+        !(parentNode?.type === "CallExpression" && parentNode.callee === node)
+      ) {
+        add("js-style-resource", "setProperty aliases are not allowed", node);
       }
     },
     ImportExpression(node) {
       add("js-dynamic-code", "dynamic module loading is not allowed", node);
     },
     NewExpression(node) {
-      const name = node.callee.type === "Identifier" ? node.callee.name : null;
-      if (name === "Function") add("js-dynamic-code", "Function constructor is not allowed", node);
-      if (["XMLHttpRequest", "WebSocket", "EventSource"].includes(name)) add("js-network", `${name} is not allowed`, node);
+      const path = normalizedGlobalPath(node.callee);
+      if (hasPath(path, ["Function"])) {
+        add("js-dynamic-code", "Function constructor is not allowed", node);
+      }
+      if (networkPath(path) && path[0] !== "fetch") {
+        add("js-network", `${path.join(".")} is not allowed`, node);
+      }
     },
     CallExpression(node) {
       const direct = node.callee.type === "Identifier" ? node.callee.name : null;
       const property = propertyName(node.callee);
-      const root = rootName(node.callee);
-      const chain = memberChain(node.callee);
-      if (["eval", "Function"].includes(direct)) add("js-dynamic-code", `${direct} is not allowed`, node);
-      if (["setTimeout", "setInterval"].includes(direct) && literalString(node.arguments[0]) !== null) add("js-dynamic-code", "string timer callbacks are not allowed", node);
-      if (direct === "fetch" || ["XMLHttpRequest", "WebSocket", "EventSource"].includes(direct) || (["window", "globalThis", "self"].includes(root) && property === "fetch") || (root === "navigator" && property === "sendBeacon")) add("js-network", "undeclared network API is not allowed", node);
-      if ((root === "window" && property === "open") || (chain.includes("location") && ["assign", "replace", "reload"].includes(property))) add("js-navigation", "navigation and window escape are not allowed", node);
-      if (root === "document" && property === "createElement" && (literalString(node.arguments[0]) === null || literalString(node.arguments[0]).toLowerCase() === "script")) add("js-dynamic-code", "dynamic or ambiguous element creation is not allowed", node);
-      if (property === "setAttribute" && ["src", "href", "srcdoc"].includes(literalString(node.arguments[0])?.toLowerCase())) add("js-dynamic-code", "dynamic executable/resource attributes are not allowed", node);
-      if (["insertAdjacentHTML", "write", "writeln"].includes(property)) add("js-unsafe-html-sink", `${property} is not allowed`, node);
+      const path = normalizedGlobalPath(node.callee);
+      if (["eval", "Function"].includes(direct)) {
+        add("js-dynamic-code", `${direct} is not allowed`, node);
+      }
+      if (
+        ["setTimeout", "setInterval"].includes(direct) &&
+        literalString(node.arguments[0]) !== null
+      ) {
+        add("js-dynamic-code", "string timer callbacks are not allowed", node);
+      }
+      if (networkPath(path)) {
+        add("js-network", "undeclared network API is not allowed", node);
+      }
+      if (
+        navigationPath(path) ||
+        ["submit", "requestSubmit"].includes(property)
+      ) {
+        add(
+          "js-navigation",
+          "navigation, form submission, and window escape are not allowed",
+          node,
+        );
+      }
+      if (
+        path[0] === "document" &&
+        ["createElement", "createElementNS"].includes(property)
+      ) {
+        const nameArgument = node.arguments[property === "createElement" ? 0 : 1];
+        const elementName = staticString(nameArgument);
+        if (elementName === null || elementName.toLowerCase() === "script") {
+          add("js-dynamic-code", "dynamic or script element creation is not allowed", node);
+        }
+      }
+      if (property === "parseFromString") {
+        add("js-dynamic-code", "runtime markup parsing is not allowed", node);
+      }
+      if (
+        property === "setProperty" &&
+        memberChain(node.callee.object).at(-1) === "style"
+      ) {
+        const rawProperty = staticString(node.arguments[0]);
+        if (rawProperty === null) {
+          add("js-style-resource", "dynamic CSS property names are not allowed", node);
+        } else {
+          const cssProperty = cssPropertyName(rawProperty);
+          if (RESOURCE_STYLE_PROPERTIES.has(cssProperty)) {
+            validateStyleSink(cssProperty, node.arguments[1], node);
+          }
+        }
+      }
+      const attributeName = literalString(node.arguments[0])?.toLowerCase();
+      if (
+        property === "setAttribute" &&
+        ["src", "href", "srcdoc"].includes(attributeName)
+      ) {
+        add(
+          "js-dynamic-code",
+          "dynamic executable/resource attributes are not allowed",
+          node,
+        );
+      }
+      if (property === "setAttribute" && attributeName === "style") {
+        validateStyleSink("style", node.arguments[1], node, {
+          declarationList: true,
+        });
+      }
+      if (["insertAdjacentHTML", "write", "writeln"].includes(property)) {
+        add("js-unsafe-html-sink", `${property} is not allowed`, node);
+      }
     },
     AssignmentExpression(node) {
       const property = propertyName(node.left);
@@ -148,11 +350,45 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       const chain = memberChain(node.left);
       if (["innerHTML", "outerHTML", "srcdoc"].includes(property)) {
         const literal = literalString(node.right);
-        if (literal === null) add("js-unsafe-html-sink", `${property} may not receive dynamic data`, node);
-        else if (/<\s*(?:script|iframe|object|embed|link|style|base)\b/i.test(literal)) add("js-dynamic-code", `${property} may not inject executable markup`, node);
+        if (literal === null) {
+          add(
+            "js-unsafe-html-sink",
+            `${property} may not receive dynamic data`,
+            node,
+          );
+        } else if (
+          /<\s*(?:script|iframe|object|embed|link|style|base)\b/i.test(literal)
+        ) {
+          add(
+            "js-dynamic-code",
+            `${property} may not inject executable markup`,
+            node,
+          );
+        }
       }
-      if (property === "location" || root === "location" || chain.includes("location")) add("js-navigation", "navigation assignment is not allowed", node);
-      else if (["src", "href", "action", "formAction", "srcdoc"].includes(property)) add("js-network", `${property} resource writes are not allowed`, node);
+      if (chain.includes("style")) {
+        const cssProperty = cssPropertyName(property ?? "");
+        if (property === "cssText" || property === "style") {
+          validateStyleSink(cssProperty, node.right, node, { declarationList: true });
+        } else if (RESOURCE_STYLE_PROPERTIES.has(cssProperty)) {
+          if (node.operator !== "=") {
+            add("js-style-resource", `${cssProperty} compound writes are not allowed`, node);
+          } else {
+            validateStyleSink(cssProperty, node.right, node);
+          }
+        }
+      }
+      if (
+        property === "location" ||
+        root === "location" ||
+        chain.includes("location")
+      ) {
+        add("js-navigation", "navigation assignment is not allowed", node);
+      } else if (
+        ["src", "href", "action", "formAction", "srcdoc"].includes(property)
+      ) {
+        add("js-network", `${property} resource writes are not allowed`, node);
+      }
     },
   });
 
