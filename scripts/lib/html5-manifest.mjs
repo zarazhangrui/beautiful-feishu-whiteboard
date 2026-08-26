@@ -1,133 +1,176 @@
 import { createHash } from "node:crypto";
-import { isDeepStrictEqual } from "node:util";
 import { readFileSync } from "node:fs";
+import { isDeepStrictEqual } from "node:util";
+import { parse } from "parse5";
 import { validateVisualizationSpec } from "./visualization-spec.mjs";
+
+const VISUALIZATION_TYPES = new Set([
+  "dashboard",
+  "chart",
+  "network",
+  "flow",
+  "timeline",
+  "presentation",
+  "prototype",
+  "form",
+  "knowledge-tool",
+  "immersive",
+]);
+const HEIGHT_MODES = new Set(["auto", "viewport"]);
+const BROWSER_TARGETS = Object.freeze([390, 820, 1440]);
+const REQUIRED_CHECK_IDS = Object.freeze(["static", "browser"]);
+const DEPENDENCY_KEYS = Object.freeze([
+  "allowedTypes",
+  "crossorigin",
+  "fallback",
+  "id",
+  "integrity",
+  "url",
+]);
+
+function policyError(code, detail = "") {
+  const error = new Error(`${code}${detail ? `: ${detail}` : ""}`);
+  error.code = code;
+  return error;
+}
+
+function isPlainObject(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.getPrototypeOf(value) === Object.prototype
+  );
+}
+
+function exactKeys(value, expected) {
+  return (
+    isPlainObject(value) &&
+    isDeepStrictEqual(Object.keys(value).sort(), [...expected].sort())
+  );
+}
+
+export function validateDependencyPolicy(policy) {
+  const fail = (detail) => {
+    throw policyError("invalid-dependency-policy", detail);
+  };
+  if (!exactKeys(policy, ["protocolVersion", "dependencies"])) {
+    fail("top-level keys");
+  }
+  if (policy.protocolVersion !== "1.0" || !Array.isArray(policy.dependencies)) {
+    fail("protocolVersion or dependencies");
+  }
+
+  const ids = new Set();
+  const urls = new Set();
+  for (const [index, dependency] of policy.dependencies.entries()) {
+    const label = `dependencies[${index}]`;
+    if (!exactKeys(dependency, DEPENDENCY_KEYS)) fail(`${label} keys`);
+    if (!/^[a-z0-9-]+@\d+\.\d+\.\d+$/.test(dependency.id)) {
+      fail(`${label}.id`);
+    }
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(dependency.url);
+    } catch {
+      fail(`${label}.url`);
+    }
+    if (parsedUrl.protocol !== "https:" || parsedUrl.href !== dependency.url) {
+      fail(`${label}.url`);
+    }
+    if (!/^sha384-[A-Za-z0-9+/]{64}$/.test(dependency.integrity)) {
+      fail(`${label}.integrity`);
+    }
+    if (dependency.crossorigin !== "anonymous") fail(`${label}.crossorigin`);
+    if (
+      !Array.isArray(dependency.allowedTypes) ||
+      dependency.allowedTypes.length === 0 ||
+      new Set(dependency.allowedTypes).size !== dependency.allowedTypes.length ||
+      dependency.allowedTypes.some((type) => !VISUALIZATION_TYPES.has(type))
+    ) {
+      fail(`${label}.allowedTypes`);
+    }
+    if (typeof dependency.fallback !== "string" || !dependency.fallback.trim()) {
+      fail(`${label}.fallback`);
+    }
+    if (ids.has(dependency.id)) fail(`duplicate id ${dependency.id}`);
+    if (urls.has(dependency.url)) fail(`duplicate url ${dependency.url}`);
+    ids.add(dependency.id);
+    urls.add(dependency.url);
+  }
+  return true;
+}
 
 const dependencyPolicy = JSON.parse(
   readFileSync(new URL("../../html5/dependencies.json", import.meta.url), "utf8"),
 );
-
+validateDependencyPolicy(dependencyPolicy);
 const dependenciesByUrl = new Map(
   dependencyPolicy.dependencies.map((dependency) => [dependency.url, dependency]),
 );
-
-const HEIGHT_MODES = new Set(["auto", "viewport"]);
-const BROWSER_TARGETS = Object.freeze([390, 820, 1440]);
-const VALIDATION_STATUSES = new Set(["not-run", "passed", "failed"]);
-
-function policyError(code, detail = "") {
-  const suffix = detail ? `: ${detail}` : "";
-  const error = new Error(`${code}${suffix}`);
-  error.code = code;
-  return error;
-}
 
 function sha256(html) {
   return createHash("sha256").update(html, "utf8").digest("hex");
 }
 
-function normalizeValidation(validation) {
-  const normalized = Object.keys(validation).length
-    ? structuredClone(validation)
-    : { status: "not-run" };
-  if (!VALIDATION_STATUSES.has(normalized.status)) {
-    throw policyError("invalid-validation-status", String(normalized.status));
+function normalizeValidation(validation, htmlSha256) {
+  if (!isPlainObject(validation)) {
+    throw policyError("invalid-validation-evidence", "expected plain object");
   }
-  return normalized;
+  if (Object.keys(validation).some((key) => !["status", "checks"].includes(key))) {
+    throw policyError("invalid-validation-evidence", "unknown field");
+  }
+  if (validation.status === "pending") {
+    if (
+      validation.checks !== undefined &&
+      (!Array.isArray(validation.checks) || validation.checks.length !== 0)
+    ) {
+      throw policyError("invalid-validation-evidence", "pending checks");
+    }
+    return { status: "pending", checks: [] };
+  }
+  if (validation.status !== "passed" || !Array.isArray(validation.checks)) {
+    throw policyError("invalid-validation-evidence", "status or checks");
+  }
+
+  const byId = new Map();
+  for (const check of validation.checks) {
+    if (!exactKeys(check, ["id", "status", "htmlSha256"])) {
+      throw policyError("invalid-validation-evidence", "check shape");
+    }
+    if (!REQUIRED_CHECK_IDS.includes(check.id) || byId.has(check.id)) {
+      throw policyError("invalid-validation-evidence", "check id");
+    }
+    if (check.status !== "passed" || check.htmlSha256 !== htmlSha256) {
+      throw policyError("invalid-validation-evidence", `unbound ${check.id}`);
+    }
+    byId.set(check.id, check);
+  }
+  if (byId.size !== REQUIRED_CHECK_IDS.length) {
+    throw policyError("invalid-validation-evidence", "missing required check");
+  }
+  return {
+    status: "passed",
+    checks: REQUIRED_CHECK_IDS.map((id) => structuredClone(byId.get(id))),
+  };
 }
 
-function findTagEnd(html, start) {
-  let quote = null;
-  for (let index = start; index < html.length; index += 1) {
-    const character = html[index];
-    if (quote !== null) {
-      if (character === quote) quote = null;
-      continue;
-    }
-    if (character === '"' || character === "'") {
-      quote = character;
-    } else if (character === ">") {
-      return index;
-    }
-  }
-  throw policyError("malformed-script-tag", "unterminated start tag");
+function walkNodes(node, visit) {
+  visit(node);
+  for (const child of node.childNodes ?? []) walkNodes(child, visit);
+  if (node.content) walkNodes(node.content, visit);
 }
 
-function parseAttributes(source) {
-  const attributes = new Map();
-  let index = 0;
-  while (index < source.length) {
-    while (/\s/.test(source[index] ?? "")) index += 1;
-    if (index >= source.length || source[index] === "/") break;
-
-    const nameStart = index;
-    while (/[^\s=/>]/.test(source[index] ?? "")) index += 1;
-    if (nameStart === index) {
-      throw policyError("malformed-script-tag", source.slice(index));
-    }
-    const name = source.slice(nameStart, index).toLowerCase();
-    while (/\s/.test(source[index] ?? "")) index += 1;
-
-    let value = "";
-    if (source[index] === "=") {
-      index += 1;
-      while (/\s/.test(source[index] ?? "")) index += 1;
-      const quote = source[index];
-      if (quote === '"' || quote === "'") {
-        index += 1;
-        const valueStart = index;
-        while (index < source.length && source[index] !== quote) index += 1;
-        if (index >= source.length) {
-          throw policyError("malformed-script-tag", `unterminated ${name}`);
-        }
-        value = source.slice(valueStart, index);
-        index += 1;
-      } else {
-        const valueStart = index;
-        while (/[^\s>]/.test(source[index] ?? "")) index += 1;
-        value = source.slice(valueStart, index);
-      }
-    }
-    if (attributes.has(name)) {
-      throw policyError("malformed-script-tag", `duplicate ${name}`);
-    }
-    attributes.set(name, value);
-  }
-  return attributes;
-}
-
-// This deliberately narrow tokenizer recognizes real script start tags, quoted
-// attributes, comments, and raw script bodies. Task 3 replaces it with parse5,
-// which becomes the single HTML parser for the full security policy.
-function scriptSources(html) {
-  const sources = [];
-  let cursor = 0;
-  while (cursor < html.length) {
-    const open = html.indexOf("<", cursor);
-    if (open === -1) break;
-    if (html.startsWith("<!--", open)) {
-      const close = html.indexOf("-->", open + 4);
-      cursor = close === -1 ? html.length : close + 3;
-      continue;
-    }
-
-    const tagMatch = /^<script(?=[\s/>])/i.exec(html.slice(open));
-    if (!tagMatch) {
-      cursor = open + 1;
-      continue;
-    }
-
-    const tagEnd = findTagEnd(html, open + tagMatch[0].length);
-    const attributeSource = html.slice(open + tagMatch[0].length, tagEnd);
-    const attributes = parseAttributes(attributeSource);
-    if (attributes.has("src")) sources.push(attributes.get("src"));
-
-    const closing = /<\/script\s*>/gi;
-    closing.lastIndex = tagEnd + 1;
-    const closeMatch = closing.exec(html);
-    cursor = closeMatch ? closing.lastIndex : tagEnd + 1;
-  }
-  return sources;
+function externalScripts(html) {
+  const scripts = [];
+  walkNodes(parse(html), (node) => {
+    if (node.tagName !== "script") return;
+    const attributes = new Map(
+      (node.attrs ?? []).map((item) => [item.name, item.value]),
+    );
+    if (attributes.has("src")) scripts.push(attributes);
+  });
+  return scripts;
 }
 
 export function resolveAllowedDependency(url) {
@@ -138,9 +181,22 @@ export function resolveAllowedDependency(url) {
 function discoverDependencies(html, type) {
   const dependencies = [];
   const seen = new Set();
-  for (const url of scriptSources(html)) {
+  for (const attributes of externalScripts(html)) {
+    const url = attributes.get("src");
     const dependency = resolveAllowedDependency(url);
     if (!dependency) throw policyError("dependency-not-allowlisted", url);
+    if (!attributes.has("integrity")) {
+      throw policyError("dependency-integrity-required", url);
+    }
+    if (attributes.get("integrity") !== dependency.integrity) {
+      throw policyError("dependency-integrity-mismatch", url);
+    }
+    if (!attributes.has("crossorigin")) {
+      throw policyError("dependency-crossorigin-required", url);
+    }
+    if (attributes.get("crossorigin") !== dependency.crossorigin) {
+      throw policyError("dependency-crossorigin-mismatch", url);
+    }
     if (!dependency.allowedTypes.includes(type)) {
       throw policyError("dependency-not-allowed-for-type", `${url} (${type})`);
     }
@@ -152,8 +208,10 @@ function discoverDependencies(html, type) {
   return dependencies;
 }
 
-function assertInputs({ html, spec, heightMode, validation }) {
-  if (typeof html !== "string") throw policyError("invalid-html", "expected string");
+function assertInputs({ html, spec, heightMode }) {
+  if (typeof html !== "string") {
+    throw policyError("invalid-html", "expected string");
+  }
   const specReport = validateVisualizationSpec(spec);
   if (!specReport.ok) {
     throw policyError(
@@ -164,16 +222,16 @@ function assertInputs({ html, spec, heightMode, validation }) {
   if (!HEIGHT_MODES.has(heightMode)) {
     throw policyError("invalid-height-mode", String(heightMode));
   }
-  normalizeValidation(validation);
 }
 
 export async function buildHtml5Manifest({
   html,
   spec,
   heightMode,
-  validation = {},
+  validation = { status: "pending" },
 }) {
-  assertInputs({ html, spec, heightMode, validation });
+  assertInputs({ html, spec, heightMode });
+  const htmlSha256 = sha256(html);
   return {
     protocolVersion: dependencyPolicy.protocolVersion,
     type: spec.type,
@@ -181,24 +239,17 @@ export async function buildHtml5Manifest({
     dependencies: discoverDependencies(html, spec.type),
     interactions: [...spec.interactions],
     browserTargets: [...BROWSER_TARGETS],
-    html: {
-      bytes: Buffer.byteLength(html, "utf8"),
-      sha256: sha256(html),
-    },
-    validation: normalizeValidation(validation),
+    html: { bytes: Buffer.byteLength(html, "utf8"), sha256: htmlSha256 },
+    validation: normalizeValidation(validation, htmlSha256),
   };
 }
 
 export function verifyManifest({ html, spec, manifest }) {
-  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
-    throw policyError("invalid-manifest", "expected object");
+  if (!isPlainObject(manifest)) {
+    throw policyError("invalid-manifest", "expected plain object");
   }
-  assertInputs({
-    html,
-    spec,
-    heightMode: manifest.heightMode,
-    validation: manifest.validation ?? {},
-  });
+  assertInputs({ html, spec, heightMode: manifest.heightMode });
+  const htmlSha256 = sha256(html);
   const expected = {
     protocolVersion: dependencyPolicy.protocolVersion,
     type: spec.type,
@@ -206,14 +257,9 @@ export function verifyManifest({ html, spec, manifest }) {
     dependencies: discoverDependencies(html, spec.type),
     interactions: [...spec.interactions],
     browserTargets: [...BROWSER_TARGETS],
-    html: {
-      bytes: Buffer.byteLength(html, "utf8"),
-      sha256: sha256(html),
-    },
-    validation: normalizeValidation(manifest.validation ?? {}),
+    html: { bytes: Buffer.byteLength(html, "utf8"), sha256: htmlSha256 },
+    validation: normalizeValidation(manifest.validation, htmlSha256),
   };
-  if (!isDeepStrictEqual(manifest, expected)) {
-    throw policyError("manifest-drift");
-  }
+  if (!isDeepStrictEqual(manifest, expected)) throw policyError("manifest-drift");
   return true;
 }
