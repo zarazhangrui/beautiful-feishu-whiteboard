@@ -3,6 +3,7 @@ import * as walk from "acorn-walk";
 import { CssPolicyError, validateCss } from "./css-policy.mjs";
 
 const GLOBAL_ROOTS = new Set(["window", "globalThis", "self"]);
+const WINDOW_HANDLES = new Set(["defaultView", "opener", "frames"]);
 const NETWORK_GLOBALS = new Set([
   "fetch",
   "XMLHttpRequest",
@@ -33,6 +34,30 @@ const RESOURCE_STYLE_PROPERTIES = new Set([
   "shape-outside",
   "offset-path",
 ]);
+const RESOURCE_ATTRIBUTES = new Set([
+  "src",
+  "srcset",
+  "href",
+  "action",
+  "formaction",
+  "srcdoc",
+  "poster",
+]);
+const EXECUTABLE_HTML_SINKS = new Set([
+  "innerHTML",
+  "outerHTML",
+  "insertAdjacentHTML",
+  "write",
+  "writeln",
+  "createContextualFragment",
+  "setHTMLUnsafe",
+]);
+const CSSOM_SINKS = new Set([
+  "insertRule",
+  "addRule",
+  "replace",
+  "replaceSync",
+]);
 
 export class JavaScriptPolicyError extends Error {
   constructor(violations) {
@@ -49,7 +74,7 @@ function location(node) {
 function propertyName(node) {
   if (!node || node.type !== "MemberExpression") return null;
   if (!node.computed && node.property.type === "Identifier") return node.property.name;
-  if (node.computed && node.property.type === "Literal" && typeof node.property.value === "string") return node.property.value;
+  if (node.computed) return staticString(node.property);
   return null;
 }
 
@@ -84,10 +109,21 @@ function hasPath(path, expected) {
   );
 }
 
+function hasPathSuffix(path, expected) {
+  return (
+    path.length >= expected.length &&
+    expected.every(
+      (item, index) => path[path.length - expected.length + index] === item,
+    )
+  );
+}
+
 function networkPath(path) {
   return (
     (path.length === 1 && NETWORK_GLOBALS.has(path[0])) ||
-    hasPath(path, ["navigator", "sendBeacon"])
+    hasPathSuffix(path, ["navigator", "sendBeacon"]) ||
+    (path.some((item) => WINDOW_HANDLES.has(item)) &&
+      NETWORK_GLOBALS.has(path.at(-1)))
   );
 }
 
@@ -96,18 +132,27 @@ function navigationPath(path) {
     hasPath(path, ["open"]) ||
     ["top", "parent", "location"].includes(path[0]) ||
     hasPath(path.slice(0, 2), ["document", "location"]) ||
+    path.some((item) => WINDOW_HANDLES.has(item)) ||
     (path[0] === "history" && HISTORY_METHODS.has(path.at(-1)))
   );
 }
 
 function staticString(node) {
-  if (node?.type === "Literal" && typeof node.value === "string") {
-    return node.value;
+  if (
+    node?.type === "Literal" &&
+    ["string", "number", "boolean", "bigint"].includes(typeof node.value)
+  ) {
+    return String(node.value);
   }
-  if (node?.type === "TemplateLiteral" && node.expressions.length === 0) {
-    return node.quasis
-      .map((item) => item.value.cooked ?? item.value.raw)
-      .join("");
+  if (node?.type === "TemplateLiteral") {
+    let value = node.quasis[0].value.cooked ?? node.quasis[0].value.raw;
+    for (let index = 0; index < node.expressions.length; index += 1) {
+      const expression = staticString(node.expressions[index]);
+      if (expression === null) return null;
+      const quasi = node.quasis[index + 1];
+      value += expression + (quasi.value.cooked ?? quasi.value.raw);
+    }
+    return value;
   }
   if (node?.type === "BinaryExpression" && node.operator === "+") {
     const left = staticString(node.left);
@@ -162,6 +207,25 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       add("js-style-resource", `${property} contains an unsafe CSS resource`, node);
     }
   };
+  const validateObjectPattern = (pattern) => {
+    for (const property of pattern.properties) {
+      if (property.type !== "Property") continue;
+      const name = property.computed
+        ? staticString(property.key)
+        : property.key.type === "Identifier"
+          ? property.key.name
+          : staticString(property.key);
+      if (WINDOW_HANDLES.has(name)) {
+        add("js-navigation", `${name} window handle aliases are not allowed`, property);
+      } else if (EXECUTABLE_HTML_SINKS.has(name)) {
+        add("js-unsafe-html-sink", `${name} HTML sink aliases are not allowed`, property);
+      } else if (CSSOM_SINKS.has(name) || name === "adoptedStyleSheets") {
+        add("js-style-resource", `${name} CSSOM aliases are not allowed`, property);
+      } else if (["setAttribute", "setAttributeNS"].includes(name)) {
+        add("js-dynamic-code", `${name} aliases are not allowed`, property);
+      }
+    }
+  };
   walk.ancestor(ast, {
     Literal(node) {
       if (typeof node.value === "string" && /(?:\bsk-[A-Za-z0-9_-]{20,}|\b(?:api[_-]?key|secret|token)\s*[:=]\s*[A-Za-z0-9_./+\-=]{16,}|\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.)/i.test(node.value)) {
@@ -181,7 +245,10 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       ) {
         return;
       }
-      if (["top", "parent", "history", "open"].includes(node.name)) {
+      if (
+        ["top", "parent", "history", "open"].includes(node.name) ||
+        WINDOW_HANDLES.has(node.name)
+      ) {
         add("js-navigation", `${node.name} window access is not allowed`, node);
         return;
       }
@@ -232,6 +299,20 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         add("js-navigation", "navigation and window escape are not allowed", node);
       }
       const parentNode = ancestors.at(-2);
+      if (EXECUTABLE_HTML_SINKS.has(property)) {
+        add(
+          "js-unsafe-html-sink",
+          `${property} executable HTML sink is not allowed`,
+          node,
+        );
+      }
+      if (CSSOM_SINKS.has(property) || property === "adoptedStyleSheets") {
+        add(
+          "js-style-resource",
+          `${property} CSSOM mutation is not allowed`,
+          node,
+        );
+      }
       if (["submit", "requestSubmit"].includes(property)) {
         add("js-navigation", "form submission references are not allowed", node);
       }
@@ -319,28 +400,46 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
           add("js-style-resource", "dynamic CSS property names are not allowed", node);
         } else {
           const cssProperty = cssPropertyName(rawProperty);
-          if (RESOURCE_STYLE_PROPERTIES.has(cssProperty)) {
-            validateStyleSink(cssProperty, node.arguments[1], node);
+          validateStyleSink(cssProperty, node.arguments[1], node);
+        }
+      }
+      if (["setAttribute", "setAttributeNS"].includes(property)) {
+        const namespaced = property === "setAttributeNS";
+        const namespaceNode = namespaced ? node.arguments[0] : null;
+        const nameNode = node.arguments[namespaced ? 1 : 0];
+        const valueNode = node.arguments[namespaced ? 2 : 1];
+        const namespaceIsStatic =
+          !namespaced ||
+          (namespaceNode?.type === "Literal" && namespaceNode.value === null) ||
+          staticString(namespaceNode) !== null;
+        const qualifiedName = staticString(nameNode);
+        if (!namespaceIsStatic || qualifiedName === null) {
+          add(
+            "js-dynamic-code",
+            "dynamic attribute namespaces or names are not allowed",
+            node,
+          );
+        } else {
+          const attributeName = qualifiedName.toLowerCase();
+          const localName = attributeName.split(":").at(-1);
+          if (
+            RESOURCE_ATTRIBUTES.has(localName) ||
+            /^on/.test(localName) ||
+            ["http-equiv", "xmlns"].includes(localName)
+          ) {
+            add(
+              "js-dynamic-code",
+              `${qualifiedName} is an executable or resource attribute`,
+              node,
+            );
+          } else if (localName === "style") {
+            validateStyleSink("style", valueNode, node, {
+              declarationList: true,
+            });
           }
         }
       }
-      const attributeName = literalString(node.arguments[0])?.toLowerCase();
-      if (
-        property === "setAttribute" &&
-        ["src", "href", "srcdoc"].includes(attributeName)
-      ) {
-        add(
-          "js-dynamic-code",
-          "dynamic executable/resource attributes are not allowed",
-          node,
-        );
-      }
-      if (property === "setAttribute" && attributeName === "style") {
-        validateStyleSink("style", node.arguments[1], node, {
-          declarationList: true,
-        });
-      }
-      if (["insertAdjacentHTML", "write", "writeln"].includes(property)) {
+      if (EXECUTABLE_HTML_SINKS.has(property)) {
         add("js-unsafe-html-sink", `${property} is not allowed`, node);
       }
     },
@@ -349,33 +448,33 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       const root = rootName(node.left);
       const chain = memberChain(node.left);
       if (["innerHTML", "outerHTML", "srcdoc"].includes(property)) {
-        const literal = literalString(node.right);
-        if (literal === null) {
-          add(
-            "js-unsafe-html-sink",
-            `${property} may not receive dynamic data`,
-            node,
-          );
-        } else if (
-          /<\s*(?:script|iframe|object|embed|link|style|base)\b/i.test(literal)
-        ) {
-          add(
-            "js-dynamic-code",
-            `${property} may not inject executable markup`,
-            node,
-          );
-        }
+        add(
+          "js-unsafe-html-sink",
+          `${property} executable HTML assignment is not allowed`,
+          node,
+        );
       }
       if (chain.includes("style")) {
+        if (property === null) {
+          add("js-style-resource", "dynamic style properties are not allowed", node);
+        }
         const cssProperty = cssPropertyName(property ?? "");
         if (property === "cssText" || property === "style") {
           validateStyleSink(cssProperty, node.right, node, { declarationList: true });
-        } else if (RESOURCE_STYLE_PROPERTIES.has(cssProperty)) {
+        } else if (
+          RESOURCE_STYLE_PROPERTIES.has(cssProperty) ||
+          cssProperty.startsWith("--")
+        ) {
           if (node.operator !== "=") {
             add("js-style-resource", `${cssProperty} compound writes are not allowed`, node);
           } else {
             validateStyleSink(cssProperty, node.right, node);
           }
+        } else if (staticString(node.right) !== null) {
+          // Static values on every style property, including custom properties,
+          // still pass through the CSS resource policy. Dynamic values remain
+          // available for non-resource presentation/state properties.
+          validateStyleSink(cssProperty, node.right, node);
         }
       }
       if (
@@ -390,6 +489,10 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         add("js-network", `${property} resource writes are not allowed`, node);
       }
     },
+  });
+
+  walk.full(ast, (node) => {
+    if (node.type === "ObjectPattern") validateObjectPattern(node);
   });
 
   walk.ancestor(ast, {

