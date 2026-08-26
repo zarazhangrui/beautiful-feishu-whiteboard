@@ -199,3 +199,76 @@ test("allows safe namespaced attributes and static local CSS", () => {
     true,
   );
 });
+
+test("rejects aliases of DOM and CSS mutation methods", () => {
+  const cases = [
+    ["const setter = node.setAttribute; setter('class', 'card')", "js-dynamic-code"],
+    ["const setter = node.setAttributeNS; setter(null, 'class', 'card')", "js-dynamic-code"],
+    ["const insert = node.insertAdjacentHTML", "js-unsafe-html-sink"],
+    ["const setStyle = node.style.setProperty", "js-style-resource"],
+    ["const insertRule = sheet.insertRule", "js-style-resource"],
+  ];
+  for (const [source, code] of cases) reject(source, code);
+});
+
+test("rejects generic property mutation APIs", () => {
+  for (const source of [
+    "Object.assign(node, {innerHTML: markup})",
+    "Reflect.set(node, 'innerHTML', markup)",
+    "const mutate = Object.assign",
+    "const set = Reflect.set",
+  ]) reject(source, "js-dynamic-code");
+});
+
+test("restricts dynamic element creation and embedded window handles", () => {
+  for (const source of [
+    "document.createElement('iframe')",
+    "document.createElement('img')",
+    "document.createElement('style')",
+    "document.createElement(tagName)",
+    "document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject')",
+    "document.createElementNS(namespace, 'svg')",
+  ]) reject(source, "js-dynamic-code");
+  for (const source of [
+    "iframe.contentWindow.fetch('/x')",
+    "iframe.contentDocument.defaultView",
+    "const view = iframe.contentWindow",
+  ]) reject(source, "js-navigation");
+
+  assert.equal(
+    validateJavaScript(`
+      const panel = document.createElement('div');
+      const button = document.createElement('button');
+      const canvas = document.createElement('canvas');
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      panel.append(button, canvas, svg, rect);
+    `).ok,
+    true,
+  );
+});
+
+test("rejects the complete resource property write family", () => {
+  for (const source of [
+    "image.srcset = candidates",
+    "video.poster = posterUrl",
+    "node.href = '#local'",
+    "object.data = payloadUrl",
+    "quote.cite = sourceUrl",
+    "image.srcset += moreCandidates",
+    "video.poster++",
+  ]) reject(source, "js-network");
+});
+
+test("keeps ordinary callbacks and data methods available", () => {
+  assert.equal(
+    validateJavaScript(`
+      const onSelect = (event) => state.select(event.currentTarget.dataset.id);
+      button.addEventListener('click', onSelect);
+      const formatter = data.format;
+      const { map } = helpers;
+      formatter(map(state.items));
+    `).ok,
+    true,
+  );
+});

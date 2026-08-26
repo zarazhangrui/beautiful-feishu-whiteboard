@@ -3,7 +3,13 @@ import * as walk from "acorn-walk";
 import { CssPolicyError, validateCss } from "./css-policy.mjs";
 
 const GLOBAL_ROOTS = new Set(["window", "globalThis", "self"]);
-const WINDOW_HANDLES = new Set(["defaultView", "opener", "frames"]);
+const WINDOW_HANDLES = new Set([
+  "defaultView",
+  "opener",
+  "frames",
+  "contentWindow",
+  "contentDocument",
+]);
 const NETWORK_GLOBALS = new Set([
   "fetch",
   "XMLHttpRequest",
@@ -34,7 +40,7 @@ const RESOURCE_STYLE_PROPERTIES = new Set([
   "shape-outside",
   "offset-path",
 ]);
-const RESOURCE_ATTRIBUTES = new Set([
+const RESOURCE_PROPERTY_NAMES = new Set([
   "src",
   "srcset",
   "href",
@@ -42,7 +48,18 @@ const RESOURCE_ATTRIBUTES = new Set([
   "formaction",
   "srcdoc",
   "poster",
+  "data",
+  "codebase",
+  "cite",
+  "background",
+  "profile",
+  "manifest",
+  "ping",
+  "archive",
+  "longdesc",
+  "usemap",
 ]);
+const DOM_MUTATION_METHODS = new Set(["setAttribute", "setAttributeNS"]);
 const EXECUTABLE_HTML_SINKS = new Set([
   "innerHTML",
   "outerHTML",
@@ -57,6 +74,21 @@ const CSSOM_SINKS = new Set([
   "addRule",
   "replace",
   "replaceSync",
+]);
+const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const SAFE_HTML_ELEMENTS = new Set([
+  "article", "aside", "button", "canvas", "caption", "col", "colgroup",
+  "dd", "details", "dialog", "div", "dl", "dt", "em", "fieldset",
+  "figcaption", "figure", "footer", "h1", "h2", "h3", "h4", "h5",
+  "h6", "header", "hr", "input", "label", "legend", "li", "main",
+  "nav", "ol", "option", "output", "p", "section", "select", "small",
+  "span", "strong", "summary", "table", "tbody", "td", "textarea",
+  "tfoot", "th", "thead", "tr", "ul",
+]);
+const SAFE_SVG_ELEMENTS = new Set([
+  "svg", "g", "defs", "marker", "rect", "circle", "ellipse", "line",
+  "polyline", "text", "tspan", "path",
 ]);
 
 export class JavaScriptPolicyError extends Error {
@@ -135,6 +167,10 @@ function navigationPath(path) {
     path.some((item) => WINDOW_HANDLES.has(item)) ||
     (path[0] === "history" && HISTORY_METHODS.has(path.at(-1)))
   );
+}
+
+function genericMutationPath(path) {
+  return hasPath(path, ["Object", "assign"]) || hasPath(path, ["Reflect", "set"]);
 }
 
 function staticString(node) {
@@ -221,7 +257,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         add("js-unsafe-html-sink", `${name} HTML sink aliases are not allowed`, property);
       } else if (CSSOM_SINKS.has(name) || name === "adoptedStyleSheets") {
         add("js-style-resource", `${name} CSSOM aliases are not allowed`, property);
-      } else if (["setAttribute", "setAttributeNS"].includes(name)) {
+      } else if (DOM_MUTATION_METHODS.has(name)) {
         add("js-dynamic-code", `${name} aliases are not allowed`, property);
       }
     }
@@ -299,6 +335,9 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         add("js-navigation", "navigation and window escape are not allowed", node);
       }
       const parentNode = ancestors.at(-2);
+      if (genericMutationPath(path)) {
+        add("js-dynamic-code", "generic property mutation APIs are not allowed", node);
+      }
       if (EXECUTABLE_HTML_SINKS.has(property)) {
         add(
           "js-unsafe-html-sink",
@@ -339,6 +378,12 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       ) {
         add("js-style-resource", "setProperty aliases are not allowed", node);
       }
+      if (
+        DOM_MUTATION_METHODS.has(property) &&
+        !(parentNode?.type === "CallExpression" && parentNode.callee === node)
+      ) {
+        add("js-dynamic-code", `${property} aliases are not allowed`, node);
+      }
     },
     ImportExpression(node) {
       add("js-dynamic-code", "dynamic module loading is not allowed", node);
@@ -358,6 +403,9 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       const path = normalizedGlobalPath(node.callee);
       if (["eval", "Function"].includes(direct)) {
         add("js-dynamic-code", `${direct} is not allowed`, node);
+      }
+      if (genericMutationPath(path)) {
+        add("js-dynamic-code", "generic property mutation APIs are not allowed", node);
       }
       if (
         ["setTimeout", "setInterval"].includes(direct) &&
@@ -382,10 +430,15 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         path[0] === "document" &&
         ["createElement", "createElementNS"].includes(property)
       ) {
-        const nameArgument = node.arguments[property === "createElement" ? 0 : 1];
-        const elementName = staticString(nameArgument);
-        if (elementName === null || elementName.toLowerCase() === "script") {
-          add("js-dynamic-code", "dynamic or script element creation is not allowed", node);
+        const namespaced = property === "createElementNS";
+        const namespace = namespaced ? staticString(node.arguments[0]) : HTML_NAMESPACE;
+        const elementName = staticString(node.arguments[namespaced ? 1 : 0]);
+        const normalizedName = elementName?.toLowerCase() ?? null;
+        const safe =
+          (namespace === HTML_NAMESPACE && SAFE_HTML_ELEMENTS.has(normalizedName)) ||
+          (namespace === SVG_NAMESPACE && SAFE_SVG_ELEMENTS.has(normalizedName));
+        if (!safe) {
+          add("js-dynamic-code", "dynamic or unsafe element creation is not allowed", node);
         }
       }
       if (property === "parseFromString") {
@@ -403,7 +456,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
           validateStyleSink(cssProperty, node.arguments[1], node);
         }
       }
-      if (["setAttribute", "setAttributeNS"].includes(property)) {
+      if (DOM_MUTATION_METHODS.has(property)) {
         const namespaced = property === "setAttributeNS";
         const namespaceNode = namespaced ? node.arguments[0] : null;
         const nameNode = node.arguments[namespaced ? 1 : 0];
@@ -423,7 +476,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
           const attributeName = qualifiedName.toLowerCase();
           const localName = attributeName.split(":").at(-1);
           if (
-            RESOURCE_ATTRIBUTES.has(localName) ||
+            RESOURCE_PROPERTY_NAMES.has(localName) ||
             /^on/.test(localName) ||
             ["http-equiv", "xmlns"].includes(localName)
           ) {
@@ -483,9 +536,13 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         chain.includes("location")
       ) {
         add("js-navigation", "navigation assignment is not allowed", node);
-      } else if (
-        ["src", "href", "action", "formAction", "srcdoc"].includes(property)
-      ) {
+      } else if (RESOURCE_PROPERTY_NAMES.has(property?.toLowerCase())) {
+        add("js-network", `${property} resource writes are not allowed`, node);
+      }
+    },
+    UpdateExpression(node) {
+      const property = propertyName(node.argument);
+      if (RESOURCE_PROPERTY_NAMES.has(property?.toLowerCase())) {
         add("js-network", `${property} resource writes are not allowed`, node);
       }
     },
