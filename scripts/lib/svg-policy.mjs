@@ -117,6 +117,7 @@ export function validateSvg(
     minSecondaryFontSize = 14,
     maxAspectRatio = 3,
     allowAccessibilityMetadata = false,
+    interactive = false,
   } = {},
 ) {
   const violations = [];
@@ -167,7 +168,7 @@ export function validateSvg(
       viewBox.width / viewBox.height,
       viewBox.height / viewBox.width,
     );
-    if (aspectRatio > maxAspectRatio) {
+    if (!interactive && aspectRatio > maxAspectRatio) {
       violations.push({
         code: "aspect-ratio",
         message: `aspect ratio ${aspectRatio.toFixed(2)} exceeds ${maxAspectRatio}:1`,
@@ -199,7 +200,7 @@ export function validateSvg(
         message: `<${name}> must use the SVG namespace`,
       });
     }
-    if (name === "path" && !hasMarkerAncestor(element)) {
+    if (name === "path" && !interactive && !hasMarkerAncestor(element)) {
       violations.push({
         code: "path-outside-marker",
         message: "path is allowed only inside marker",
@@ -243,7 +244,7 @@ export function validateSvg(
           message: `${attribute.name} must be a color, none, currentColor, or local marker reference`,
         });
       }
-      if (attribute.name === "style") {
+      if (attribute.name === "style" && !interactive) {
         violations.push({
           code: "disallowed-attribute",
           message: "style attributes are not allowed; use presentation attributes",
@@ -252,10 +253,17 @@ export function validateSvg(
       const elementAttributes = ELEMENT_ATTRIBUTES.get(name) ?? new Set();
       const accessibilityAttribute =
         allowAccessibilityMetadata && ACCESSIBILITY_ATTRIBUTES.has(attribute.name);
+      const interactiveAttribute =
+        interactive &&
+        (attribute.name === "style" ||
+          attribute.name === "class" ||
+          attribute.name.startsWith("data-") ||
+          ACCESSIBILITY_ATTRIBUTES.has(attribute.name));
       if (
         !COMMON_ATTRIBUTES.has(attribute.name) &&
         !elementAttributes.has(attribute.name) &&
-        !accessibilityAttribute
+        !accessibilityAttribute &&
+        !interactiveAttribute
       ) {
         violations.push({
           code: "disallowed-attribute",
@@ -274,26 +282,28 @@ export function validateSvg(
     const effectiveInheritedFontSize = ownFontSize ?? inheritedFontSize;
     if (name === "text" || name === "tspan") {
       textCount += 1;
-      const threshold =
-        element.getAttribute("data-text-role") === "secondary"
-          ? minSecondaryFontSize
-          : minBodyFontSize;
-      if (effectiveInheritedFontSize === null) {
-        violations.push({
-          code: "font-size",
-          message: `<${name}> must have an explicit or inherited numeric font-size`,
-        });
-      } else {
-        const estimated = effectiveInheritedFontSize * scale;
-        minimumEstimatedFontSize = Math.min(
-          minimumEstimatedFontSize,
-          estimated,
-        );
-        if (estimated < threshold) {
+      if (!interactive) {
+        const threshold =
+          element.getAttribute("data-text-role") === "secondary"
+            ? minSecondaryFontSize
+            : minBodyFontSize;
+        if (effectiveInheritedFontSize === null) {
           violations.push({
             code: "font-size",
-            message: `<${name}> estimates to ${estimated.toFixed(2)}px, below ${threshold}px`,
+            message: `<${name}> must have an explicit or inherited numeric font-size`,
           });
+        } else {
+          const estimated = effectiveInheritedFontSize * scale;
+          minimumEstimatedFontSize = Math.min(
+            minimumEstimatedFontSize,
+            estimated,
+          );
+          if (estimated < threshold) {
+            violations.push({
+              code: "font-size",
+              message: `<${name}> estimates to ${estimated.toFixed(2)}px, below ${threshold}px`,
+            });
+          }
         }
       }
     }

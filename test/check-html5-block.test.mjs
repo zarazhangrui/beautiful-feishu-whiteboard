@@ -1,218 +1,69 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import test from "node:test";
+import { HtmlCheckError, checkHtml5Block, normalizedContentSha256 } from "../scripts/lib/html-check.mjs";
+import { resolveAllowedDependency } from "../scripts/lib/html5-manifest.mjs";
 
-import { buildHtmlDocument } from "../scripts/lib/html-wrapper.mjs";
-import {
-  HtmlCheckError,
-  checkHtml5Block,
-  normalizedContentSha256,
-} from "../scripts/lib/html-check.mjs";
-import { canonicalizeSvg } from "../scripts/lib/svg-canonical.mjs";
+const dependency = resolveAllowedDependency("https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js");
+const csp = `default-src 'none'; script-src 'unsafe-inline' ${dependency.url}; style-src 'unsafe-inline'; img-src data:; font-src 'none'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'`;
+const manifest = { heightMode:"auto", dependencies:[dependency] };
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400"><rect width="720" height="400" fill="#fff"/><text x="40" y="80" font-size="20">Architecture</text></svg>`;
+function validHtml() { return `<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="use-iframe" content="true"><meta name="html-box-height-mode" content="auto"><meta name="description" content="Interactive dependency map"><meta http-equiv="Content-Security-Policy" content="${csp}">
+<title>Architecture</title><style>:root{color-scheme:light}body{margin:0;font:16px system-ui}.layout{display:grid;grid-template-columns:1fr 16rem;gap:1rem}@media(max-width:600px){.layout{grid-template-columns:1fr}}button:focus-visible{outline:2px solid #2563eb}</style><script src="${dependency.url}" integrity="${dependency.integrity}" crossorigin="anonymous"></script></head>
+<body><main><h1>Architecture</h1><div class="layout"><section aria-label="Graph"><button id="toggle" type="button">Toggle</button><svg viewBox="0 0 400 200" role="img" aria-label="Services"><rect id="service" x="20" y="20" width="120" height="60" fill="#2563eb"/><text x="30" y="55" font-size="18">API</text></svg></section><aside id="details">Select a service</aside></div></main><script>
+const state={selected:false};const button=document.querySelector('#toggle');const details=document.querySelector('#details');button.addEventListener('click',()=>{state.selected=!state.selected;details.textContent=state.selected?'API selected':'Select a service';});window.addEventListener('resize',()=>requestAnimationFrame(()=>details.dataset.width=String(document.documentElement.clientWidth)));
+</script></body></html>`; }
 
-function validHtml() {
-  return buildHtmlDocument({
-    svg,
-    title: "Architecture",
-    description: "Project architecture",
-    artifactId: "project-architecture-v1",
-  }).html;
-}
+function expectViolation(html, code, context={manifest}) { assert.throws(()=>checkHtml5Block(html,context),(error)=>{ assert.ok(error instanceof HtmlCheckError); assert.ok(error.violations.some((item)=>item.code===code),JSON.stringify(error.violations)); return true; }); }
 
-test("accepts a wrapped artifact and reports its identity", () => {
-  const report = checkHtml5Block(validHtml());
-  assert.equal(report.ok, true);
-  assert.equal(report.artifactId, "project-architecture-v1");
-  assert.match(report.sourceSvgSha256, /^[a-f0-9]{64}$/);
-  assert.equal(report.svgCount, 1);
-  assert.ok(report.bytes > 0);
+test("accepts a semantic interactive HTML page",()=>{ const report=checkHtml5Block(validHtml(),{manifest}); assert.equal(report.ok,true); assert.equal(report.svgCount,1); assert.equal(report.scriptCount,2); });
+test("requires head-direct exact metadata and manifest height mode",()=>{
+  expectViolation(validHtml().replace('<meta name="description"','<svg><meta name="description"').replace('<title>','</svg><title>'),"required-meta");
+  expectViolation(validHtml().replace('<meta name="description"','<meta http-equiv="refresh" name="description"'),"forbidden-meta");
+  expectViolation(validHtml(),"height-mode-mismatch",{manifest:{...manifest,heightMode:"viewport"}});
 });
-
-test("rejects missing required metadata and CSP", () => {
-  const html = validHtml()
-    .replace(/\s*<meta name="artifact-id"[^>]*>/, "")
-    .replace(/\s*<meta http-equiv="Content-Security-Policy"[^>]*>/, "");
-  assert.throws(
-    () => checkHtml5Block(html),
-    (error) =>
-      error instanceof HtmlCheckError &&
-      error.violations.some(({ code }) => code === "required-meta") &&
-      error.violations.some(({ code }) => code === "csp"),
-  );
+test("rejects parser-synthesized document structure",()=>{
+  expectViolation(validHtml().replace("<head>","").replace("</head>",""),"html-structure");
+  expectViolation(validHtml().replace("<!doctype html>",""),"html-structure");
+  expectViolation(validHtml().replace("<!doctype html>","<!doctype svg>"),"invalid-html");
 });
-
-test("rejects unverified height modes", () => {
-  const viewport = validHtml().replace(
-    'name="html-box-height-mode" content="auto"',
-    'name="html-box-height-mode" content="viewport"',
-  );
-  assert.throws(
-    () => checkHtml5Block(viewport),
-    (error) => error.violations.some(({ code }) => code === "required-meta"),
-  );
+test("rejects refresh, unknown http-equiv and duplicate variant attributes",()=>{
+  expectViolation(validHtml().replace("</head>",'<meta http-equiv="refresh" content="0;url=https://evil.example"></head>'),"forbidden-meta");
+  expectViolation(validHtml().replace("</head>",'<meta http-equiv="x-test" content="x"></head>'),"forbidden-meta");
+  expectViolation(validHtml().replace('<meta charset="utf-8">','<meta charset="utf-8" content="x">'),"forbidden-meta");
 });
-
-test("requires metadata in the HTML head with the correct namespace", () => {
-  const cases = [
-    validHtml().replace(
-      /(<meta http-equiv="Content-Security-Policy"[^>]*>)/,
-      "</head><body>$1</body><head>",
-    ),
-    validHtml().replace(
-      '<meta name="artifact-id"',
-      '<x:meta xmlns:x="urn:test" name="artifact-id"',
-    ),
-    validHtml().replace(
-      "</head>",
-      '<meta http-equiv="refresh" content="30;url=file:///etc/passwd"></head>',
-    ),
-    validHtml().replace(
-      '<meta name="description"',
-      '<meta http-equiv="refresh" name="description"',
-    ),
-  ];
-  for (const html of cases) {
-    assert.throws(
-      () => checkHtml5Block(html),
-      (error) =>
-        error instanceof HtmlCheckError &&
-        error.violations.some(({ code }) =>
-          ["html-structure", "html-namespace", "forbidden-meta"].includes(code),
-        ),
-    );
-  }
+test("validates exact declared external script attributes",()=>{
+  expectViolation(validHtml().replace(dependency.integrity,"sha384-bad"),"dependency-integrity-mismatch");
+  expectViolation(validHtml().replace(' crossorigin="anonymous"',""),"dependency-crossorigin-required");
+  expectViolation(validHtml().replace(`src="${dependency.url}"`,'src="https://evil.example/library.js"'),"dependency-not-allowlisted");
 });
-
-test("rejects executable markup, event attributes and relaxed CSP", () => {
-  const cases = [
-    validHtml().replace("</body>", "<script>alert(1)</script></body>"),
-    validHtml().replace("<main ", '<main onclick="alert(1)" '),
-    validHtml().replace("</body>", '<iframe srcdoc="x"></iframe></body>'),
-    validHtml().replace("script-src 'none'", "script-src 'none' 'unsafe-inline'"),
-    validHtml().replace(
-      "</head>",
-      '<style>.html5-canvas:active{background-image:image-set("https://evil.example/x" 1x)}</style></head>',
-    ),
-  ];
-  for (const html of cases) {
-    assert.throws(
-      () => checkHtml5Block(html),
-      (error) =>
-        error instanceof HtmlCheckError &&
-        error.violations.some(({ code }) =>
-          ["executable-markup", "event-attribute", "csp", "style-template"].includes(code),
-        ),
-    );
-  }
+test("rejects malformed and duplicate Manifest dependencies without crashing",()=>{
+  expectViolation(validHtml(),"invalid-manifest-dependency",{manifest:{...manifest,dependencies:[{url:dependency.url}]}});
+  expectViolation(validHtml(),"invalid-manifest-dependency",{manifest:{...manifest,dependencies:[dependency,dependency]}});
+  expectViolation(validHtml(),"invalid-manifest-dependency",{manifest:{...manifest,dependencies:[{...dependency,id:"forged@1.0.0"}]}});
 });
-
-test("rejects malformed artifact and source hashes", () => {
-  const html = validHtml()
-    .replace('content="project-architecture-v1"', 'content="bad id"')
-    .replace(/(<meta name="source-svg-sha256" content=")[a-f0-9]+/, "$1oops");
-  assert.throws(
-    () => checkHtml5Block(html),
-    (error) =>
-      error.violations.some(({ code }) => code === "artifact-id") &&
-      error.violations.some(({ code }) => code === "source-svg-sha256"),
-  );
+test("requires a one-to-one match between declared dependencies and script tags",()=>{
+  const tag=`<script src="${dependency.url}" integrity="${dependency.integrity}" crossorigin="anonymous"></script>`;
+  expectViolation(validHtml().replace("</head>",`${tag}</head>`),"dependency-script-count");
 });
-
-test("rejects external resources and multiple target SVGs", () => {
-  const html = validHtml()
-    .replace("</body>", '<img src="https://example.com/a.png"><svg viewBox="0 0 1 1"></svg></body>');
-  assert.throws(
-    () => checkHtml5Block(html),
-    (error) =>
-      error.violations.some(({ code }) => code === "external-resource") &&
-      error.violations.some(({ code }) => code === "svg-count"),
-  );
+test("rejects CSS URLs including image-set and escaped schemes",()=>{
+  expectViolation(validHtml().replace("</head>",'<style>.x{background:image-set("https://evil.example/x" 1x)}</style></head>'),"css-external-url");
+  expectViolation(validHtml().replace("</head>",String.raw`<style>.x{background:url(\68 ttps\3a //evil.example/x)}</style></head>`),"css-external-url");
 });
-
-test("enforces maximum artifact bytes", () => {
-  assert.throws(
-    () => checkHtml5Block(validHtml(), { maxBytes: 100 }),
-    (error) => error.violations.some(({ code }) => code === "html-too-large"),
-  );
+test("rejects inline events, form actions and navigation",()=>{
+  expectViolation(validHtml().replace('<button id="toggle"','<button onclick="alert(1)" id="toggle"'),"event-attribute");
+  expectViolation(validHtml().replace("</main>",'<form action="https://evil.example"><button>Send</button></form></main>'),"form-action");
+  expectViolation(validHtml().replace("</main>",'<button formaction="https://evil.example">Send</button></main>'),"form-action");
+  expectViolation(validHtml().replace("</script></body>","location.href='https://evil.example';</script></body>"),"js-navigation");
 });
-
-test("rejects invalid maximum byte limits", () => {
-  for (const maxBytes of [Number.NaN, 0, -1, 12.5]) {
-    assert.throws(
-      () => checkHtml5Block(validHtml(), { maxBytes }),
-      (error) => error.violations.some(({ code }) => code === "invalid-max-bytes"),
-    );
-  }
+test("rejects additional HTML resource-bearing attributes",()=>{
+  expectViolation(validHtml().replace("</main>",'<img srcset="https://evil.example/a.png 1x"></main>'),"external-resource");
+  expectViolation(validHtml().replace("</main>",'<video poster="https://evil.example/a.png"></video></main>'),"external-resource");
+  expectViolation(validHtml().replace("</main>",'<img alt="x" src="data:image/svg+xml,%3Csvg%20onload%3Dalert(1)%3E"></main>'),"external-resource");
 });
-
-test("normalizes line endings and trailing whitespace before hashing", () => {
-  const unix = "<p>a</p>\n<p>b</p>\n";
-  const windows = "<p>a</p>\r\n<p>b</p>  \r\n\r\n";
-  assert.equal(normalizedContentSha256(unix), normalizedContentSha256(windows));
+test("rejects SVG escaped remote paint references",()=>expectViolation(validHtml().replace('fill="#2563eb"',String.raw`fill="u\72l(\68 ttps\3a //evil.example/x)"`),"svg-policy"));
+test("rejects CDATA and entity attempts",()=>{
+  expectViolation(validHtml().replace("const state","<![CDATA[eval('1')]]>\nconst state"),"javascript-parse");
+  expectViolation(validHtml().replace(">API</text>",">&#x3c;script&#x3e;</text>"),"unsafe-html-text");
 });
-
-test("checks an expected source SVG hash when supplied", () => {
-  assert.throws(
-    () => checkHtml5Block(validHtml(), { expectedSourceSvgSha256: "0".repeat(64) }),
-    (error) => error.violations.some(({ code }) => code === "source-hash-mismatch"),
-  );
-});
-
-test("binds the actual embedded SVG to the canonical source hash", () => {
-  const modified = validHtml().replace('fill="#fff"', 'fill="#000"');
-  assert.throws(
-    () => checkHtml5Block(modified),
-    (error) => error.violations.some(({ code }) => code === "embedded-svg-hash"),
-  );
-});
-
-test("binds expected raw and canonical hashes to the same source", () => {
-  const sourceA = svg.replace("#fff", "#111");
-  const sourceB = svg.replace("#fff", "#222");
-  const htmlB = buildHtmlDocument({
-    svg: sourceB,
-    title: "Architecture",
-    description: "Project architecture",
-    artifactId: "project-architecture-v1",
-  }).html.replace(
-    /(<meta name="source-svg-sha256" content=")[a-f0-9]+/,
-    `$1${createHash("sha256").update(sourceA).digest("hex")}`,
-  );
-  assert.throws(
-    () =>
-      checkHtml5Block(htmlB, {
-        expectedSourceSvgSha256: createHash("sha256").update(sourceA).digest("hex"),
-        expectedSourceSvgCanonicalSha256: createHash("sha256")
-          .update(canonicalizeSvg(sourceA))
-          .digest("hex"),
-      }),
-    (error) =>
-      error.violations.some(
-        ({ code }) => code === "source-canonical-hash-mismatch",
-      ),
-  );
-});
-
-test("canonicalization includes CDATA text", () => {
-  const before = canonicalizeSvg(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400"><text font-size="20"><![CDATA[SECRET-A]]></text></svg>',
-  );
-  const after = canonicalizeSvg(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400"><text font-size="20"><![CDATA[SECRET-B]]></text></svg>',
-  );
-  assert.notEqual(before, after);
-});
-
-test("validates custom minimum widths under the artifact contract", () => {
-  const wideSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500"><text x="20" y="40" font-size="16">Readable</text></svg>`;
-  const html = buildHtmlDocument({
-    svg: wideSvg,
-    title: "Wide",
-    description: "Wide artifact",
-    artifactId: "wide",
-    minSupportedWidth: 1000,
-  }).html;
-  assert.equal(checkHtml5Block(html).ok, true);
-});
+test("enforces maximum bytes and normalizes hashes",()=>{ expectViolation(validHtml(),"html-too-large",{manifest,maxBytes:100}); assert.equal(normalizedContentSha256("<p>a</p>\r\n"),normalizedContentSha256("<p>a</p>\n")); });

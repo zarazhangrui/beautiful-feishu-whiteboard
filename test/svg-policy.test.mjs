@@ -128,3 +128,8 @@ test("uses the secondary threshold for explicitly secondary text", () => {
 
   assert.equal(result.minimumEstimatedFontSize, 14.4);
 });
+
+test("interactive SVG does not inherit static whiteboard readability constraints", () => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 300"><path d="M0 0L20 20" stroke="#123456"/><text x="10" y="20" font-size="12">Zoomable</text></svg>`;
+  assert.equal(validateSvg(svg, { interactive: true }).textCount, 1);
+});
