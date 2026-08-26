@@ -52,17 +52,6 @@ function externalScript(dependency, overrides = {}) {
     .join(" ")}></script>`;
 }
 
-function passedValidation(html) {
-  const htmlSha256 = sha256(html);
-  return {
-    status: "passed",
-    checks: [
-      { id: "static", status: "passed", htmlSha256 },
-      { id: "browser", status: "passed", htmlSha256 },
-    ],
-  };
-}
-
 test("discovers only exact allowlisted dependency URLs", async () => {
   for (const dependency of dependencyPolicy.dependencies) {
     assert.match(dependency.integrity, /^sha384-[A-Za-z0-9+/]+={0,2}$/);
@@ -165,12 +154,10 @@ test("hashes the exact final HTML outside the document", async () => {
 
 test("records the complete derived manifest contract", async () => {
   const html = "<!doctype html><html><head></head><body>Dashboard</body></html>";
-  const validation = passedValidation(html);
   const manifest = await buildHtml5Manifest({
     html,
     spec: makeSpec(),
     heightMode: "viewport",
-    validation,
   });
 
   assert.deepEqual(manifest, {
@@ -184,31 +171,29 @@ test("records the complete derived manifest contract", async () => {
       bytes: Buffer.byteLength(html, "utf8"),
       sha256: sha256(html),
     },
-    validation,
+    validation: { status: "pending", checks: [] },
   });
 });
 
-test("requires passed validation evidence bound to the final HTML", async () => {
+test("rejects caller-fabricated passed validation evidence", async () => {
   const html = "<!doctype html><html><body>evidence</body></html>";
-  const good = passedValidation(html);
-  const invalidEvidence = [
+  const htmlSha256 = sha256(html);
+  const fabricatedEvidence = [
     { status: "passed" },
-    { status: "passed", checks: [good.checks[0]] },
-    {
-      status: "passed",
-      checks: [good.checks[0], { ...good.checks[1], htmlSha256: "0".repeat(64) }],
-    },
-    { status: "passed", checks: [good.checks[0], good.checks[0], good.checks[1]] },
     {
       status: "passed",
       checks: [
-        ...good.checks,
-        { id: "self-report", status: "passed", htmlSha256: sha256(html) },
+        { id: "static", status: "passed", htmlSha256 },
+        { id: "browser", status: "passed", htmlSha256 },
       ],
+    },
+    {
+      status: "passed",
+      checks: [{ id: "looks-safe", status: "passed", htmlSha256 }],
     },
   ];
 
-  for (const validation of invalidEvidence) {
+  for (const validation of fabricatedEvidence) {
     await assert.rejects(
       buildHtml5Manifest({
         html,
@@ -219,15 +204,6 @@ test("requires passed validation evidence bound to the final HTML", async () => 
       /invalid-validation-evidence/,
     );
   }
-
-  const manifest = await buildHtml5Manifest({
-    html,
-    spec: makeSpec(),
-    heightMode: "auto",
-    validation: good,
-  });
-  assert.deepEqual(manifest.validation, good);
-  assert.equal(verifyManifest({ html, spec: makeSpec(), manifest }), true);
 
   const pendingManifest = await buildHtml5Manifest({
     html,
@@ -243,6 +219,19 @@ test("requires passed validation evidence bound to the final HTML", async () => 
       }),
     /invalid-validation-evidence/,
   );
+  const boundPassedManifest = {
+    ...pendingManifest,
+    validation: fabricatedEvidence[1],
+  };
+  assert.throws(
+    () =>
+      verifyManifest({
+        html,
+        spec: makeSpec(),
+        manifest: boundPassedManifest,
+      }),
+    /invalid-validation-evidence/,
+  );
 });
 
 test("accepts pending evidence and rejects non-plain validation values", async () => {
@@ -252,6 +241,14 @@ test("accepts pending evidence and rejects non-plain validation values", async (
     validation: { status: "pending" },
   });
   assert.deepEqual(manifest.validation, { status: "pending", checks: [] });
+
+  await assert.rejects(
+    buildHtml5Manifest({
+      ...base,
+      validation: { status: "pending", checks: ["static"] },
+    }),
+    /invalid-validation-evidence/,
+  );
 
   for (const validation of [null, [], "pending", new Date()]) {
     await assert.rejects(
@@ -381,6 +378,7 @@ test("every catalog palette has a complete CSS token mapping", async () => {
     "card",
     "muted",
     "primary",
+    "accent",
     "border",
     "success",
     "warning",
@@ -388,13 +386,37 @@ test("every catalog palette has a complete CSS token mapping", async () => {
     "radius",
     "shadow",
   ];
+  const allowedTokens = [...requiredTokens, "accentSecondary"];
+  const colorTokens = [
+    "background",
+    "foreground",
+    "card",
+    "muted",
+    "primary",
+    "accent",
+    "accentSecondary",
+    "border",
+    "success",
+    "warning",
+    "error",
+  ];
+  const additionalSurfaceSignatures = {
+    "lime-slab": new Set(["#FFFFF2"]),
+  };
 
   assert.equal(new Set(templateSlugs).size, 35);
   assert.deepEqual([...new Set(templateSlugs)].sort(), directories);
   assert.deepEqual(Object.keys(map).sort(), directories);
   for (const slug of directories) {
-    assert.deepEqual(Object.keys(map[slug]).sort(), [...requiredTokens].sort(), slug);
-    for (const token of requiredTokens.slice(0, 9)) {
+    assert.ok(
+      requiredTokens.every((token) => Object.hasOwn(map[slug], token)),
+      `${slug} required tokens`,
+    );
+    assert.ok(
+      Object.keys(map[slug]).every((token) => allowedTokens.includes(token)),
+      `${slug} unknown tokens`,
+    );
+    for (const token of colorTokens.filter((name) => map[slug][name])) {
       assert.match(map[slug][token], /^#[0-9A-F]{6}$/i, `${slug}.${token}`);
     }
     assert.match(map[slug].radius, /^(?:0|\d+(?:\.\d+)?(?:px|rem))$/);
@@ -407,6 +429,15 @@ test("every catalog palette has a complete CSS token mapping", async () => {
       contrastRatio(map[slug].foreground, map[slug].background) >= 4.5,
       `${slug} foreground/background contrast`,
     );
+    // WCAG 1.4.11 requires 3:1 for non-text graphical/status indicators.
+    for (const status of ["success", "warning", "error"]) {
+      for (const surface of ["background", "card"]) {
+        assert.ok(
+          contrastRatio(map[slug][status], map[slug][surface]) >= 3,
+          `${slug}.${status}/${surface} indicator contrast`,
+        );
+      }
+    }
   }
 
   for (const line of catalog.split("\n")) {
@@ -415,15 +446,40 @@ test("every catalog palette has a complete CSS token mapping", async () => {
     const signature = [...line.matchAll(/#[0-9A-F]{6}/gi)].map((match) =>
       match[0].toUpperCase(),
     );
-    const mappedColors = new Set(
-      Object.values(map[slug]).map((value) => value.toUpperCase()),
+    const surfaceColors = new Set(
+      [map[slug].background, map[slug].card].map((value) => value.toUpperCase()),
+    );
+    const visualColors = new Set(
+      [map[slug].primary, map[slug].accent, map[slug].accentSecondary]
+        .filter(Boolean)
+        .map((value) => value.toUpperCase()),
     );
     const design = (
       await readFile(`templates/${slug}/design.md`, "utf8")
     ).toUpperCase();
-    for (const color of signature) {
+    assert.ok(
+      design.includes(signature[0]),
+      `${slug} design defines ${signature[0]}`,
+    );
+    assert.ok(
+      surfaceColors.has(signature[0]),
+      `${slug} preserves surface ${signature[0]}`,
+    );
+    const visualSignature = signature.slice(1).filter(
+      (color) => !additionalSurfaceSignatures[slug]?.has(color),
+    );
+    assert.equal(
+      Object.hasOwn(map[slug], "accentSecondary"),
+      visualSignature.length > 2,
+      `${slug} uses accentSecondary only when needed`,
+    );
+    for (const color of signature.slice(1)) {
       assert.ok(design.includes(color), `${slug} design defines ${color}`);
-      assert.ok(mappedColors.has(color), `${slug} preserves ${color}`);
+      if (additionalSurfaceSignatures[slug]?.has(color)) {
+        assert.ok(surfaceColors.has(color), `${slug} preserves surface ${color}`);
+      } else {
+        assert.ok(visualColors.has(color), `${slug} preserves visual ${color}`);
+      }
     }
   }
 });

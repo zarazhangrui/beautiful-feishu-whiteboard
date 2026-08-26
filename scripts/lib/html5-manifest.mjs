@@ -18,7 +18,6 @@ const VISUALIZATION_TYPES = new Set([
 ]);
 const HEIGHT_MODES = new Set(["auto", "viewport"]);
 const BROWSER_TARGETS = Object.freeze([390, 820, 1440]);
-const REQUIRED_CHECK_IDS = Object.freeze(["static", "browser"]);
 const DEPENDENCY_KEYS = Object.freeze([
   "allowedTypes",
   "crossorigin",
@@ -113,46 +112,21 @@ function sha256(html) {
   return createHash("sha256").update(html, "utf8").digest("hex");
 }
 
-function normalizeValidation(validation, htmlSha256) {
+function normalizeValidation(validation) {
   if (!isPlainObject(validation)) {
     throw policyError("invalid-validation-evidence", "expected plain object");
   }
   if (Object.keys(validation).some((key) => !["status", "checks"].includes(key))) {
     throw policyError("invalid-validation-evidence", "unknown field");
   }
-  if (validation.status === "pending") {
-    if (
-      validation.checks !== undefined &&
-      (!Array.isArray(validation.checks) || validation.checks.length !== 0)
-    ) {
-      throw policyError("invalid-validation-evidence", "pending checks");
-    }
-    return { status: "pending", checks: [] };
+  if (
+    validation.status !== "pending" ||
+    (validation.checks !== undefined &&
+      (!Array.isArray(validation.checks) || validation.checks.length !== 0))
+  ) {
+    throw policyError("invalid-validation-evidence", "Task 2 accepts pending only");
   }
-  if (validation.status !== "passed" || !Array.isArray(validation.checks)) {
-    throw policyError("invalid-validation-evidence", "status or checks");
-  }
-
-  const byId = new Map();
-  for (const check of validation.checks) {
-    if (!exactKeys(check, ["id", "status", "htmlSha256"])) {
-      throw policyError("invalid-validation-evidence", "check shape");
-    }
-    if (!REQUIRED_CHECK_IDS.includes(check.id) || byId.has(check.id)) {
-      throw policyError("invalid-validation-evidence", "check id");
-    }
-    if (check.status !== "passed" || check.htmlSha256 !== htmlSha256) {
-      throw policyError("invalid-validation-evidence", `unbound ${check.id}`);
-    }
-    byId.set(check.id, check);
-  }
-  if (byId.size !== REQUIRED_CHECK_IDS.length) {
-    throw policyError("invalid-validation-evidence", "missing required check");
-  }
-  return {
-    status: "passed",
-    checks: REQUIRED_CHECK_IDS.map((id) => structuredClone(byId.get(id))),
-  };
+  return { status: "pending", checks: [] };
 }
 
 function walkNodes(node, visit) {
@@ -240,7 +214,7 @@ export async function buildHtml5Manifest({
     interactions: [...spec.interactions],
     browserTargets: [...BROWSER_TARGETS],
     html: { bytes: Buffer.byteLength(html, "utf8"), sha256: htmlSha256 },
-    validation: normalizeValidation(validation, htmlSha256),
+    validation: normalizeValidation(validation),
   };
 }
 
@@ -258,7 +232,7 @@ export function verifyManifest({ html, spec, manifest }) {
     interactions: [...spec.interactions],
     browserTargets: [...BROWSER_TARGETS],
     html: { bytes: Buffer.byteLength(html, "utf8"), sha256: htmlSha256 },
-    validation: normalizeValidation(manifest.validation, htmlSha256),
+    validation: normalizeValidation(manifest.validation),
   };
   if (!isDeepStrictEqual(manifest, expected)) throw policyError("manifest-drift");
   return true;
