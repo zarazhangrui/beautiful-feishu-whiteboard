@@ -1,0 +1,115 @@
+{
+  "version": "1.0",
+  "type": "network",
+  "title": "仓库架构：白板与 HTML 双渲染器流水线",
+  "summary": "用户请求经 SKILL.md 路由后进入 VisualizationSpec 共享语义层，分别由白板渲染器与 HTML 渲染器产出，最终发布到飞书文档；主题、安全策略、资产、骨架、测试与前置检查构成支撑层。",
+  "content": {
+    "nodes": [
+      {
+        "id": "user-request",
+        "label": "用户请求",
+        "description": "“画一张飞书架构图 / 把图发布为 HTML 块”",
+        "category": "core"
+      },
+      {
+        "id": "routing",
+        "label": "路由 SKILL.md",
+        "description": "按意图选择 whiteboard / html5-block / dual",
+        "category": "core"
+      },
+      {
+        "id": "spec",
+        "label": "VisualizationSpec",
+        "description": "共享语义层：内容、关系、主题、交互、无障碍",
+        "category": "core"
+      },
+      {
+        "id": "whiteboard-renderer",
+        "label": "白板渲染器",
+        "description": "RULES.md + whiteboard-cli → 可编辑飞书白板",
+        "category": "render"
+      },
+      {
+        "id": "html-renderer",
+        "label": "HTML 渲染器",
+        "description": "HTML5_RULES + build/check/render/publish → HTML5 Block",
+        "category": "render"
+      },
+      {
+        "id": "feishu-doc",
+        "label": "飞书文档",
+        "description": "可编辑白板 + 交互式 HTML5 Block，支持评论",
+        "category": "publish"
+      },
+      {
+        "id": "support",
+        "label": "支撑层",
+        "description": "主题模板 CATALOG+templates / 安全策略 scripts/lib / html5 资产 / 骨架与示例 / 测试 / 前置检查",
+        "category": "support"
+      }
+    ],
+    "edges": [
+      {
+        "id": "user-to-routing",
+        "source": "user-request",
+        "target": "routing",
+        "label": "意图"
+      },
+      {
+        "id": "routing-to-spec",
+        "source": "routing",
+        "target": "spec",
+        "label": "结构化"
+      },
+      {
+        "id": "spec-to-whiteboard",
+        "source": "spec",
+        "target": "whiteboard-renderer",
+        "label": "白板 SVG"
+      },
+      {
+        "id": "spec-to-html",
+        "source": "spec",
+        "target": "html-renderer",
+        "label": "HTML 页面"
+      },
+      {
+        "id": "whiteboard-to-doc",
+        "source": "whiteboard-renderer",
+        "target": "feishu-doc",
+        "label": "whiteboard-cli"
+      },
+      {
+        "id": "html-to-doc",
+        "source": "html-renderer",
+        "target": "feishu-doc",
+        "label": "html5-block"
+      },
+      {
+        "id": "support-to-whiteboard",
+        "source": "support",
+        "target": "whiteboard-renderer",
+        "label": "主题与规则"
+      },
+      {
+        "id": "support-to-html",
+        "source": "support",
+        "target": "html-renderer",
+        "label": "策略与验证"
+      }
+    ],
+    "metrics": [],
+    "series": [],
+    "steps": [],
+    "annotations": []
+  },
+  "theme": {
+    "palette": "grove-block",
+    "tokens": {}
+  },
+  "interactions": ["select", "filter", "pan", "zoom"],
+  "accessibility": {
+    "alt": "仓库架构图：用户请求经路由与可视化语义层分别进入白板和 HTML 渲染器，发布到飞书文档，支撑层提供主题、策略、资产、骨架、测试与前置检查。",
+    "instructions": "点击节点或连线查看详情，用筛选按钮按类别过滤，平移与缩放浏览整体结构。"
+  }
+}
