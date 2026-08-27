@@ -72,6 +72,9 @@ export function dependencyOrigins(dependencies = []) {
 }
 
 export function interactionSelectors(interaction) {
+  if (interaction === "input") {
+    return ["[data-viz-input]", '[data-viz-action="input"]'];
+  }
   if (interaction === "filter") {
     return ["[data-viz-filter]", '[data-viz-action="filter"]'];
   }
@@ -202,7 +205,14 @@ export async function runInteractions(page, interactions = []) {
             after: readState(),
           };
         }
-        if (typeof hook.click === "function") {
+        const tag = (hook.tagName ?? "").toLowerCase();
+        if (tag === "input" || tag === "textarea" || tag === "select") {
+          hook.value = "测试";
+          hook.dispatchEvent(new Event("input", { bubbles: true }));
+          if (tag === "select") {
+            hook.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        } else if (typeof hook.click === "function") {
           hook.click();
         } else {
           hook.dispatchEvent(

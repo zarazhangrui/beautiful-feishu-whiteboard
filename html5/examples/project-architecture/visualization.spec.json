@@ -1,0 +1,85 @@
+{
+  "version": "1.0",
+  "type": "network",
+  "title": "项目架构：双渲染器与发布链路",
+  "summary": "从内容规划到共享语义层，分别渲染可编辑白板与交互式 HTML，最终发布到飞书文档。",
+  "content": {
+    "nodes": [
+      {
+        "id": "planner",
+        "label": "内容规划",
+        "description": "理解内容、受众与用途，确定信息层级。",
+        "category": "core"
+      },
+      {
+        "id": "spec",
+        "label": "可视化语义层",
+        "description": "VisualizationSpec 记录事实、数据、关系与交互意图。",
+        "category": "core"
+      },
+      {
+        "id": "whiteboard",
+        "label": "白板渲染器",
+        "description": "生成 1600–1700 宽的可编辑白板 SVG。",
+        "category": "render"
+      },
+      {
+        "id": "html",
+        "label": "HTML 渲染器",
+        "description": "生成响应式、可交互的单文件 HTML。",
+        "category": "render"
+      },
+      {
+        "id": "lark",
+        "label": "飞书发布",
+        "description": "写入白板与 HTML5 Block，回查核验。",
+        "category": "publish"
+      }
+    ],
+    "edges": [
+      {
+        "id": "planner-to-spec",
+        "source": "planner",
+        "target": "spec",
+        "label": "结构化"
+      },
+      {
+        "id": "spec-to-whiteboard",
+        "source": "spec",
+        "target": "whiteboard",
+        "label": "白板 SVG"
+      },
+      {
+        "id": "spec-to-html",
+        "source": "spec",
+        "target": "html",
+        "label": "HTML 页面"
+      },
+      {
+        "id": "whiteboard-to-lark",
+        "source": "whiteboard",
+        "target": "lark",
+        "label": "whiteboard-cli"
+      },
+      {
+        "id": "html-to-lark",
+        "source": "html",
+        "target": "lark",
+        "label": "html5-block"
+      }
+    ],
+    "metrics": [],
+    "series": [],
+    "steps": [],
+    "annotations": []
+  },
+  "theme": {
+    "palette": "grove-block",
+    "tokens": {}
+  },
+  "interactions": ["select", "filter", "pan", "zoom"],
+  "accessibility": {
+    "alt": "项目架构关系图：内容规划经共享语义层分别进入白板与 HTML 渲染器，最后发布到飞书。",
+    "instructions": "点击节点查看详情，用筛选按钮按类别过滤，用平移和缩放浏览完整关系图。"
+  }
+}

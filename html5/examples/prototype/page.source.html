@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <title>任务录入原型</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; margin: 0; padding: 0; }
+    body { font-size: 16px; line-height: 1.5; color: #153125; background: #f7f1ec; }
+    .viz-shell { max-width: 100%; margin: 0 auto; padding: 24px; }
+    .viz-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+    .viz-toolbar button {
+      font: inherit; padding: 6px 12px; border: 2px solid #153125; border-radius: 10px;
+      background: #ffffff; cursor: pointer;
+    }
+    .viz-input {
+      font: inherit; padding: 8px 12px; border: 2px solid #153125; border-radius: 10px;
+      width: min(100%, 360px);
+    }
+    .viz-panel { border: 2px solid #153125; border-radius: 14px; padding: 16px; margin-top: 16px; background: #ffffff; }
+    .viz-list { list-style: none; margin: 12px 0 0; padding: 0; }
+    .viz-list li { padding: 8px 12px; border: 1px solid #cbb9a2; border-radius: 8px; margin-top: 8px; }
+    .viz-list li.is-urgent { border-color: #153125; background: #fcc715; }
+    .viz-fallback { display: none; }
+  </style>
+</head>
+<body>
+  <main class="viz-shell">
+    <h1>任务录入原型</h1>
+    <p>本地状态的任务录入工具：输入草稿、添加任务、切换紧急模式并重置。</p>
+    <div class="viz-toolbar" role="group" aria-label="任务工具">
+      <input class="viz-input" data-viz-input type="text" value="" placeholder="输入任务名称" aria-label="任务名称">
+      <button type="button" data-viz-action="submit">添加任务</button>
+      <button type="button" data-viz-action="toggle">紧急模式</button>
+      <button type="button" data-viz-action="reset">重置</button>
+    </div>
+    <section class="viz-panel">
+      <p data-viz-state>就绪</p>
+      <ul class="viz-list" data-viz-list></ul>
+    </section>
+    <p class="viz-fallback" data-viz-fallback>工具离线可用，所有数据仅保存在当前页面。</p>
+    <p><span data-viz-motion>full</span></p>
+  </main>
+  <script>
+    const state = { draft: "", tasks: [], urgent: false };
+    const stateElement = document.querySelector("[data-viz-state]");
+    const input = document.querySelector("[data-viz-input]");
+    const list = document.querySelector("[data-viz-list]");
+    const motionIndicator = document.querySelector("[data-viz-motion]");
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    motionIndicator.textContent = motionQuery.matches ? "reduced" : "full";
+    const renderList = () => {
+      list.textContent = "";
+      for (const task of state.tasks) {
+        const item = document.createElement("li");
+        item.textContent = task;
+        if (state.urgent) item.classList.add("is-urgent");
+        list.appendChild(item);
+      }
+    };
+    input.addEventListener("input", () => {
+      state.draft = input.value;
+      stateElement.textContent = "草稿：" + (state.draft || "（空）");
+    });
+    document.querySelector("[data-viz-action=\"submit\"]").addEventListener("click", () => {
+      const value = input.value.trim();
+      if (value) {
+        state.tasks.push(value);
+        renderList();
+        stateElement.textContent = "已添加：" + value;
+      } else {
+        stateElement.textContent = "请先输入任务名称";
+      }
+    });
+    document.querySelector("[data-viz-action=\"toggle\"]").addEventListener("click", () => {
+      state.urgent = !state.urgent;
+      renderList();
+      stateElement.textContent = state.urgent ? "模式：紧急" : "模式：标准";
+    });
+    document.querySelector("[data-viz-action=\"reset\"]").addEventListener("click", () => {
+      state.draft = "";
+      state.tasks = [];
+      state.urgent = false;
+      input.value = "";
+      renderList();
+      stateElement.textContent = "已重置";
+    });
+    if (!motionQuery.matches) {
+      const loop = () => { requestAnimationFrame(loop); };
+      requestAnimationFrame(loop);
+    }
+  </script>
+</body>
+</html>

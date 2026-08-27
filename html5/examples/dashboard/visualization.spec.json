@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "type": "dashboard",
+  "title": "服务健康看板",
+  "summary": "核心服务可用性与性能指标，支持按周期切换并查看指标详情。",
+  "content": {
+    "nodes": [],
+    "edges": [],
+    "metrics": [
+      {
+        "id": "availability",
+        "label": "可用性",
+        "value": 99.9,
+        "unit": "%",
+        "trend": 0.1
+      },
+      {
+        "id": "error-rate",
+        "label": "错误率",
+        "value": 0.02,
+        "unit": "%",
+        "trend": -0.01
+      },
+      {
+        "id": "requests",
+        "label": "请求量",
+        "value": 12400,
+        "unit": "次/分",
+        "trend": 8
+      },
+      {
+        "id": "latency",
+        "label": "P95 延迟",
+        "value": 210,
+        "unit": "ms",
+        "trend": -12
+      }
+    ],
+    "series": [
+      {
+        "id": "period",
+        "label": "统计周期",
+        "data": ["今日", "本周", "本月"]
+      }
+    ],
+    "steps": [],
+    "annotations": []
+  },
+  "theme": {
+    "palette": "grove-block",
+    "tokens": {}
+  },
+  "interactions": ["select", "filter", "toggle"],
+  "accessibility": {
+    "alt": "服务健康看板：可用性、错误率、请求量与 P95 延迟四个指标卡片。",
+    "instructions": "点击指标卡片查看详情，用周期按钮切换统计范围。"
+  }
+}

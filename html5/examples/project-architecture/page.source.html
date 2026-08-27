@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <title>项目架构</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; margin: 0; padding: 0; }
+    body { font-size: 16px; line-height: 1.5; color: #153125; background: #f7f1ec; }
+    .viz-shell { max-width: 100%; margin: 0 auto; padding: 24px; }
+    .viz-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+    .viz-toolbar button {
+      font: inherit; padding: 6px 12px; border: 2px solid #153125; border-radius: 10px;
+      background: #ffffff; cursor: pointer;
+    }
+    .viz-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; }
+    .viz-canvas {
+      min-width: 0; min-height: 480px; border: 2px solid #153125; border-radius: 14px;
+      background: #ffffff; overflow: hidden;
+    }
+    .viz-canvas svg { display: block; width: 100%; height: auto; }
+    .viz-node { cursor: pointer; }
+    .viz-node.is-selected { stroke: #153125; stroke-width: 4; }
+    .viz-node.is-hidden { opacity: 0.15; pointer-events: none; }
+    .viz-edge.is-hidden { opacity: 0.1; }
+    .viz-details { border: 2px solid #153125; border-radius: 14px; padding: 16px; background: #ffffff; }
+    .viz-details h2 { margin-top: 0; font-size: 18px; }
+    .viz-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; font-size: 14px; }
+    .viz-legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px; border-radius: 4px; background: currentColor; }
+    .viz-fallback { display: none; }
+    @media (max-width: 820px) { .viz-layout { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 520px) {
+      .viz-canvas { overflow-x: auto; }
+      .viz-canvas svg { width: 680px; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="viz-shell">
+    <h1>项目架构：双渲染器与发布链路</h1>
+    <p>从内容规划到共享语义层，分别渲染可编辑白板与交互式 HTML，最终发布到飞书文档。</p>
+    <div class="viz-toolbar" role="toolbar" aria-label="关系图工具">
+      <button type="button" data-viz-filter="all">全部</button>
+      <button type="button" data-viz-filter="core">核心</button>
+      <button type="button" data-viz-filter="render">渲染</button>
+      <button type="button" data-viz-filter="publish">发布</button>
+      <button type="button" data-viz-action="pan">平移</button>
+      <button type="button" data-viz-action="zoom-in">放大</button>
+      <button type="button" data-viz-action="zoom-out">缩小</button>
+      <button type="button" data-viz-action="reset">重置</button>
+    </div>
+    <div class="viz-layout">
+      <section class="viz-canvas" data-viz-canvas aria-label="项目架构关系图">
+        <svg viewBox="0 0 860 480" role="img" aria-label="项目架构关系图">
+          <defs>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+              <path d="M0 0 L10 4 L0 8 z" fill="#153125"/>
+            </marker>
+          </defs>
+          <g class="viz-group" style="transform: translate(0px, 0px) scale(1)">
+            <line class="viz-edge" data-edge-id="planner-to-spec" data-edge-source="planner" data-edge-target="spec" x1="190" y1="120" x2="330" y2="120" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
+            <line class="viz-edge" data-edge-id="spec-to-whiteboard" data-edge-source="spec" data-edge-target="whiteboard" x1="470" y1="80" x2="590" y2="80" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
+            <line class="viz-edge" data-edge-id="spec-to-html" data-edge-source="spec" data-edge-target="html" x1="470" y1="160" x2="590" y2="160" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
+            <line class="viz-edge" data-edge-id="whiteboard-to-lark" data-edge-source="whiteboard" data-edge-target="lark" x1="730" y1="100" x2="758" y2="120" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
+            <line class="viz-edge" data-edge-id="html-to-lark" data-edge-source="html" data-edge-target="lark" x1="730" y1="180" x2="758" y2="170" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
+            <rect class="viz-node" data-node-id="planner" data-node-category="core" x="40" y="80" width="150" height="80" rx="16" fill="#008248"/>
+            <rect class="viz-node" data-node-id="spec" data-node-category="core" x="330" y="80" width="140" height="80" rx="16" fill="#008248"/>
+            <rect class="viz-node" data-node-id="whiteboard" data-node-category="render" x="590" y="40" width="140" height="80" rx="16" fill="#f6bdda"/>
+            <rect class="viz-node" data-node-id="html" data-node-category="render" x="590" y="120" width="140" height="80" rx="16" fill="#f6bdda"/>
+            <rect class="viz-node" data-node-id="lark" data-node-category="publish" x="760" y="60" width="84" height="160" rx="16" fill="#fcc715"/>
+            <text x="115" y="122" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">内容规划</text>
+            <text x="400" y="122" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">语义层</text>
+            <text x="660" y="80" text-anchor="middle" font-size="18" font-weight="700" fill="#153125">白板</text>
+            <text x="660" y="160" text-anchor="middle" font-size="18" font-weight="700" fill="#153125">HTML</text>
+            <text x="802" y="130" text-anchor="middle" font-size="20" font-weight="700" fill="#000000">飞书</text>
+            <text x="802" y="158" text-anchor="middle" font-size="18" fill="#000000">发布</text>
+          </g>
+        </svg>
+        <p class="viz-fallback" data-viz-fallback>图表库不可用，节点与关系仍以上方图形展示。</p>
+      </section>
+      <aside class="viz-details">
+        <h2>详情</h2>
+        <p data-viz-state>选择节点查看详情</p>
+        <div class="viz-legend">
+          <span style="color:#008248">核心</span>
+          <span style="color:#f6bdda">渲染</span>
+          <span style="color:#fcc715">发布</span>
+        </div>
+      </aside>
+    </div>
+    <p><span data-viz-motion>full</span></p>
+  </main>
+  <script>
+    const state = { selected: null, category: "all", panX: 0, scale: 1 };
+    const stateElement = document.querySelector("[data-viz-state]");
+    const group = document.querySelector(".viz-group");
+    const motionIndicator = document.querySelector("[data-viz-motion]");
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    motionIndicator.textContent = motionQuery.matches ? "reduced" : "full";
+    const nodes = [...document.querySelectorAll("[data-node-id]")];
+    const edges = [...document.querySelectorAll("[data-edge-id]")];
+    const nodeById = new Map(nodes.map((node) => [node.getAttribute("data-node-id"), node]));
+    const applyTransform = () => {
+      group.style.transform = "translate(" + state.panX + "px, 0px) scale(" + state.scale + ")";
+    };
+    const applyFilter = () => {
+      for (const node of nodes) {
+        const category = node.getAttribute("data-node-category");
+        const hidden = state.category !== "all" && category !== state.category;
+        node.classList.toggle("is-hidden", hidden);
+      }
+      for (const edge of edges) {
+        const source = nodeById.get(edge.getAttribute("data-edge-source"));
+        const target = nodeById.get(edge.getAttribute("data-edge-target"));
+        const hidden = source.classList.contains("is-hidden") || target.classList.contains("is-hidden");
+        edge.classList.toggle("is-hidden", hidden);
+      }
+    };
+    for (const node of nodes) {
+      node.addEventListener("click", () => {
+        for (const item of nodes) item.classList.remove("is-selected");
+        node.classList.add("is-selected");
+        state.selected = node.getAttribute("data-node-id");
+        stateElement.textContent = "已选择：" + node.getAttribute("data-node-id");
+      });
+    }
+    for (const button of document.querySelectorAll("[data-viz-filter]")) {
+      button.addEventListener("click", () => {
+        state.category = button.getAttribute("data-viz-filter");
+        applyFilter();
+        stateElement.textContent = "筛选：" + state.category;
+      });
+    }
+    document.querySelector("[data-viz-action=\"pan\"]").addEventListener("click", () => {
+      state.panX = (state.panX + 20) % 60;
+      applyTransform();
+      stateElement.textContent = "平移：" + state.panX;
+    });
+    document.querySelector("[data-viz-action=\"zoom-in\"]").addEventListener("click", () => {
+      state.scale = Math.min(2, state.scale + 0.25);
+      applyTransform();
+      stateElement.textContent = "缩放：" + state.scale;
+    });
+    document.querySelector("[data-viz-action=\"zoom-out\"]").addEventListener("click", () => {
+      state.scale = Math.max(0.5, state.scale - 0.25);
+      applyTransform();
+      stateElement.textContent = "缩放：" + state.scale;
+    });
+    document.querySelector("[data-viz-action=\"reset\"]").addEventListener("click", () => {
+      state.selected = null;
+      state.category = "all";
+      state.panX = 0;
+      state.scale = 1;
+      for (const item of nodes) item.classList.remove("is-selected", "is-hidden");
+      for (const item of edges) item.classList.remove("is-hidden");
+      applyTransform();
+      stateElement.textContent = "视图已重置";
+    });
+    if (!motionQuery.matches) {
+      const loop = () => { requestAnimationFrame(loop); };
+      requestAnimationFrame(loop);
+    }
+  </script>
+</body>
+</html>
