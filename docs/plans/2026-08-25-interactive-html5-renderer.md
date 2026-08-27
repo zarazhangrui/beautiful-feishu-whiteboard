@@ -609,4 +609,3 @@ Use `@requesting-code-review`. Treat all findings with `@receiving-code-review`,
 **Step 6: Final verification commit if needed**
 
 Commit only concrete fixes or evidence changes; do not create an empty completion commit.
-
