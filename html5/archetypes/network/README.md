@@ -45,10 +45,12 @@ scaling the whole canvas down.
   responsive reflow, breakpoints, or per-width adaptation. The in-document preview is
   intentionally scaled; Feishu's fullscreen button is the 1:1 reading mode. Keep every declared
   interaction reachable while the stage is scaled.
-- Arrowheads: use a **fixed-size** `<marker>` (default `userSpaceOnUse`, e.g. `markerWidth="16"`
-  with a 12-unit head) in HTML pages. Do not use `markerUnits="strokeWidth"` there — it scales the
-  head with line width and renders oversized in the browser. On the whiteboard, the marker is only
-  a signal: Feishu replaces it with its native arrowhead, so the two mediums intentionally differ.
+- Arrowheads: use a **fixed-size** `<marker>` (default `userSpaceOnUse`) in HTML pages — for a
+  4-unit line, a head around 8×5 units reads well (`markerWidth="12" markerHeight="10"
+  refX="8" refY="2.5"` with path `M0 0 L8 2.5 L0 5 z`). Do not use `markerUnits="strokeWidth"`
+  there — it scales the head with line width and renders oversized in the browser. On the
+  whiteboard, the marker is only a signal: Feishu replaces it with its native arrowhead, so the
+  two mediums intentionally differ.
 - Animated layout, force simulation, or rAF loops must stop when reduced motion is active.
 - No external URLs except version-pinned, allowlisted dependencies with a visible fallback.
 - All data stays local; never fetch remote data.
