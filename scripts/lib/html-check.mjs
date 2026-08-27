@@ -103,7 +103,7 @@ function addFromError(violations, error, prefix, path) {
   }
 }
 
-function expectedCsp(dependencies) {
+export function expectedCsp(dependencies) {
   const scripts = dependencies.map((item) => item.url);
   return [
     "default-src 'none'",

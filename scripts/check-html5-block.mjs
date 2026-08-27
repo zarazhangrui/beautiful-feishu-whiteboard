@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 
 import { HtmlCheckError, checkHtml5Block } from "./lib/html-check.mjs";
-import { canonicalizeSvg } from "./lib/svg-canonical.mjs";
+import { verifyManifest } from "./lib/html5-manifest.mjs";
+import { validateVisualizationSpec } from "./lib/visualization-spec.mjs";
 
 function usage() {
-  return "Usage: node scripts/check-html5-block.mjs --input widget.html [--max-bytes 500000] [--source-svg diagram.svg | --source-sha256 HASH]";
+  return "Usage: node scripts/check-html5-block.mjs --spec visualization.spec.json --manifest visualization.manifest.json --input index.html [--max-bytes 500000]";
 }
 
 function parseArgs(argv) {
@@ -15,7 +16,7 @@ function parseArgs(argv) {
     const arg = argv[index];
     if (!arg.startsWith("--")) throw new Error(`unexpected argument: ${arg}`);
     const key = arg.slice(2);
-    if (!["input", "max-bytes", "source-svg", "source-sha256"].includes(key)) {
+    if (!["spec", "manifest", "input", "max-bytes"].includes(key)) {
       throw new Error(`unknown option: ${arg}`);
     }
     const value = argv[index + 1];
@@ -23,36 +24,65 @@ function parseArgs(argv) {
     options[key] = value;
     index += 1;
   }
-  if (!options.input) throw new Error("--input is required");
-  if (options["source-svg"] && options["source-sha256"]) {
-    throw new Error("use only one of --source-svg or --source-sha256");
+  for (const required of ["spec", "manifest", "input"]) {
+    if (!options[required]) throw new Error(`--${required} is required`);
   }
   return options;
 }
 
-try {
+async function run() {
   const options = parseArgs(process.argv.slice(2));
+  const spec = JSON.parse(await readFile(options.spec, "utf8"));
+  const manifest = JSON.parse(await readFile(options.manifest, "utf8"));
   const html = await readFile(options.input, "utf8");
-  const sourceSvg = options["source-svg"]
-    ? await readFile(options["source-svg"], "utf8")
-    : null;
-  const expectedSourceSvgSha256 = sourceSvg
-    ? createHash("sha256").update(sourceSvg).digest("hex")
-    : options["source-sha256"];
-  const expectedSourceSvgCanonicalSha256 = sourceSvg
-    ? createHash("sha256").update(canonicalizeSvg(sourceSvg)).digest("hex")
-    : undefined;
+
+  const specReport = validateVisualizationSpec(spec);
+  if (!specReport.ok) {
+    throw new Error(
+      `invalid-visualization-spec: ${specReport.violations
+        .map((item) => item.code)
+        .join(",")}`,
+    );
+  }
+
+  verifyManifest({ html, spec, manifest });
   const report = checkHtml5Block(html, {
+    manifest,
     maxBytes: options["max-bytes"] ? Number(options["max-bytes"]) : undefined,
-    expectedSourceSvgSha256,
-    expectedSourceSvgCanonicalSha256,
   });
-  console.log(JSON.stringify({ input: options.input, ...report }, null, 2));
-} catch (error) {
+  process.stdout.write(
+    `${JSON.stringify(
+      {
+        ok: true,
+        input: options.input,
+        protocolVersion: manifest.protocolVersion,
+        type: manifest.type,
+        heightMode: manifest.heightMode,
+        dependencies: manifest.dependencies.map((item) => item.id),
+        interactions: manifest.interactions,
+        bytes: report.bytes,
+        sha256: createHash("sha256").update(html, "utf8").digest("hex"),
+        normalizedContentSha256: report.normalizedContentSha256,
+        svgCount: report.svgCount,
+        scriptCount: report.scriptCount,
+        violations: [],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+run().catch((error) => {
   const payload =
     error instanceof HtmlCheckError
       ? { ok: false, violations: error.violations }
-      : { ok: false, error: error.message, usage: usage() };
+      : {
+          ok: false,
+          error: error.message,
+          ...(error.code ? { code: error.code } : {}),
+          usage: usage(),
+        };
   console.error(JSON.stringify(payload, null, 2));
   process.exitCode = 1;
-}
+});

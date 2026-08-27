@@ -152,7 +152,7 @@ export function resolveAllowedDependency(url) {
   return dependency ? structuredClone(dependency) : null;
 }
 
-function discoverDependencies(html, type) {
+export function discoverDependencies(html, type) {
   const dependencies = [];
   const seen = new Set();
   for (const attributes of externalScripts(html)) {
