@@ -25,6 +25,8 @@
     .viz-node { cursor: pointer; }
     .viz-node.is-selected { stroke: #153125; stroke-width: 4; }
     .viz-node.is-hidden { opacity: 0.15; pointer-events: none; }
+    .viz-edge { cursor: pointer; }
+    .viz-edge.is-selected { stroke: #008248; stroke-width: 6; }
     .viz-edge.is-hidden { opacity: 0.1; }
     .viz-details { border: 2px solid #153125; border-radius: 14px; padding: 16px; background: #ffffff; }
     .viz-details h2 { margin-top: 0; font-size: 18px; }
@@ -66,11 +68,11 @@
             <line class="viz-edge" data-edge-id="spec-to-html" data-edge-source="spec" data-edge-target="html" x1="470" y1="160" x2="590" y2="160" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
             <line class="viz-edge" data-edge-id="whiteboard-to-lark" data-edge-source="whiteboard" data-edge-target="lark" x1="730" y1="100" x2="758" y2="120" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
             <line class="viz-edge" data-edge-id="html-to-lark" data-edge-source="html" data-edge-target="lark" x1="730" y1="180" x2="758" y2="170" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
-            <rect class="viz-node" data-node-id="planner" data-node-category="core" x="40" y="80" width="150" height="80" rx="16" fill="#008248"/>
-            <rect class="viz-node" data-node-id="spec" data-node-category="core" x="330" y="80" width="140" height="80" rx="16" fill="#008248"/>
-            <rect class="viz-node" data-node-id="whiteboard" data-node-category="render" x="590" y="40" width="140" height="80" rx="16" fill="#f6bdda"/>
-            <rect class="viz-node" data-node-id="html" data-node-category="render" x="590" y="120" width="140" height="80" rx="16" fill="#f6bdda"/>
-            <rect class="viz-node" data-node-id="lark" data-node-category="publish" x="760" y="60" width="84" height="160" rx="16" fill="#fcc715"/>
+            <rect class="viz-node" data-node-id="planner" data-node-category="core" data-node-label="内容规划" x="40" y="80" width="150" height="80" rx="16" fill="#008248"/>
+            <rect class="viz-node" data-node-id="spec" data-node-category="core" data-node-label="语义层" x="330" y="80" width="140" height="80" rx="16" fill="#008248"/>
+            <rect class="viz-node" data-node-id="whiteboard" data-node-category="render" data-node-label="白板" x="590" y="40" width="140" height="80" rx="16" fill="#f6bdda"/>
+            <rect class="viz-node" data-node-id="html" data-node-category="render" data-node-label="HTML" x="590" y="120" width="140" height="80" rx="16" fill="#f6bdda"/>
+            <rect class="viz-node" data-node-id="lark" data-node-category="publish" data-node-label="飞书发布" x="760" y="60" width="84" height="160" rx="16" fill="#fcc715"/>
             <text x="115" y="122" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">内容规划</text>
             <text x="400" y="122" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">语义层</text>
             <text x="660" y="80" text-anchor="middle" font-size="18" font-weight="700" fill="#153125">白板</text>
@@ -122,9 +124,23 @@
     for (const node of nodes) {
       node.addEventListener("click", () => {
         for (const item of nodes) item.classList.remove("is-selected");
+        for (const item of edges) item.classList.remove("is-selected");
         node.classList.add("is-selected");
         state.selected = node.getAttribute("data-node-id");
-        stateElement.textContent = "已选择：" + node.getAttribute("data-node-id");
+        stateElement.textContent = "已选择：" + node.getAttribute("data-node-label");
+      });
+    }
+    for (const edge of edges) {
+      edge.addEventListener("click", () => {
+        for (const item of edges) item.classList.remove("is-selected");
+        for (const item of nodes) item.classList.remove("is-selected");
+        edge.classList.add("is-selected");
+        const sourceId = edge.getAttribute("data-edge-source");
+        const targetId = edge.getAttribute("data-edge-target");
+        const sourceLabel = nodeById.get(sourceId)?.getAttribute("data-node-label") ?? sourceId;
+        const targetLabel = nodeById.get(targetId)?.getAttribute("data-node-label") ?? targetId;
+        state.selected = edge.getAttribute("data-edge-id");
+        stateElement.textContent = "连线：" + sourceLabel + " → " + targetLabel;
       });
     }
     for (const button of document.querySelectorAll("[data-viz-filter]")) {

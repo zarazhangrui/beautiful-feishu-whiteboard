@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import test from "node:test";
+import { chromium } from "playwright-core";
 
 import { buildHtml5Page } from "../scripts/html5-build.mjs";
 import { discoverChrome, renderHtmlFile } from "../scripts/lib/browser-render.mjs";
@@ -81,3 +83,38 @@ for (const [name, expected] of Object.entries(EXPECTATIONS)) {
     assert.deepEqual(report.errors, { console: [], page: [], request: [] });
   });
 }
+
+test("project-architecture edges are clickable and update the state panel", {
+  skip: !CHROME ? "system Chrome not found" : false,
+}, async () => {
+  const name = "project-architecture";
+  const spec = JSON.parse(
+    await readFile(join(ROOT, name, "visualization.spec.json"), "utf8"),
+  );
+  const sourceHtml = await readFile(join(ROOT, name, "page.source.html"), "utf8");
+  const result = await buildHtml5Page({ sourceHtml, spec, heightMode: "auto" });
+  const dir = await mkdtemp(join(tmpdir(), "html5-edge-"));
+  await writeFile(join(dir, "index.html"), result.html, "utf8");
+  const browser = await chromium.launch({ executablePath: CHROME, headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.goto(pathToFileURL(resolve(join(dir, "index.html"))).href);
+    const before = await page.textContent("[data-viz-state]");
+    const after = await page.evaluate(() => {
+      const edge = document.querySelector("[data-edge-id]");
+      edge.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        }),
+      );
+      return document.querySelector("[data-viz-state]").textContent;
+    });
+    assert.notEqual(after, before);
+    assert.match(after, /连线：/);
+    assert.ok(after.includes("→"));
+  } finally {
+    await browser.close();
+  }
+});

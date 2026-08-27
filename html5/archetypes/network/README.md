@@ -13,6 +13,9 @@ node-edge views that benefit from selection, filtering, pan, and zoom.
 - An interactive SVG graph under `[data-viz-canvas]`. Use native shapes only
   (`rect`, `circle`, `ellipse`, `line`, `polyline`, `path` inside `marker`, `text`).
   Every node carries `data-node-id`; edges carry `data-edge-id` plus source/target ids.
+- Every node and every edge is clickable: clicking a node or an edge updates `[data-viz-state]`
+  with the selected label (edges show `source → target`), so both shapes participate in the
+  `select` interaction.
 - A detail panel `[data-viz-state]` that the page updates on every interaction so the
   renderer can verify the declared interactions.
 - A `[data-viz-fallback]` element that becomes visible when an optional CDN dependency fails.

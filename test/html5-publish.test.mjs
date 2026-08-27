@@ -247,12 +247,13 @@ test("warnings and tips are surfaced and fail when they affect HTML rendering", 
 
 test("publisher returns a full report through a fake lark-cli", async () => {
   const { html, manifest } = await buildValidArtifact();
+  const dir = await mkdtemp(join(tmpdir(), "publish-report-"));
   const runLarkCli = fakeLarkCli({ fetchPayload: fakeFetchPayload(html) });
   const report = await publishHtml5Block({
     spec,
     manifest,
     html,
-    outputDir: "/tmp/publish-report",
+    outputDir: dir,
     runLarkCli,
   });
   assert.equal(report.ok, true, JSON.stringify(report));
@@ -262,6 +263,7 @@ test("publisher returns a full report through a fake lark-cli", async () => {
   assert.equal(report.localSha256, report.remoteSha256);
   assert.match(report.documentUrl, /^https:\/\//);
   assert.equal(report.verification.ok, true);
+  assert.equal(await readFile(join(dir, "index.html"), "utf8"), html);
 });
 
 test("publisher resolves a path-based reference_map export", async () => {

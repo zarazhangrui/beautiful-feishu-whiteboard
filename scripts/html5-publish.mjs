@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execFile } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
@@ -85,6 +85,7 @@ export async function publishHtml5Block({
   outputDir,
   title = spec.title,
   whiteboardSvgPath,
+  whiteboardSvgFile,
   htmlPath = "@./index.html",
   runLarkCli,
   larkCli = "lark-cli",
@@ -109,6 +110,16 @@ export async function publishHtml5Block({
   checkHtml5Block(html, { manifest });
 
   await mkdir(outputDir, { recursive: true });
+  const stagedHtmlName = basename(String(htmlPath).replace(/^@\//, ""));
+  await writeFile(join(outputDir, stagedHtmlName), html, "utf8");
+  if (whiteboardSvgPath && whiteboardSvgFile) {
+    const stagedSvgName = basename(String(whiteboardSvgPath).replace(/^@\//, ""));
+    await writeFile(
+      join(outputDir, stagedSvgName),
+      await readFile(whiteboardSvgFile, "utf8"),
+      "utf8",
+    );
+  }
   const documentXml = buildDocxXml({ title, whiteboardSvgPath, htmlPath });
   const xmlPath = join(outputDir, "document.xml");
   await writeFile(xmlPath, documentXml, "utf8");
@@ -225,6 +236,7 @@ function parseArgs(argv) {
     "output-dir",
     "title",
     "whiteboard-svg",
+    "whiteboard-svg-file",
     "lark-cli",
     "as",
   ]);
@@ -260,6 +272,7 @@ async function run() {
     outputDir: options["output-dir"],
     title: options.title,
     whiteboardSvgPath: options["whiteboard-svg"],
+    whiteboardSvgFile: options["whiteboard-svg-file"],
     larkCli: options["lark-cli"],
     asUser: options.as,
   });
