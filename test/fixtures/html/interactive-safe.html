@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <title>交互式架构图</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; margin: 0; padding: 0; }
+    body { font-size: 16px; line-height: 1.5; color: #153125; background: #f7f1ec; }
+    .viz-shell { max-width: 100%; margin: 0 auto; padding: 24px; }
+    .viz-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .viz-toolbar button {
+      font: inherit; padding: 6px 12px; border: 2px solid #153125; border-radius: 6px;
+      background: #ffffff; cursor: pointer;
+    }
+    .viz-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; margin-top: 16px; }
+    .viz-canvas { min-width: 0; min-height: 420px; border: 2px solid #153125; border-radius: 12px; background: #ffffff; overflow: hidden; }
+    .viz-canvas svg { display: block; width: 100%; height: auto; }
+    .viz-details { border: 2px solid #153125; border-radius: 12px; padding: 16px; background: #ffffff; }
+    .viz-fallback { display: none; }
+    @media (max-width: 820px) { .viz-layout { grid-template-columns: minmax(0, 1fr); } }
+  </style>
+</head>
+<body>
+  <main class="viz-shell">
+    <h1>交互式架构图</h1>
+    <p>验证 390、820、1440 像素下的响应式布局与交互行为。</p>
+    <div class="viz-toolbar" role="toolbar" aria-label="关系图工具">
+      <button type="button" data-viz-action="filter">全部</button>
+      <button type="button" data-viz-action="zoom-in">放大</button>
+      <button type="button" data-viz-action="zoom-out">缩小</button>
+      <button type="button" data-viz-action="reset">重置</button>
+    </div>
+    <div class="viz-layout">
+      <section class="viz-canvas" data-viz-canvas aria-label="交互式架构图">
+        <svg viewBox="0 0 800 420" role="img" aria-label="交互式架构图">
+          <g class="viz-zoom" style="transform: translate(0px, 0px) scale(1)">
+            <rect class="viz-node" data-node-id="a" x="40" y="60" width="200" height="80" rx="16" fill="#008248"/>
+            <rect class="viz-node" data-node-id="b" x="320" y="60" width="200" height="80" rx="16" fill="#f6bdda"/>
+            <line x1="240" y1="100" x2="320" y2="100" stroke="#153125" stroke-width="4"/>
+            <text x="140" y="102" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">节点A</text>
+            <text x="420" y="102" text-anchor="middle" font-size="18" font-weight="700" fill="#153125">节点B</text>
+          </g>
+        </svg>
+        <p class="viz-fallback" data-viz-fallback>辅助内容不可用时的降级说明。</p>
+      </section>
+      <aside class="viz-details" data-viz-state>选择节点查看详情</aside>
+    </div>
+    <p><span data-viz-motion>full</span></p>
+  </main>
+  <script>
+    const state = { selected: null, scale: 1 };
+    const stateElement = document.querySelector("[data-viz-state]");
+    const zoom = document.querySelector(".viz-zoom");
+    const motionIndicator = document.querySelector("[data-viz-motion]");
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    motionIndicator.textContent = motionQuery.matches ? "reduced" : "full";
+    const nodes = document.querySelectorAll("[data-node-id]");
+    for (const node of nodes) {
+      node.addEventListener("click", () => {
+        state.selected = node.getAttribute("data-node-id");
+        stateElement.textContent = "selected:" + state.selected;
+      });
+    }
+    document.querySelector("[data-viz-action=\"filter\"]").addEventListener("click", () => {
+      stateElement.textContent = "filter:all";
+    });
+    document.querySelector("[data-viz-action=\"zoom-in\"]").addEventListener("click", () => {
+      state.scale = Math.min(2, state.scale + 0.25);
+      zoom.style.transform = "translate(0px, 0px) scale(" + state.scale + ")";
+      stateElement.textContent = "scale:" + state.scale;
+    });
+    document.querySelector("[data-viz-action=\"zoom-out\"]").addEventListener("click", () => {
+      state.scale = Math.max(0.5, state.scale - 0.25);
+      zoom.style.transform = "translate(0px, 0px) scale(" + state.scale + ")";
+      stateElement.textContent = "scale:" + state.scale;
+    });
+    document.querySelector("[data-viz-action=\"reset\"]").addEventListener("click", () => {
+      state.scale = 1;
+      zoom.style.transform = "translate(0px, 0px) scale(1)";
+      stateElement.textContent = "reset";
+    });
+    window.addEventListener("resize", () => {
+      requestAnimationFrame(() => {
+        stateElement.dataset.width = String(document.documentElement.clientWidth);
+      });
+    });
+    if (!motionQuery.matches) {
+      const loop = () => { requestAnimationFrame(loop); };
+      requestAnimationFrame(loop);
+    }
+  </script>
+</body>
+</html>
