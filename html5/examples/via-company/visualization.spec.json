@@ -132,7 +132,7 @@
     "annotations": []
   },
   "theme": {
-    "palette": "grove-block",
+    "palette": "neo-grid-bold",
     "tokens": {}
   },
   "interactions": ["select", "filter", "pan", "zoom"],
