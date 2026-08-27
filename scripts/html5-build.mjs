@@ -5,6 +5,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse, serialize } from "parse5";
 
+import { parseArgs } from "./lib/cli-args.mjs";
 import {
   HtmlCheckError,
   checkHtml5Block,
@@ -210,37 +211,17 @@ export async function buildHtml5Page({
   };
 }
 
-function parseArguments(argv) {
-  const options = {};
-  const allowed = new Set([
-    "spec",
-    "input",
-    "output-dir",
-    "height-mode",
-    "max-bytes",
-  ]);
-  for (let index = 0; index < argv.length; index += 1) {
-    const argument = argv[index];
-    if (!argument.startsWith("--")) {
-      throw new Error(`unexpected argument: ${argument}`);
-    }
-    const key = argument.slice(2);
-    if (!allowed.has(key)) throw new Error(`unknown option: ${argument}`);
-    const value = argv[index + 1];
-    if (!value || value.startsWith("--")) {
-      throw new Error(`missing value for ${argument}`);
-    }
-    options[key] = value;
-    index += 1;
-  }
-  for (const required of ["spec", "input", "output-dir"]) {
-    if (!options[required]) throw new Error(`--${required} is required`);
-  }
-  return options;
-}
-
 export async function main(argv = process.argv.slice(2)) {
-  const options = parseArguments(argv);
+  const options = parseArgs(argv, {
+    allowed: new Set([
+      "spec",
+      "input",
+      "output-dir",
+      "height-mode",
+      "max-bytes",
+    ]),
+    required: ["spec", "input", "output-dir"],
+  });
   const spec = JSON.parse(await readFile(resolve(options.spec), "utf8"));
   const sourceHtml = await readFile(resolve(options.input), "utf8");
   const result = await buildHtml5Page({

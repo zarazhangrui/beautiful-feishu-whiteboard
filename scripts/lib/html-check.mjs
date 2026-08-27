@@ -103,6 +103,223 @@ function addFromError(violations, error, prefix, path) {
   }
 }
 
+function validateDocumentStructure(document, violations) {
+  const roots = children(document).filter((node) => node.tagName === "html");
+  const doctypes = children(document).filter(
+    (node) => node.nodeName === "#documentType",
+  );
+  const root = roots[0];
+  const head = children(root).filter((node) => node.tagName === "head");
+  const body = children(root).filter((node) => node.tagName === "body");
+  const explicitStructure = [root, head[0], body[0]].every(
+    (node) =>
+      node?.sourceCodeLocation?.startTag && node?.sourceCodeLocation?.endTag,
+  );
+  if (
+    roots.length !== 1 ||
+    head.length !== 1 ||
+    body.length !== 1 ||
+    doctypes.length !== 1 ||
+    root?.namespaceURI !== HTML_NAMESPACE ||
+    !explicitStructure
+  ) {
+    violations.push({
+      code: "html-structure",
+      message:
+        "one explicit doctype, HTML root, direct head, and direct body are required",
+    });
+  }
+  return head[0] ?? null;
+}
+
+function validateDocumentElements({
+  allElements,
+  head,
+  safeManifest,
+  violations,
+}) {
+  let svgCount = 0;
+  let scriptCount = 0;
+  for (const { node, path } of allElements) {
+    const name = node.tagName.toLowerCase();
+    const attributes = attrs(node);
+    if (FORBIDDEN_ELEMENTS.has(name)) {
+      violations.push({
+        code: "forbidden-element",
+        message: `<${name}> is not allowed`,
+        path,
+      });
+    }
+    for (const key of attributes.keys()) {
+      if (key.startsWith("on")) {
+        violations.push({
+          code: "event-attribute",
+          message: `${key} is not allowed`,
+          path,
+        });
+      }
+    }
+    if (name === "meta" && node.parentNode !== head) {
+      violations.push({
+        code: "required-meta",
+        message: "meta elements must be direct children of head",
+        path,
+      });
+    }
+    if (
+      (name === "form" && attributes.has("action")) ||
+      attributes.has("formaction")
+    ) {
+      violations.push({
+        code: "form-action",
+        message: "form submission action is not allowed",
+        path,
+      });
+    }
+    if (
+      name === "a" &&
+      attributes.has("href") &&
+      !attributes.get("href").startsWith("#")
+    ) {
+      violations.push({
+        code: "navigation",
+        message: "external navigation is not allowed",
+        path,
+      });
+    }
+    for (const key of ["srcset", "poster"]) {
+      if (attributes.has(key)) {
+        violations.push({
+          code: "external-resource",
+          message: `${key} is not allowed`,
+          path,
+        });
+      }
+    }
+    if (attributes.has("style")) {
+      try {
+        validateCss(attributes.get("style"), { context: "declarationList" });
+      } catch (error) {
+        if (error instanceof CssPolicyError) {
+          addFromError(violations, error, "css", path);
+        } else {
+          throw error;
+        }
+      }
+    }
+    const resourceKeys = ["src", "href", "action", "formaction"];
+    if (
+      resourceKeys.some((key) => attributes.has(key)) &&
+      !["script", "a", "form"].includes(name)
+    ) {
+      for (const key of resourceKeys) {
+        const value = attributes.get(key);
+        if (
+          value !== undefined &&
+          !value.startsWith("#") &&
+          !/^data:image\/(?:png|jpeg|gif|webp)(?:;|,)/i.test(value)
+        ) {
+          violations.push({
+            code: "external-resource",
+            message: `${key} resource is not allowed`,
+            path,
+          });
+        }
+      }
+    }
+    if (name === "style") {
+      try {
+        validateCss(children(node).map((child) => child.value ?? "").join(""));
+      } catch (error) {
+        if (error instanceof CssPolicyError) {
+          addFromError(violations, error, "css", path);
+        } else {
+          throw error;
+        }
+      }
+    }
+    if (name === "script") {
+      scriptCount++;
+      if (attributes.has("src")) {
+        validateExternalScript(node, safeManifest, violations, path);
+      } else {
+        try {
+          validateJavaScript(
+            children(node).map((child) => child.value ?? "").join(""),
+          );
+        } catch (error) {
+          if (error instanceof JavaScriptPolicyError) {
+            addFromError(violations, error, "javascript", path);
+          } else {
+            throw error;
+          }
+        }
+      }
+    }
+    if (
+      node.namespaceURI === SVG_NAMESPACE &&
+      name === "svg" &&
+      node.parentNode?.namespaceURI !== SVG_NAMESPACE
+    ) {
+      svgCount++;
+      try {
+        validateSvg(serializeOuter(node), {
+          allowAccessibilityMetadata: true,
+          interactive: true,
+        });
+      } catch (error) {
+        if (error instanceof SvgPolicyError) {
+          addFromError(violations, error, "svg-policy", path);
+        } else {
+          throw error;
+        }
+      }
+    } else if (
+      node.namespaceURI !== HTML_NAMESPACE &&
+      node.namespaceURI !== SVG_NAMESPACE
+    ) {
+      violations.push({
+        code: "html-namespace",
+        message: `unexpected namespace on <${name}>`,
+        path,
+      });
+    }
+  }
+  return { svgCount, scriptCount };
+}
+
+function validateTextNodes(allNodes, violations) {
+  for (const { node, path } of allNodes) {
+    if (
+      node.nodeName === "#text" &&
+      /<\/?script\b/i.test(node.value ?? "")
+    ) {
+      violations.push({
+        code: "unsafe-html-text",
+        message: "script-like entity text is not allowed",
+        path,
+      });
+    }
+  }
+}
+
+function validateDependencyUsage(safeManifest, usedUrls, violations) {
+  for (const dependency of safeManifest.dependencies) {
+    const count = usedUrls.filter((url) => url === dependency.url).length;
+    if (count === 0) {
+      violations.push({
+        code: "dependency-unused",
+        message: `declared dependency is not used: ${dependency.url}`,
+      });
+    } else if (count !== 1) {
+      violations.push({
+        code: "dependency-script-count",
+        message: `declared dependency must have exactly one script tag: ${dependency.url}`,
+      });
+    }
+  }
+}
+
 export function expectedCsp(dependencies) {
   const scripts = dependencies.map((item) => item.url);
   return [
@@ -359,215 +576,25 @@ export function checkHtml5Block(
     }
   }
 
-  const roots = children(document).filter((node) => node.tagName === "html");
-  const doctypes = children(document).filter(
-    (node) => node.nodeName === "#documentType",
-  );
-  const root = roots[0];
-  const head = children(root).filter((node) => node.tagName === "head");
-  const body = children(root).filter((node) => node.tagName === "body");
-  const explicitStructure = [root, head[0], body[0]].every(
-    (node) =>
-      node?.sourceCodeLocation?.startTag && node?.sourceCodeLocation?.endTag,
-  );
-  if (
-    roots.length !== 1 ||
-    head.length !== 1 ||
-    body.length !== 1 ||
-    doctypes.length !== 1 ||
-    root?.namespaceURI !== HTML_NAMESPACE ||
-    !explicitStructure
-  ) {
-    violations.push({
-      code: "html-structure",
-      message:
-        "one explicit doctype, HTML root, direct head, and direct body are required",
-    });
-  }
-  if (head[0]) validateMetadata(head[0], safeManifest, violations);
+  const head = validateDocumentStructure(document, violations);
+  if (head) validateMetadata(head, safeManifest, violations);
   const traversal = collectNodes(document, violations);
   if (traversal.limitExceeded) throw new HtmlCheckError(violations);
   const allNodes = traversal.nodes;
   const allElements = allNodes.filter(({ node }) => node.tagName);
-  let svgCount = 0;
-  let scriptCount = 0;
-  for (const { node, path } of allElements) {
-    const name = node.tagName.toLowerCase();
-    const attributes = attrs(node);
-    if (FORBIDDEN_ELEMENTS.has(name)) {
-      violations.push({
-        code: "forbidden-element",
-        message: `<${name}> is not allowed`,
-        path,
-      });
-    }
-    for (const key of attributes.keys()) {
-      if (key.startsWith("on")) {
-        violations.push({
-          code: "event-attribute",
-          message: `${key} is not allowed`,
-          path,
-        });
-      }
-    }
-    if (name === "meta" && node.parentNode !== head[0]) {
-      violations.push({
-        code: "required-meta",
-        message: "meta elements must be direct children of head",
-        path,
-      });
-    }
-    if (
-      (name === "form" && attributes.has("action")) ||
-      attributes.has("formaction")
-    ) {
-      violations.push({
-        code: "form-action",
-        message: "form submission action is not allowed",
-        path,
-      });
-    }
-    if (
-      name === "a" &&
-      attributes.has("href") &&
-      !attributes.get("href").startsWith("#")
-    ) {
-      violations.push({
-        code: "navigation",
-        message: "external navigation is not allowed",
-        path,
-      });
-    }
-    for (const key of ["srcset", "poster"]) {
-      if (attributes.has(key)) {
-        violations.push({
-          code: "external-resource",
-          message: `${key} is not allowed`,
-          path,
-        });
-      }
-    }
-    if (attributes.has("style")) {
-      try {
-        validateCss(attributes.get("style"), { context: "declarationList" });
-      } catch (error) {
-        if (error instanceof CssPolicyError) {
-          addFromError(violations, error, "css", path);
-        } else {
-          throw error;
-        }
-      }
-    }
-    const resourceKeys = ["src", "href", "action", "formaction"];
-    if (
-      resourceKeys.some((key) => attributes.has(key)) &&
-      !["script", "a", "form"].includes(name)
-    ) {
-      for (const key of resourceKeys) {
-        const value = attributes.get(key);
-        if (
-          value !== undefined &&
-          !value.startsWith("#") &&
-          !/^data:image\/(?:png|jpeg|gif|webp)(?:;|,)/i.test(value)
-        ) {
-          violations.push({
-            code: "external-resource",
-            message: `${key} resource is not allowed`,
-            path,
-          });
-        }
-      }
-    }
-    if (name === "style") {
-      try {
-        validateCss(children(node).map((child) => child.value ?? "").join(""));
-      } catch (error) {
-        if (error instanceof CssPolicyError) {
-          addFromError(violations, error, "css", path);
-        } else {
-          throw error;
-        }
-      }
-    }
-    if (name === "script") {
-      scriptCount++;
-      if (attributes.has("src")) {
-        validateExternalScript(node, safeManifest, violations, path);
-      } else {
-        try {
-          validateJavaScript(
-            children(node).map((child) => child.value ?? "").join(""),
-          );
-        } catch (error) {
-          if (error instanceof JavaScriptPolicyError) {
-            addFromError(violations, error, "javascript", path);
-          } else {
-            throw error;
-          }
-        }
-      }
-    }
-    if (
-      node.namespaceURI === SVG_NAMESPACE &&
-      name === "svg" &&
-      node.parentNode?.namespaceURI !== SVG_NAMESPACE
-    ) {
-      svgCount++;
-      try {
-        validateSvg(serializeOuter(node), {
-          allowAccessibilityMetadata: true,
-          interactive: true,
-        });
-      } catch (error) {
-        if (error instanceof SvgPolicyError) {
-          addFromError(violations, error, "svg-policy", path);
-        } else {
-          throw error;
-        }
-      }
-    } else if (
-      node.namespaceURI !== HTML_NAMESPACE &&
-      node.namespaceURI !== SVG_NAMESPACE
-    ) {
-      violations.push({
-        code: "html-namespace",
-        message: `unexpected namespace on <${name}>`,
-        path,
-      });
-    }
-  }
-
-  for (const { node, path } of allNodes) {
-    if (
-      node.nodeName === "#text" &&
-      /<\/?script\b/i.test(node.value ?? "")
-    ) {
-      violations.push({
-        code: "unsafe-html-text",
-        message: "script-like entity text is not allowed",
-        path,
-      });
-    }
-  }
+  const { svgCount, scriptCount } = validateDocumentElements({
+    allElements,
+    head,
+    safeManifest,
+    violations,
+  });
+  validateTextNodes(allNodes, violations);
   const usedUrls = allElements
     .filter(
       ({ node }) => node.tagName === "script" && attrs(node).has("src"),
     )
     .map(({ node }) => attrs(node).get("src"));
-  for (const dependency of safeManifest.dependencies) {
-    const count = usedUrls.filter((url) => url === dependency.url).length;
-    if (count === 0) {
-      violations.push({
-        code: "dependency-unused",
-        message: `declared dependency is not used: ${dependency.url}`,
-      });
-    } else if (count !== 1) {
-      violations.push({
-        code: "dependency-script-count",
-        message: `declared dependency must have exactly one script tag: ${dependency.url}`,
-      });
-    }
-  }
+  validateDependencyUsage(safeManifest, usedUrls, violations);
   if (violations.length) throw new HtmlCheckError(violations);
   return {
     ok: true,

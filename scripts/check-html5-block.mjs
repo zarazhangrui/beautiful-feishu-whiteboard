@@ -2,52 +2,27 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-import { HtmlCheckError, checkHtml5Block } from "./lib/html-check.mjs";
-import { verifyManifest } from "./lib/html5-manifest.mjs";
-import { validateVisualizationSpec } from "./lib/visualization-spec.mjs";
+import { parseArgs } from "./lib/cli-args.mjs";
+import { HtmlCheckError } from "./lib/html-check.mjs";
+import { verifyHtml5Artifact } from "./lib/html5-verify-artifact.mjs";
 
 function usage() {
   return "Usage: node scripts/check-html5-block.mjs --spec visualization.spec.json --manifest visualization.manifest.json --input index.html [--max-bytes 500000]";
 }
 
-function parseArgs(argv) {
-  const options = {};
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    if (!arg.startsWith("--")) throw new Error(`unexpected argument: ${arg}`);
-    const key = arg.slice(2);
-    if (!["spec", "manifest", "input", "max-bytes"].includes(key)) {
-      throw new Error(`unknown option: ${arg}`);
-    }
-    const value = argv[index + 1];
-    if (!value || value.startsWith("--")) throw new Error(`${arg} requires a value`);
-    options[key] = value;
-    index += 1;
-  }
-  for (const required of ["spec", "manifest", "input"]) {
-    if (!options[required]) throw new Error(`--${required} is required`);
-  }
-  return options;
-}
-
 async function run() {
-  const options = parseArgs(process.argv.slice(2));
+  const options = parseArgs(process.argv.slice(2), {
+    allowed: new Set(["spec", "manifest", "input", "max-bytes"]),
+    required: ["spec", "manifest", "input"],
+  });
   const spec = JSON.parse(await readFile(options.spec, "utf8"));
   const manifest = JSON.parse(await readFile(options.manifest, "utf8"));
   const html = await readFile(options.input, "utf8");
 
-  const specReport = validateVisualizationSpec(spec);
-  if (!specReport.ok) {
-    throw new Error(
-      `invalid-visualization-spec: ${specReport.violations
-        .map((item) => item.code)
-        .join(",")}`,
-    );
-  }
-
-  verifyManifest({ html, spec, manifest });
-  const report = checkHtml5Block(html, {
+  const report = verifyHtml5Artifact({
+    spec,
     manifest,
+    html,
     maxBytes: options["max-bytes"] ? Number(options["max-bytes"]) : undefined,
   });
   process.stdout.write(

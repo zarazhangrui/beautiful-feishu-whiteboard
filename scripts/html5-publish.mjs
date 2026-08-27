@@ -5,13 +5,13 @@ import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
+import { parseArgs } from "./lib/cli-args.mjs";
 import {
   extractReferenceEntry,
   verifyFetchedHtml5Block,
 } from "./lib/html5-fetch-verify.mjs";
-import { HtmlCheckError, checkHtml5Block } from "./lib/html-check.mjs";
-import { verifyManifest } from "./lib/html5-manifest.mjs";
-import { validateVisualizationSpec } from "./lib/visualization-spec.mjs";
+import { HtmlCheckError } from "./lib/html-check.mjs";
+import { verifyHtml5Artifact } from "./lib/html5-verify-artifact.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -78,6 +78,28 @@ export function extractBlockId(payload) {
   return deepFind(payload, ["blockId", "block_id", "blockToken"]);
 }
 
+export function extractRevision(payload) {
+  if (typeof payload.revision === "number") return payload.revision;
+  if (typeof payload.revision_id === "number") return payload.revision_id;
+  if (typeof payload.data?.document?.revision_id === "number") {
+    return payload.data.document.revision_id;
+  }
+  if (typeof payload.data?.revision === "number") return payload.data.revision;
+  return null;
+}
+
+function parseCliJson(stdout, command) {
+  try {
+    return JSON.parse(stdout);
+  } catch (error) {
+    throw new Error(
+      `lark-cli ${command} returned non-JSON output (${error.message}); stdout: ${String(
+        stdout,
+      ).slice(0, 500)}`,
+    );
+  }
+}
+
 export async function publishHtml5Block({
   spec,
   manifest,
@@ -91,23 +113,13 @@ export async function publishHtml5Block({
   larkCli = "lark-cli",
   asUser = "user",
 }) {
-  const specReport = validateVisualizationSpec(spec);
-  if (!specReport.ok) {
-    throw publishError(
-      "invalid-visualization-spec",
-      `invalid-visualization-spec: ${specReport.violations
-        .map((item) => item.code)
-        .join(",")}`,
-    );
-  }
-  verifyManifest({ html, spec, manifest });
+  verifyHtml5Artifact({ spec, manifest, html });
   if (manifest.validation?.status !== "passed") {
     throw publishError(
       "unvalidated-manifest",
       "unvalidated-manifest: run scripts/check-html5-block.mjs and scripts/render-html5-block.mjs first; the Manifest must record passed validation",
     );
   }
-  checkHtml5Block(html, { manifest });
 
   await mkdir(outputDir, { recursive: true });
   const stagedHtmlName = basename(String(htmlPath).replace(/^@\//, ""));
@@ -138,7 +150,7 @@ export async function publishHtml5Block({
     ["docs", "+create", "--doc-format", "xml", "--content", "@./document.xml", "--as", asUser],
     { cwd: outputDir },
   );
-  const createPayload = JSON.parse(createStdout);
+  const createPayload = parseCliJson(createStdout, "docs +create");
   const documentToken = extractDocumentToken(createPayload);
   if (!documentToken) {
     throw publishError(
@@ -148,13 +160,20 @@ export async function publishHtml5Block({
   }
   const documentUrl = deepFind(createPayload, ["url"]);
 
-  const fetchStdout = await runner(
-    ["docs", "+fetch", "--doc", documentToken, "--detail", "full", "--as", asUser],
-    { cwd: outputDir },
-  );
-  const fetchPayload = JSON.parse(fetchStdout);
-  const fetchPath = join(outputDir, "fetch-response.json");
-  await writeFile(fetchPath, `${JSON.stringify(fetchPayload, null, 2)}\n`, "utf8");
+  let fetchPayload;
+  try {
+    const fetchStdout = await runner(
+      ["docs", "+fetch", "--doc", documentToken, "--detail", "full", "--as", asUser],
+      { cwd: outputDir },
+    );
+    fetchPayload = parseCliJson(fetchStdout, "docs +fetch");
+    const fetchPath = join(outputDir, "fetch-response.json");
+    await writeFile(fetchPath, `${JSON.stringify(fetchPayload, null, 2)}\n`, "utf8");
+  } catch (error) {
+    error.documentToken = documentToken;
+    error.documentUrl = documentUrl;
+    throw error;
+  }
 
   const warnings = Array.isArray(fetchPayload.warnings)
     ? fetchPayload.warnings
@@ -181,8 +200,8 @@ export async function publishHtml5Block({
   ) {
     const entry = extractReferenceEntry(fetchPayload, verification.dataRef);
     if (entry?.path) {
+      const relativePath = String(entry.path).replace(/^@/, "");
       try {
-        const relativePath = String(entry.path).replace(/^@/, "");
         const exportedHtml = await readFile(
           resolve(outputDir, relativePath),
           "utf8",
@@ -195,73 +214,52 @@ export async function publishHtml5Block({
           tips,
         });
         if (resolved.ok) verification = resolved;
-      } catch {
-        // keep the remote-html-path violation; the exported file is not readable
+      } catch (error) {
+        verification = {
+          ...verification,
+          violations: [
+            ...verification.violations,
+            {
+              code: "remote-html-read-failed",
+              message: `cannot read exported HTML ${entry.path}: ${error.message}`,
+            },
+          ],
+        };
       }
     }
   }
-  const revision =
-    typeof fetchPayload.revision === "number"
-      ? fetchPayload.revision
-      : typeof fetchPayload.revision_id === "number"
-        ? fetchPayload.revision_id
-      : typeof fetchPayload.data?.document?.revision_id === "number"
-        ? fetchPayload.data.document.revision_id
-      : typeof fetchPayload.data?.revision === "number"
-        ? fetchPayload.data.revision
-        : null;
 
   return {
     ok: verification.ok,
     documentToken,
     documentUrl,
     blockId: verification.blockId ?? extractBlockId(fetchPayload),
-    revision,
+    revision: extractRevision(fetchPayload),
     localSha256: verification.localSha256,
     remoteSha256: verification.remoteSha256,
     warnings: verification.warnings,
     tips: verification.tips,
     violations: verification.violations,
     verification,
-    files: [xmlPath, fetchPath],
+    files: [xmlPath, join(outputDir, "fetch-response.json")],
   };
 }
 
-function parseArgs(argv) {
-  const options = {};
-  const allowed = new Set([
-    "spec",
-    "manifest",
-    "input",
-    "output-dir",
-    "title",
-    "whiteboard-svg",
-    "whiteboard-svg-file",
-    "lark-cli",
-    "as",
-  ]);
-  for (let index = 0; index < argv.length; index += 1) {
-    const argument = argv[index];
-    if (!argument.startsWith("--")) {
-      throw new Error(`unexpected argument: ${argument}`);
-    }
-    const key = argument.slice(2);
-    if (!allowed.has(key)) throw new Error(`unknown option: ${argument}`);
-    const value = argv[index + 1];
-    if (!value || value.startsWith("--")) {
-      throw new Error(`missing value for ${argument}`);
-    }
-    options[key] = value;
-    index += 1;
-  }
-  for (const required of ["spec", "manifest", "input", "output-dir"]) {
-    if (!options[required]) throw new Error(`--${required} is required`);
-  }
-  return options;
-}
-
 async function run() {
-  const options = parseArgs(process.argv.slice(2));
+  const options = parseArgs(process.argv.slice(2), {
+    allowed: new Set([
+      "spec",
+      "manifest",
+      "input",
+      "output-dir",
+      "title",
+      "whiteboard-svg",
+      "whiteboard-svg-file",
+      "lark-cli",
+      "as",
+    ]),
+    required: ["spec", "manifest", "input", "output-dir"],
+  });
   const spec = JSON.parse(await readFile(options.spec, "utf8"));
   const manifest = JSON.parse(await readFile(options.manifest, "utf8"));
   const html = await readFile(options.input, "utf8");
@@ -292,6 +290,9 @@ if (isDirect) {
             ok: false,
             error: error.message,
             ...(error.code ? { code: error.code } : {}),
+            ...(error.documentToken
+              ? { documentToken: error.documentToken, documentUrl: error.documentUrl }
+              : {}),
           };
     console.error(JSON.stringify(payload, null, 2));
     process.exitCode = 1;

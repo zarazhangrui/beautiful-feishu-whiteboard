@@ -367,6 +367,75 @@ test("publisher fails when the create response has no document token", async () 
   );
 });
 
+test("publisher preserves the created document token when fetch fails", async () => {
+  const { html, manifest } = await buildValidArtifact();
+  const dir = await mkdtemp(join(tmpdir(), "publish-fetch-fail-"));
+  const runLarkCli = async (args) => {
+    if (args.includes("+create")) {
+      return JSON.stringify({
+        ok: true,
+        document: {
+          token: "doc-token-123",
+          url: "https://example.feishu.cn/docx/doc-token-123",
+        },
+      });
+    }
+    if (args.includes("+fetch")) {
+      throw new Error("network down");
+    }
+    throw new Error(`unexpected command: ${args.join(" ")}`);
+  };
+  await assert.rejects(
+    publishHtml5Block({ spec, manifest, html, outputDir: dir, runLarkCli }),
+    (error) => {
+      assert.equal(error.message, "network down");
+      assert.equal(error.documentToken, "doc-token-123");
+      assert.equal(
+        error.documentUrl,
+        "https://example.feishu.cn/docx/doc-token-123",
+      );
+      return true;
+    },
+  );
+});
+
+test("publisher includes CLI output context when JSON parsing fails", async () => {
+  const { html, manifest } = await buildValidArtifact();
+  const dir = await mkdtemp(join(tmpdir(), "publish-json-fail-"));
+  await assert.rejects(
+    publishHtml5Block({
+      spec,
+      manifest,
+      html,
+      outputDir: dir,
+      runLarkCli: async () => "this is not json",
+    }),
+    /this is not json/,
+  );
+});
+
+test("a missing exported HTML file surfaces a readable read error", async () => {
+  const { html, manifest } = await buildValidArtifact();
+  const dir = await mkdtemp(join(tmpdir(), "publish-read-fail-"));
+  const payload = fakeFetchPayload(html);
+  delete payload.reference_map["html5-block"].html5_1.data;
+  payload.reference_map["html5-block"].html5_1.path = "@missing-export.html";
+  const report = await publishHtml5Block({
+    spec,
+    manifest,
+    html,
+    outputDir: dir,
+    runLarkCli: fakeLarkCli({ fetchPayload: payload }),
+  });
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.violations.some(
+      (item) => item.code === "remote-html-read-failed",
+    ),
+    JSON.stringify(report.violations),
+  );
+});
+
 test("document token and block id extractors search nested payloads", () => {
   const payload = {
     code: 0,
