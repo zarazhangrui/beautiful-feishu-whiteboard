@@ -59,6 +59,10 @@ whiteboard, export the live preview, and inspect the preview.
 
 Author a complete responsive page for the chosen archetype, then run the verified pipeline:
 
+Build the page as **one fixed canvas at the SVG's logical size** (typically 1600px wide). Do not
+adapt it to document width — scale the whole stage uniformly to the container, and treat the
+fullscreen button as the 1:1 reading mode.
+
 1. `scripts/html5-build.mjs --spec ... --input ... --output-dir ...`
 2. `scripts/check-html5-block.mjs --spec ... --manifest ... --input ...`
 3. `scripts/render-html5-block.mjs --spec ... --manifest ... --input ... --output-dir ...`
@@ -71,8 +75,8 @@ node-editable inside the doc.
 ### Dual
 
 Create one Feishu document containing both resource blocks: one `VisualizationSpec`, a whiteboard
-SVG sized for editability, and an interactive HTML page sized for document readability. Verify both
-blocks independently after the write.
+SVG sized for editability, and an interactive HTML page on a fixed canvas at the same SVG size
+(scaled to fit, fullscreen for 1:1). Verify both blocks independently after the write.
 
 Use one combined DocxXML release candidate so block order is deterministic:
 

@@ -25,9 +25,14 @@ HTML block, or dual whiteboard + HTML output. `RULES.md` remains the editable-wh
   Do not declare those reserved metas in the source page.
 - Default `html-box-height-mode=auto` so the block expands in the document flow. `viewport` is for
   single-screen tools only and remains subject to the trusted-client POC gate.
-- Primary acceptance widths are 390, 820, and 1440px; 820px is the main Feishu document width.
-  Body text must stay readable (≥16px) at 820px. On very narrow screens, reflow columns or expose
-  an internal horizontal scroll container; never shrink body text to fit.
+- **Fixed canvas, scale to fit — no responsive reflow.** Build the page as one fixed logical
+  canvas sized to the source SVG (typically 1600–1700px wide; the whiteboard SVG and the HTML page
+  share the same dimensions). Do not build breakpoints, collapsible sidebars, per-width layouts,
+  or document-width adaptation. Scale the whole stage uniformly to the container with a CSS
+  `transform: scale()` on a fixed-size stage (or an SVG `viewBox`); Feishu's fullscreen button is
+  the 1:1 reading mode. Keep every declared interaction reachable while the stage is scaled.
+- Renderer verification still covers 390, 820, and 1440px to catch document overflow, zero-height
+  roots, and interaction failures; passing verification does not require reflowing the layout.
 - Declared interactions must be reachable through stable hooks the renderer verifies:
   `[data-viz-action="..."]`, `[data-viz-filter]`, `[data-viz-input]`, `[data-node-id]`,
   `[data-viz-selectable]`, and a `[data-viz-state]` element that reflects every state change.

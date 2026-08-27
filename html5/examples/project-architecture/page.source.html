@@ -9,96 +9,120 @@
     }
     * { box-sizing: border-box; }
     html, body { width: 100%; margin: 0; padding: 0; }
-    body { font-size: 16px; line-height: 1.5; color: #153125; background: #f7f1ec; }
-    .viz-shell { max-width: 100%; margin: 0 auto; padding: 24px; }
-    .viz-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+    body { font-size: 16px; line-height: 1.5; color: #153125; background: #F7F1EC; }
+    .viz-frame {
+      width: 100%;
+      aspect-ratio: 1600 / 940;
+      overflow: hidden;
+      position: relative;
+      background: #F7F1EC;
+    }
+    .viz-stage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1600px;
+      height: 940px;
+      transform-origin: 0 0;
+    }
+    .viz-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 20px 28px; }
     .viz-toolbar button {
-      font: inherit; padding: 6px 12px; border: 2px solid #153125; border-radius: 10px;
-      background: #ffffff; cursor: pointer;
+      font: inherit; font-size: 20px; padding: 10px 20px; border: 2px solid #153125;
+      border-radius: 12px; background: #FFFFFF; cursor: pointer;
     }
-    .viz-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; }
-    .viz-canvas {
-      min-width: 0; min-height: 480px; border: 2px solid #153125; border-radius: 14px;
-      background: #ffffff; overflow: hidden;
-    }
-    .viz-canvas svg { display: block; width: 100%; height: auto; }
+    .viz-graph { width: 100%; padding: 0 28px; }
+    .viz-graph svg { display: block; width: 100%; height: auto; }
     .viz-node { cursor: pointer; }
     .viz-node.is-selected { stroke: #153125; stroke-width: 4; }
     .viz-node.is-hidden { opacity: 0.15; pointer-events: none; }
     .viz-edge { cursor: pointer; }
-    .viz-edge.is-selected { stroke: #008248; stroke-width: 6; }
-    .viz-edge.is-hidden { opacity: 0.1; }
-    .viz-details { border: 2px solid #153125; border-radius: 14px; padding: 16px; background: #ffffff; }
-    .viz-details h2 { margin-top: 0; font-size: 18px; }
-    .viz-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; font-size: 14px; }
-    .viz-legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px; border-radius: 4px; background: currentColor; }
+    .viz-edge.is-selected .viz-edge-line { stroke: #008248; stroke-width: 7; }
+    .viz-edge.is-hidden { opacity: 0.1; pointer-events: none; }
+    .viz-status { display: flex; gap: 20px; align-items: baseline; padding: 18px 28px 24px; }
+    .viz-status p { margin: 0; font-size: 22px; }
+    .viz-status .viz-hint { font-size: 18px; color: #5A6B5F; margin-left: auto; }
     .viz-fallback { display: none; }
-    @media (max-width: 820px) { .viz-layout { grid-template-columns: minmax(0, 1fr); } }
-    @media (max-width: 520px) {
-      .viz-canvas { overflow-x: auto; }
-      .viz-canvas svg { width: 680px; max-width: none; }
-    }
   </style>
 </head>
 <body>
-  <main class="viz-shell">
-    <h1>项目架构：双渲染器与发布链路</h1>
-    <p>从内容规划到共享语义层，分别渲染可编辑白板与交互式 HTML，最终发布到飞书文档。</p>
-    <div class="viz-toolbar" role="toolbar" aria-label="关系图工具">
-      <button type="button" data-viz-filter="all">全部</button>
-      <button type="button" data-viz-filter="core">核心</button>
-      <button type="button" data-viz-filter="render">渲染</button>
-      <button type="button" data-viz-filter="publish">发布</button>
-      <button type="button" data-viz-action="pan">平移</button>
-      <button type="button" data-viz-action="zoom-in">放大</button>
-      <button type="button" data-viz-action="zoom-out">缩小</button>
-      <button type="button" data-viz-action="reset">重置</button>
-    </div>
-    <div class="viz-layout">
-      <section class="viz-canvas" data-viz-canvas aria-label="项目架构关系图">
-        <svg viewBox="0 0 860 480" role="img" aria-label="项目架构关系图">
+  <div class="viz-frame" data-viz-canvas>
+    <div class="viz-stage">
+      <div class="viz-toolbar" role="toolbar" aria-label="关系图工具">
+        <button type="button" data-viz-filter="all">全部</button>
+        <button type="button" data-viz-filter="core">核心</button>
+        <button type="button" data-viz-filter="render">渲染</button>
+        <button type="button" data-viz-filter="publish">发布</button>
+        <button type="button" data-viz-action="pan">平移</button>
+        <button type="button" data-viz-action="zoom-in">放大</button>
+        <button type="button" data-viz-action="zoom-out">缩小</button>
+        <button type="button" data-viz-action="reset">重置</button>
+      </div>
+      <div class="viz-graph">
+        <svg viewBox="0 0 1600 740" role="img" aria-label="项目架构关系图">
           <defs>
-            <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
-              <path d="M0 0 L10 4 L0 8 z" fill="#153125"/>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M0 0 L10 4 L0 8 z"/>
             </marker>
           </defs>
-          <g class="viz-group" style="transform: translate(0px, 0px) scale(1)">
-            <line class="viz-edge" data-edge-id="planner-to-spec" data-edge-source="planner" data-edge-target="spec" x1="190" y1="120" x2="330" y2="120" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
-            <line class="viz-edge" data-edge-id="spec-to-whiteboard" data-edge-source="spec" data-edge-target="whiteboard" x1="470" y1="80" x2="590" y2="80" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
-            <line class="viz-edge" data-edge-id="spec-to-html" data-edge-source="spec" data-edge-target="html" x1="470" y1="160" x2="590" y2="160" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
-            <line class="viz-edge" data-edge-id="whiteboard-to-lark" data-edge-source="whiteboard" data-edge-target="lark" x1="730" y1="100" x2="758" y2="120" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
-            <line class="viz-edge" data-edge-id="html-to-lark" data-edge-source="html" data-edge-target="lark" x1="730" y1="180" x2="758" y2="170" stroke="#153125" stroke-width="3" marker-end="url(#arrow)"/>
-            <rect class="viz-node" data-node-id="planner" data-node-category="core" data-node-label="内容规划" x="40" y="80" width="150" height="80" rx="16" fill="#008248"/>
-            <rect class="viz-node" data-node-id="spec" data-node-category="core" data-node-label="语义层" x="330" y="80" width="140" height="80" rx="16" fill="#008248"/>
-            <rect class="viz-node" data-node-id="whiteboard" data-node-category="render" data-node-label="白板" x="590" y="40" width="140" height="80" rx="16" fill="#f6bdda"/>
-            <rect class="viz-node" data-node-id="html" data-node-category="render" data-node-label="HTML" x="590" y="120" width="140" height="80" rx="16" fill="#f6bdda"/>
-            <rect class="viz-node" data-node-id="lark" data-node-category="publish" data-node-label="飞书发布" x="760" y="60" width="84" height="160" rx="16" fill="#fcc715"/>
-            <text x="115" y="122" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">内容规划</text>
-            <text x="400" y="122" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">语义层</text>
-            <text x="660" y="80" text-anchor="middle" font-size="18" font-weight="700" fill="#153125">白板</text>
-            <text x="660" y="160" text-anchor="middle" font-size="18" font-weight="700" fill="#153125">HTML</text>
-            <text x="802" y="130" text-anchor="middle" font-size="20" font-weight="700" fill="#000000">飞书</text>
-            <text x="802" y="158" text-anchor="middle" font-size="18" fill="#000000">发布</text>
+          <rect x="0" y="0" width="1600" height="740" fill="#F7F1EC"/>
+          <text x="60" y="88" font-size="44" font-weight="700" fill="#153125">项目架构：双渲染器与发布链路</text>
+          <g class="viz-zoom" style="transform: translate(0px, 0px) scale(1)">
+            <rect class="viz-node" data-node-id="planner" data-node-category="core" data-node-label="内容规划" x="80" y="220" width="250" height="130" rx="28" fill="#008248"/>
+            <text x="205" y="278" text-anchor="middle" font-size="28" font-weight="700" fill="#FFFFFF">内容规划</text>
+            <text x="205" y="314" text-anchor="middle" font-size="18" fill="#FFFFFF">理解内容、受众与用途</text>
+
+            <rect class="viz-node" data-node-id="spec" data-node-category="core" data-node-label="语义层" x="450" y="220" width="250" height="130" rx="28" fill="#008248"/>
+            <text x="575" y="278" text-anchor="middle" font-size="28" font-weight="700" fill="#FFFFFF">可视化语义层</text>
+            <text x="575" y="314" text-anchor="middle" font-size="18" fill="#FFFFFF">VisualizationSpec 共享协议</text>
+
+            <rect class="viz-node" data-node-id="whiteboard" data-node-category="render" data-node-label="白板" x="840" y="170" width="280" height="115" rx="26" fill="#F6BDDA"/>
+            <text x="980" y="224" text-anchor="middle" font-size="26" font-weight="700" fill="#153125">白板渲染器</text>
+            <text x="980" y="258" text-anchor="middle" font-size="18" fill="#153125">SVG → whiteboard-cli 写入</text>
+
+            <rect class="viz-node" data-node-id="html" data-node-category="render" data-node-label="HTML" x="840" y="335" width="280" height="115" rx="26" fill="#F6BDDA"/>
+            <text x="980" y="389" text-anchor="middle" font-size="26" font-weight="700" fill="#153125">HTML 渲染器</text>
+            <text x="980" y="423" text-anchor="middle" font-size="18" fill="#153125">HTML → html5-block 写入</text>
+
+            <rect class="viz-node" data-node-id="lark" data-node-category="publish" data-node-label="飞书发布" x="1260" y="220" width="270" height="130" rx="28" fill="#FCC715"/>
+            <text x="1395" y="278" text-anchor="middle" font-size="28" font-weight="700" fill="#000000">飞书发布</text>
+            <text x="1395" y="314" text-anchor="middle" font-size="18" fill="#000000">写入文档并 fetch 回查</text>
+
+            <g class="viz-edge" data-edge-id="planner-to-spec" data-edge-source="planner" data-edge-target="spec">
+              <line x1="330" y1="285" x2="450" y2="285" stroke="transparent" stroke-width="28"/>
+              <line class="viz-edge-line" x1="330" y1="285" x2="450" y2="285" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+            </g>
+            <g class="viz-edge" data-edge-id="spec-to-whiteboard" data-edge-source="spec" data-edge-target="whiteboard">
+              <polyline points="700,250 770,250 770,227 840,227" fill="none" stroke="transparent" stroke-width="28"/>
+              <polyline class="viz-edge-line" points="700,250 770,250 770,227 840,227" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+            </g>
+            <g class="viz-edge" data-edge-id="spec-to-html" data-edge-source="spec" data-edge-target="html">
+              <polyline points="700,310 770,310 770,392 840,392" fill="none" stroke="transparent" stroke-width="28"/>
+              <polyline class="viz-edge-line" points="700,310 770,310 770,392 840,392" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+            </g>
+            <g class="viz-edge" data-edge-id="whiteboard-to-lark" data-edge-source="whiteboard" data-edge-target="lark">
+              <polyline points="1120,227 1190,227 1190,250 1260,250" fill="none" stroke="transparent" stroke-width="28"/>
+              <polyline class="viz-edge-line" points="1120,227 1190,227 1190,250 1260,250" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+            </g>
+            <g class="viz-edge" data-edge-id="html-to-lark" data-edge-source="html" data-edge-target="lark">
+              <polyline points="1120,392 1190,392 1190,310 1260,310" fill="none" stroke="transparent" stroke-width="28"/>
+              <polyline class="viz-edge-line" points="1120,392 1190,392 1190,310 1260,310" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+            </g>
           </g>
         </svg>
-        <p class="viz-fallback" data-viz-fallback>图表库不可用，节点与关系仍以上方图形展示。</p>
-      </section>
-      <aside class="viz-details">
-        <h2>详情</h2>
-        <p data-viz-state>选择节点查看详情</p>
-        <div class="viz-legend">
-          <span style="color:#008248">核心</span>
-          <span style="color:#f6bdda">渲染</span>
-          <span style="color:#fcc715">发布</span>
-        </div>
-      </aside>
+      </div>
+      <div class="viz-status">
+        <p data-viz-state>就绪：点击节点或连线查看详情</p>
+        <p class="viz-hint">文档内为缩放预览，点击右上角「全屏」查看原始尺寸</p>
+      </div>
+      <p class="viz-fallback" data-viz-fallback hidden>辅助资源不可用时的降级说明。</p>
+      <span data-viz-motion hidden>full</span>
     </div>
-    <p><span data-viz-motion>full</span></p>
-  </main>
+  </div>
   <script>
     const state = { selected: null, category: "all", panX: 0, scale: 1 };
     const stateElement = document.querySelector("[data-viz-state]");
-    const group = document.querySelector(".viz-group");
+    const stage = document.querySelector(".viz-stage");
+    const group = document.querySelector(".viz-zoom");
     const motionIndicator = document.querySelector("[data-viz-motion]");
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     motionIndicator.textContent = motionQuery.matches ? "reduced" : "full";
@@ -171,14 +195,17 @@
       state.panX = 0;
       state.scale = 1;
       for (const item of nodes) item.classList.remove("is-selected", "is-hidden");
-      for (const item of edges) item.classList.remove("is-hidden");
+      for (const item of edges) item.classList.remove("is-selected", "is-hidden");
       applyTransform();
       stateElement.textContent = "视图已重置";
     });
-    if (!motionQuery.matches) {
-      const loop = () => { requestAnimationFrame(loop); };
-      requestAnimationFrame(loop);
-    }
+    const fit = () => {
+      const width = document.documentElement.clientWidth;
+      const scale = Math.min(1, width / 1600);
+      stage.style.transform = "scale(" + scale + ")";
+    };
+    window.addEventListener("resize", fit);
+    fit();
   </script>
 </body>
 </html>

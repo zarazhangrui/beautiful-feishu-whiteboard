@@ -82,6 +82,9 @@ test("the skill and HTML rules describe the interactive pipeline and new command
   assert.match(htmlRules, /render-html5-block\.mjs/);
   assert.match(htmlRules, /visualization\.spec\.json/);
   assert.match(htmlRules, /visualization\.manifest\.json/);
+  assert.match(htmlRules, /Fixed canvas|fixed logical|固定画布/i);
+  assert.match(htmlRules, /transform: scale\(\)|整体缩放|scale/i);
+  assert.match(htmlRules, /fullscreen|全屏/i);
 });
 
 test("obsolete static SVG wrapper language is gone from the HTML rules", () => {

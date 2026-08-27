@@ -39,6 +39,12 @@ scaling the whole canvas down.
 
 ## Rendering rules
 
+- Design one fixed logical canvas sized to the source SVG (1600px is the default; the whiteboard
+  SVG and the HTML page share the same dimensions) and scale the whole stage to the container
+  width — CSS `transform: scale()` on a fixed-size stage or SVG `viewBox` scaling. Do not build
+  responsive reflow, breakpoints, or per-width adaptation. The in-document preview is
+  intentionally scaled; Feishu's fullscreen button is the 1:1 reading mode. Keep every declared
+  interaction reachable while the stage is scaled.
 - Animated layout, force simulation, or rAF loops must stop when reduced motion is active.
 - No external URLs except version-pinned, allowlisted dependencies with a visible fallback.
 - All data stays local; never fetch remote data.
