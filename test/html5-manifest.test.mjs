@@ -4,8 +4,12 @@ import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import * as manifestApi from "../scripts/lib/html5-manifest.mjs";
 
-const { buildHtml5Manifest, resolveAllowedDependency, verifyManifest } =
-  manifestApi;
+const {
+  buildHtml5Manifest,
+  markHtml5ValidationPassed,
+  resolveAllowedDependency,
+  verifyManifest,
+} = manifestApi;
 
 const ECHARTS_URL =
   "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js";
@@ -175,7 +179,7 @@ test("records the complete derived manifest contract", async () => {
   });
 });
 
-test("rejects caller-fabricated passed validation evidence", async () => {
+test("rejects caller-fabricated passed validation evidence through the build API", async () => {
   const html = "<!doctype html><html><body>evidence</body></html>";
   const htmlSha256 = sha256(html);
   const fabricatedEvidence = [
@@ -204,31 +208,65 @@ test("rejects caller-fabricated passed validation evidence", async () => {
       /invalid-validation-evidence/,
     );
   }
+});
 
+test("verifyManifest accepts only well-formed passed validation evidence", async () => {
+  const html = "<!doctype html><html><body>evidence</body></html>";
+  const htmlSha256 = sha256(html);
   const pendingManifest = await buildHtml5Manifest({
     html,
     spec: makeSpec(),
     heightMode: "auto",
   });
+
+  for (const validation of [
+    { status: "passed" },
+    {
+      status: "passed",
+      checks: [{ id: "static", status: "passed", htmlSha256 }],
+    },
+  ]) {
+    assert.throws(
+      () =>
+        verifyManifest({
+          html,
+          spec: makeSpec(),
+          manifest: { ...pendingManifest, validation },
+        }),
+      /invalid-validation-evidence/,
+    );
+  }
+
+  const passedManifest = markHtml5ValidationPassed({
+    html,
+    spec: makeSpec(),
+    manifest: pendingManifest,
+    checks: ["static-check", "browser-820"],
+  });
+  assert.equal(passedManifest.validation.status, "passed");
+  assert.deepEqual(passedManifest.validation.checks, ["static-check", "browser-820"]);
+  assert.equal(
+    verifyManifest({ html, spec: makeSpec(), manifest: passedManifest }),
+    true,
+  );
   assert.throws(
     () =>
       verifyManifest({
         html,
         spec: makeSpec(),
-        manifest: { ...pendingManifest, validation: { status: "passed" } },
+        manifest: { ...passedManifest, validation: { status: "passed" } },
       }),
     /invalid-validation-evidence/,
   );
-  const boundPassedManifest = {
-    ...pendingManifest,
-    validation: fabricatedEvidence[1],
-  };
   assert.throws(
     () =>
       verifyManifest({
         html,
         spec: makeSpec(),
-        manifest: boundPassedManifest,
+        manifest: {
+          ...passedManifest,
+          validation: { status: "passed", checks: [] },
+        },
       }),
     /invalid-validation-evidence/,
   );

@@ -119,14 +119,35 @@ function normalizeValidation(validation) {
   if (Object.keys(validation).some((key) => !["status", "checks"].includes(key))) {
     throw policyError("invalid-validation-evidence", "unknown field");
   }
+  const checks = validation.checks ?? [];
   if (
-    validation.status !== "pending" ||
-    (validation.checks !== undefined &&
-      (!Array.isArray(validation.checks) || validation.checks.length !== 0))
+    !Array.isArray(checks) ||
+    checks.some((item) => typeof item !== "string" || !item.trim())
   ) {
-    throw policyError("invalid-validation-evidence", "Task 2 accepts pending only");
+    throw policyError(
+      "invalid-validation-evidence",
+      "checks must be an array of non-empty strings",
+    );
   }
-  return { status: "pending", checks: [] };
+  if (validation.status === "pending" && checks.length !== 0) {
+    throw policyError(
+      "invalid-validation-evidence",
+      "pending evidence cannot carry checks",
+    );
+  }
+  if (validation.status === "passed" && checks.length === 0) {
+    throw policyError(
+      "invalid-validation-evidence",
+      "passed evidence requires checks",
+    );
+  }
+  if (!["pending", "passed"].includes(validation.status)) {
+    throw policyError(
+      "invalid-validation-evidence",
+      "status must be pending or passed",
+    );
+  }
+  return { status: validation.status, checks: [...checks] };
 }
 
 function walkNodes(node, visit) {
@@ -205,6 +226,12 @@ export async function buildHtml5Manifest({
   validation = { status: "pending" },
 }) {
   assertInputs({ html, spec, heightMode });
+  if (validation?.status !== "pending") {
+    throw policyError(
+      "invalid-validation-evidence",
+      "build accepts pending evidence only; run check and render to pass validation",
+    );
+  }
   const htmlSha256 = sha256(html);
   return {
     protocolVersion: dependencyPolicy.protocolVersion,
@@ -215,6 +242,24 @@ export async function buildHtml5Manifest({
     browserTargets: [...BROWSER_TARGETS],
     html: { bytes: Buffer.byteLength(html, "utf8"), sha256: htmlSha256 },
     validation: normalizeValidation(validation),
+  };
+}
+
+export function markHtml5ValidationPassed({ html, spec, manifest, checks }) {
+  verifyManifest({ html, spec, manifest });
+  if (
+    !Array.isArray(checks) ||
+    checks.length === 0 ||
+    checks.some((item) => typeof item !== "string" || !item.trim())
+  ) {
+    throw policyError(
+      "invalid-validation-evidence",
+      "checks must be non-empty strings",
+    );
+  }
+  return {
+    ...manifest,
+    validation: { status: "passed", checks: [...checks] },
   };
 }
 
