@@ -5,7 +5,10 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { verifyFetchedHtml5Block } from "./lib/html5-fetch-verify.mjs";
+import {
+  extractReferenceEntry,
+  verifyFetchedHtml5Block,
+} from "./lib/html5-fetch-verify.mjs";
 import { HtmlCheckError, checkHtml5Block } from "./lib/html-check.mjs";
 import { verifyManifest } from "./lib/html5-manifest.mjs";
 import { validateVisualizationSpec } from "./lib/visualization-spec.mjs";
@@ -152,15 +155,47 @@ export async function publishHtml5Block({
     : Array.isArray(fetchPayload.data?.tips)
       ? fetchPayload.data.tips
       : [];
-  const verification = verifyFetchedHtml5Block({
+  let verification = verifyFetchedHtml5Block({
     fetchedDocument: fetchPayload,
     localHtml: html,
     warnings,
     tips,
   });
+  if (
+    !verification.ok &&
+    verification.dataRef &&
+    verification.violations.some(
+      (item) => item.code === "remote-html-path",
+    )
+  ) {
+    const entry = extractReferenceEntry(fetchPayload, verification.dataRef);
+    if (entry?.path) {
+      try {
+        const relativePath = String(entry.path).replace(/^@/, "");
+        const exportedHtml = await readFile(
+          resolve(outputDir, relativePath),
+          "utf8",
+        );
+        const resolved = verifyFetchedHtml5Block({
+          fetchedDocument: fetchPayload,
+          localHtml: html,
+          remoteHtml: exportedHtml,
+          warnings,
+          tips,
+        });
+        if (resolved.ok) verification = resolved;
+      } catch {
+        // keep the remote-html-path violation; the exported file is not readable
+      }
+    }
+  }
   const revision =
     typeof fetchPayload.revision === "number"
       ? fetchPayload.revision
+      : typeof fetchPayload.revision_id === "number"
+        ? fetchPayload.revision_id
+      : typeof fetchPayload.data?.document?.revision_id === "number"
+        ? fetchPayload.data.document.revision_id
       : typeof fetchPayload.data?.revision === "number"
         ? fetchPayload.data.revision
         : null;

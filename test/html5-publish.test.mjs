@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
 import { buildHtml5Page } from "../scripts/html5-build.mjs";
@@ -158,6 +160,27 @@ test("remote HTML is normalized before hash comparison", async () => {
   assert.equal(result.ok, true, JSON.stringify(result));
 });
 
+test("fetch verifier accepts an explicit remoteHtml for path-based exports", async () => {
+  const { html } = await buildValidArtifact();
+  const payload = fakeFetchPayload(html);
+  delete payload.reference_map["html5-block"].html5_1.data;
+  payload.reference_map["html5-block"].html5_1.path = "resources/html5_1.html";
+  const missing = verifyFetchedHtml5Block({
+    fetchedDocument: payload,
+    localHtml: html,
+  });
+  assert.equal(missing.ok, false);
+  assert.ok(
+    missing.violations.some((item) => item.code === "remote-html-path"),
+  );
+  const resolved = verifyFetchedHtml5Block({
+    fetchedDocument: payload,
+    localHtml: html,
+    remoteHtml: html,
+  });
+  assert.equal(resolved.ok, true, JSON.stringify(resolved));
+});
+
 test("text, script, style, and geometry mutations fail verification", async () => {
   const { html } = await buildValidArtifact();
   const mutations = [
@@ -239,6 +262,93 @@ test("publisher returns a full report through a fake lark-cli", async () => {
   assert.equal(report.localSha256, report.remoteSha256);
   assert.match(report.documentUrl, /^https:\/\//);
   assert.equal(report.verification.ok, true);
+});
+
+test("publisher resolves a path-based reference_map export", async () => {
+  const { html, manifest } = await buildValidArtifact();
+  const dir = await mkdtemp(join(tmpdir(), "publish-path-"));
+  const payload = fakeFetchPayload(html);
+  delete payload.reference_map["html5-block"].html5_1.data;
+  payload.reference_map["html5-block"].html5_1.path = "@exported.html";
+  await writeFile(join(dir, "exported.html"), html, "utf8");
+  const report = await publishHtml5Block({
+    spec,
+    manifest,
+    html,
+    outputDir: dir,
+    runLarkCli: fakeLarkCli({ fetchPayload: payload }),
+  });
+  assert.equal(report.ok, true, JSON.stringify(report));
+  assert.equal(report.remoteSha256, report.localSha256);
+});
+
+test("verifies the real docs +fetch shape with a content string and @path export", async () => {
+  const { html } = await buildValidArtifact();
+  const fetched = {
+    ok: true,
+    identity: "user",
+    data: {
+      document: {
+        document_id: "doc-1",
+        revision_id: 3,
+        content:
+          '<title id="doc-1">发布回查测试</title><whiteboard id="wb-1" token="board-1"></whiteboard><html5-block id="doxcnx1" alt="发布回查测试图" data-ref="html5_1"></html5-block>',
+        reference_map: {
+          "html5-block": {
+            html5_1: { path: "@doc-fetch-resources/doc-1/html5_1.html" },
+          },
+        },
+      },
+    },
+  };
+  const missing = verifyFetchedHtml5Block({
+    fetchedDocument: fetched,
+    localHtml: html,
+  });
+  assert.equal(missing.ok, false);
+  assert.ok(
+    missing.violations.some((item) => item.code === "remote-html-path"),
+  );
+  const resolved = verifyFetchedHtml5Block({
+    fetchedDocument: fetched,
+    localHtml: html,
+    remoteHtml: html,
+  });
+  assert.equal(resolved.ok, true, JSON.stringify(resolved));
+  assert.equal(resolved.blockId, "doxcnx1");
+  assert.equal(resolved.dataRef, "html5_1");
+});
+
+test("publisher verifies the real nested fetch shape end to end", async () => {
+  const { html, manifest } = await buildValidArtifact();
+  const dir = await mkdtemp(join(tmpdir(), "publish-real-"));
+  await writeFile(join(dir, "exported.html"), html, "utf8");
+  const fetchPayload = {
+    ok: true,
+    identity: "user",
+    data: {
+      document: {
+        document_id: "doc-1",
+        revision_id: 3,
+        content:
+          '<title id="doc-1">发布回查测试</title><html5-block id="doxcnx1" alt="a" data-ref="html5_1"></html5-block>',
+        reference_map: {
+          "html5-block": { html5_1: { path: "@exported.html" } },
+        },
+      },
+    },
+  };
+  const report = await publishHtml5Block({
+    spec,
+    manifest,
+    html,
+    outputDir: dir,
+    runLarkCli: fakeLarkCli({ fetchPayload }),
+  });
+  assert.equal(report.ok, true, JSON.stringify(report));
+  assert.equal(report.blockId, "doxcnx1");
+  assert.equal(report.revision, 3);
+  assert.equal(report.remoteSha256, report.localSha256);
 });
 
 test("publisher fails when the create response has no document token", async () => {

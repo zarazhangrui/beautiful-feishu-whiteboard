@@ -52,9 +52,29 @@ same transport and adds a publisher (`scripts/html5-publish.mjs`) that:
    `reference_map`, block id, revision, and normalized hashes;
 4. surfaces service warnings/tips and fails when they affect HTML rendering.
 
+## Real publish (2026-08-27)
+
+A dual-output document was created in the user's Feishu tenant with the project-architecture
+spec: an editable whiteboard (`<whiteboard type="svg" path="@./board.svg">`, block token
+`PPOewR1ZPhoXoFbzWoFlbjoHgeh`) followed by the interactive HTML5 Block
+(`<html5-block path="@./index.html">`).
+
+- Document: <https://bytedance.sg.larkoffice.com/docx/Fz38doVlBof8tSxNwVgl6CVHgxc>
+- Document token: `Fz38doVlBof8tSxNwVgl6CVHgxc`, revision 3
+- HTML block id: `doxcnx7kGp4GYvfou7qgXMIdCXf`, `data-ref="html5_1"`
+- Fetch structure: `data.document.content` is a serialized XML string; the HTML5 Block lives in
+  `data.document.reference_map["html5-block"]["html5_1"].path` as an `@doc-fetch-resources/...`
+  export. The verifier resolves the `@`-prefixed path, normalizes both sides, and compares hashes.
+- Round-trip verification: **ok** — local 10,431 bytes, remote 10,431 bytes, normalized
+  SHA-256 `b8aa6f5a443f4eabec808565bd6ee2f52b85412f2974cedbbec478e4238502be` on both sides.
+
+The first publisher run created the document before the fetch-verifier understood the real
+`docs +fetch` shape (`content` string + `@path` export); the verifier was fixed and the existing
+document re-verified without creating a duplicate. The whiteboard SVG passed
+`whiteboard-cli --check` (0 errors, 0 warnings) before publishing.
+
 ## Remaining gates
 
-- Publishing a real dual-output document (external write) is pending user approval.
 - Real Feishu Web/desktop iframe width/height inspection remains pending on a trusted client
   (the in-app browser is blocked by the organization's MDM/conditional-access policy).
 - Existing-document insert/replace, multiple HTML blocks in one doc, and cross-client CJK font

@@ -29,6 +29,27 @@ export function findHtml5Blocks(documentNode) {
   return blocks;
 }
 
+export function html5ContentString(fetchedDocument) {
+  const candidate =
+    fetchedDocument?.data?.document?.content ??
+    fetchedDocument?.document?.content ??
+    fetchedDocument?.content;
+  return typeof candidate === "string" ? candidate : null;
+}
+
+export function findHtml5BlocksInContent(content) {
+  const blocks = [];
+  if (typeof content !== "string") return blocks;
+  for (const match of content.matchAll(/<html5-block\b[^>]*>/gi)) {
+    const tag = match[0];
+    blocks.push({
+      blockId: /(?:^|\s)id="([^"]+)"/i.exec(tag)?.[1] ?? null,
+      dataRef: /(?:^|\s)data-ref="([^"]+)"/i.exec(tag)?.[1] ?? null,
+    });
+  }
+  return blocks;
+}
+
 export function extractBlockDataRef(block) {
   if (!block || typeof block !== "object") return null;
   const nested =
@@ -51,6 +72,8 @@ export function extractReferenceEntry(fetchedDocument, dataRef) {
     fetchedDocument?.reference_map?.["html5-block"] ??
     fetchedDocument?.referenceMap?.["html5-block"] ??
     fetchedDocument?.reference_map?.html5_block ??
+    fetchedDocument?.data?.document?.reference_map?.["html5-block"] ??
+    fetchedDocument?.data?.document?.referenceMap?.["html5-block"] ??
     null;
   return map?.[dataRef] ?? null;
 }
@@ -59,12 +82,19 @@ export function verifyFetchedHtml5Block({
   fetchedDocument,
   localHtml,
   expectedDataRef,
+  remoteHtml,
   warnings = [],
   tips = [],
 }) {
   const violations = [];
-  const blocks = findHtml5Blocks(fetchedDocument).filter((block) => {
-    const dataRef = extractBlockDataRef(block);
+  const contentBlocks = findHtml5BlocksInContent(
+    html5ContentString(fetchedDocument),
+  );
+  const blocks = [
+    ...findHtml5Blocks(fetchedDocument),
+    ...contentBlocks,
+  ].filter((block) => {
+    const dataRef = block.dataRef ?? extractBlockDataRef(block);
     return !expectedDataRef || dataRef === expectedDataRef;
   });
   if (blocks.length === 0) {
@@ -75,9 +105,10 @@ export function verifyFetchedHtml5Block({
   }
 
   const block = blocks[0];
-  const blockId = block?.block_id ?? block?.blockId ?? null;
-  const dataRef = block ? extractBlockDataRef(block) : null;
-  let remoteHtml = null;
+  const blockId =
+    block?.blockId ?? block?.block_id ?? block?.id ?? null;
+  const dataRef = block?.dataRef ?? (block ? extractBlockDataRef(block) : null);
+  let remoteContent = null;
   if (block && dataRef) {
     const entry = extractReferenceEntry(fetchedDocument, dataRef);
     if (!entry) {
@@ -85,13 +116,15 @@ export function verifyFetchedHtml5Block({
         code: "missing-reference-entry",
         message: `reference_map entry ${dataRef} is missing`,
       });
+    } else if (typeof remoteHtml === "string") {
+      remoteContent = remoteHtml;
     } else if (typeof entry.data === "string") {
-      remoteHtml = entry.data;
+      remoteContent = entry.data;
     } else if (entry.path) {
       violations.push({
         code: "remote-html-path",
         message:
-          "the service exported HTML as a path; download the resource and pass it as remoteHtml",
+          "the service exported HTML as a path; resolve the resource and pass it as remoteHtml",
       });
     } else {
       violations.push({
@@ -102,8 +135,8 @@ export function verifyFetchedHtml5Block({
   }
 
   const localSha256 = normalizedContentSha256(String(localHtml));
-  const remoteSha256 = remoteHtml
-    ? normalizedContentSha256(String(remoteHtml))
+  const remoteSha256 = remoteContent
+    ? normalizedContentSha256(String(remoteContent))
     : null;
   if (remoteSha256 && remoteSha256 !== localSha256) {
     violations.push({
