@@ -28,6 +28,10 @@ const EXPECTATIONS = {
     type: "prototype",
     interactions: ["input", "submit", "toggle"],
   },
+  "via-company": {
+    type: "network",
+    interactions: ["select", "filter", "pan", "zoom"],
+  },
 };
 
 for (const [name, expected] of Object.entries(EXPECTATIONS)) {
