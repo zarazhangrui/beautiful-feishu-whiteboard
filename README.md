@@ -12,22 +12,28 @@ auto layout chart tool. Your agent composes the layout, and these templates give
 **colour palette and mood** plus the whiteboard medium's hard rendering rules. The result is a real,
 **editable** Feishu whiteboard inside a doc, not a screenshot.
 
-## Experimental HTML5 Block output
+## Interactive HTML5 Block output
 
-Version 1.2 adds an experimental, create-only Feishu/Lark document HTML5 Block route. It shares the content outline,
-palette, and visual tone with whiteboard output, but generates a separate SVG around document width
-instead of shrinking a 1600–1700px board. HTML output is static and not node-editable.
+Version 1.3 adds an experimental, create-only Feishu/Lark document HTML5 Block route. It starts from
+the same content intent as whiteboard output, but renders a complete interactive page
+(DOM/CSS/JavaScript) instead of an SVG: relationship graphs with selection/filter/pan/zoom,
+KPI dashboards with series switching, and local-state prototypes. The HTML block is interactive in
+the browser but is not node-editable inside the doc.
 
-- Whiteboard remains the default output.
-- HTML only triggers when the request explicitly names a Feishu/Lark document HTML5 Block or HTML block.
-- At 720px and wider, body text remains at least 16px; narrower clients use internal horizontal scroll.
-- Static allowlist validation, deny-by-default CSP, a 500KB limit, artifact hashes, and real Chrome
-  checks run before publishing.
-- The verified CLI gate is `lark-cli >= 1.0.89`.
-- Existing-document insert/replace remains disabled pending the full transport and trusted-client POC.
+- Whiteboard remains the default output; the HTML route only triggers for explicit
+  Feishu/Lark document HTML5 Block / interactive / Dashboard / prototype requests.
+- A shared `VisualizationSpec` (JSON Schema) keeps dual whiteboard + HTML outputs factually aligned.
+- Pages are verified at 390/820/1440px in real Chrome, including every declared interaction,
+  reduced-motion handling, and the CDN-offline fallback.
+- Allowlisted, SRI-pinned CDN dependencies are optional; deny-by-default CSP, a 500KB limit, and
+  Manifest-backed hash verification run before publishing.
+- The verified CLI gate is `lark-cli >= 1.0.89`. Existing-document insert/replace remains disabled
+  pending the full transport and trusted-client POC.
 
 Run `bash scripts/preflight.sh --mode html5-block` before publishing. See
-[`RULES-html5-block.md`](RULES-html5-block.md) and the [transport POC](examples/html5-block/POC.md).
+[`HTML5_RULES.md`](HTML5_RULES.md), the archetypes under
+[`html5/archetypes/`](html5/archetypes/), runnable examples under
+[`html5/examples/`](html5/examples/), and the [transport POC](examples/html5-block/POC.md).
 
 > Built from hard won, on board verified knowledge of what the Feishu SVG whiteboard renderer can and
 > cannot do (native shapes only, no opacity, the text colour export quirk, and more), all captured in
@@ -194,8 +200,10 @@ Your agent will: ask what the board is for and what vibe you want, pick a fittin
   can pick a style that fits the content.
 - **`RULES.md`**: the medium's hard limits (native shapes only, no opacity, no gradients or blur, the
   text colour export caveat) and the exact `lark-cli` and `whiteboard-cli` commands.
-- **`RULES-html5-block.md`**: document-width, security, browser-rendering, publishing, and fetch-back
-  rules for the experimental static HTML5 Block route.
+- **`HTML5_RULES.md`**: shared-spec, interaction-hook, security, browser-rendering, publishing, and
+  fetch-back rules for the interactive HTML5 Block route.
+- **`html5/examples/`**: three runnable examples (project architecture, service dashboard, task
+  prototype) with specs and source pages verified by the test suite.
 - **`templates/<slug>/design.md`**: one per style, just the palette and how to use its colours. The
   agent is free to lay out the content however reads best; the template only constrains colour and mood.
 

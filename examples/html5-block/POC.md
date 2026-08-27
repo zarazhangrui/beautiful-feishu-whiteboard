@@ -2,6 +2,13 @@
 
 Date: 2026-08-24
 
+> Design update (2026-08-25): the static "wrap an SVG into an HTML page" approach was superseded
+> by the interactive HTML5 Renderer (`VisualizationSpec` + DOM/CSS/JS pages). The transport
+> evidence below remains valid and is the basis for the current create-only publisher. The current
+> examples live under [`html5/examples/`](../../html5/examples/); runnable skeleton guidance lives
+> under [`html5/archetypes/`](../../html5/archetypes/). The old static artifacts
+> (`example.svg`, `example.html`) were removed because they no longer represent the pipeline.
+
 ## Environment
 
 - Node.js: 25.8.2
@@ -67,5 +74,6 @@ desktop HTML iframe width/height inspection remains pending on a trusted client.
 not invalidate the verified transport or server round trip, but keeps the HTML capability experimental.
 
 Insert, replace, multiple-HTML-block, cross-client CJK font, and real iframe script/sandbox behavior
-remain follow-up POC items. The current skill keeps scripts and remote resources forbidden regardless
-of future iframe behavior.
+remain follow-up POC items. The interactive pipeline now allows inline scripts and allowlisted CDN
+dependencies under a strict policy (see [`HTML5_RULES.md`](../../HTML5_RULES.md)), but publishing
+stays create-only until those gates complete.

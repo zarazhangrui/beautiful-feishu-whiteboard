@@ -7,6 +7,7 @@ import {
   checkHtml5Prerequisites,
   compareVersions,
   detectAuthentication,
+  detectHtml5Commands,
 } from "../scripts/preflight-html5-block.mjs";
 
 test("compares dotted CLI versions numerically", () => {
@@ -22,9 +23,33 @@ test("accepts an HTML environment with dependencies, Chrome and supported CLI", 
     chromePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     larkCliVersion: MIN_LARK_CLI_VERSION,
     authenticated: true,
+    commandsAvailable: true,
   });
   assert.equal(report.ok, true);
   assert.equal(report.publishAvailable, true);
+});
+
+test("rejects an HTML environment when the build/check/render commands are missing", () => {
+  const report = checkHtml5Prerequisites({
+    nodeVersion: "22.0.0",
+    dependenciesAvailable: true,
+    chromePath: "/chrome",
+    larkCliVersion: MIN_LARK_CLI_VERSION,
+    authenticated: true,
+    commandsAvailable: false,
+  });
+  assert.equal(report.ok, false);
+  assert.equal(report.publishAvailable, false);
+  assert.match(report.errors.join("\n"), /html5-build\.mjs/);
+  assert.match(report.errors.join("\n"), /check-html5-block\.mjs/);
+  assert.match(report.errors.join("\n"), /render-html5-block\.mjs/);
+});
+
+test("detects the html5 build/check/render commands from the scripts directory", () => {
+  const { commands } = detectHtml5Commands();
+  assert.equal(commands.build, true);
+  assert.equal(commands.check, true);
+  assert.equal(commands.render, true);
 });
 
 test("rejects an unsupported CLI with an actionable upgrade message", () => {

@@ -8,19 +8,22 @@
 
 这是一个给 AI agent 用的 **skill**（适用于 Claude Code 等会读取 `SKILL.md` 的 agent）。它不是一个自动排版的图表工具：**布局由你的 agent 自己来排**，而这些模板只提供有品味的**配色与气质**，外加飞书画板渲染引擎的硬性规则。产出是一块真正可在文档里继续编辑的飞书画板，而不是一张截图。
 
-## 实验性 HTML5 Block 输出
+## 交互式 HTML5 Block 输出
 
-1.2 版本增加了仅在明确飞书/Lark 文档上下文中触发、且只支持新建文档的实验性 HTML5 Block 路由。它与白板共享内容清单、配色和视觉气质，但会针对文档宽度生成另一份 SVG，而不是把 1600–1700px 白板直接缩小。HTML 输出是静态展示，不能像白板节点一样编辑。
+1.3 版本增加了仅在明确飞书/Lark 文档上下文中触发、且只支持新建文档的交互式 HTML5 Block 路由。
+它和白板输出共享同一份内容意图，但渲染为完整的交互页面（DOM/CSS/JavaScript），而不是 SVG：
+支持选择/筛选/平移/缩放的关系网络图、支持周期切换的指标看板，以及本地状态的产品原型。
+HTML 块在浏览器里可交互，但在文档里不能像白板节点一样编辑。
 
-- 白板仍是默认输出。
-- 只有用户明确要求飞书/Lark 文档 HTML5 Block、HTML 块或双输出时才进入 HTML 路由。
-- 720px 及以上保证正文实际字号至少 16px；更窄时使用块内横向滚动。
-- 写入前执行解析器允许列表、default-deny CSP、500KB 限制、artifact hash 和真实 Chrome 检查。
-- 当前已验证 CLI 门禁为 `lark-cli >= 1.0.89`。
-- 已有文档的插入/替换在完整传输与受信客户端 POC 完成前保持禁用。
+- 白板仍是默认输出；只有明确要求飞书/Lark 文档 HTML5 Block、交互式、Dashboard 或原型时才进入 HTML 路由。
+- 共享的 `VisualizationSpec`（JSON Schema）保证白板与 HTML 双发时内容事实一致。
+- 页面在真实 Chrome 中按 390/820/1440px 验证，包括每个声明的交互、减少动态效果偏好，以及 CDN 断网降级。
+- 可选 CDN 依赖必须走 SRI 白名单；写入前执行 default-deny CSP、500KB 限制和 Manifest 哈希校验。
+- 当前已验证 CLI 门禁为 `lark-cli >= 1.0.89`。已有文档的插入/替换在完整传输与受信客户端 POC 完成前保持禁用。
 
 发布前运行 `bash scripts/preflight.sh --mode html5-block`。详见
-[`RULES-html5-block.md`](RULES-html5-block.md) 与[传输 POC](examples/html5-block/POC.md)。
+[`HTML5_RULES.md`](HTML5_RULES.md)、[`html5/archetypes/`](html5/archetypes/) 下的骨架说明、
+[`html5/examples/`](html5/examples/) 下的可运行示例，以及[传输 POC](examples/html5-block/POC.md)。
 
 > 这套规则来自对飞书 SVG 画板渲染引擎「能做什么、不能做什么」的实测沉淀（只支持原生图形、不支持透明度、文字颜色导出会失真等），全部写在 [`RULES.md`](RULES.md) 里。
 
@@ -176,7 +179,8 @@ HTML5 Block 模式还需先在仓库目录运行 `npm install`，再执行
 - **`SKILL.md`**：agent 的入口。包含使用时机、前置自检，以及对话流程（先搞清楚要画什么、再问气质、挑风格、生成、把链接和图片一起给用户、并告知可换风格）。
 - **`CATALOG.md`**：每个风格的气质、正式程度、适合的内容类型，便于 agent 按内容挑风格。
 - **`RULES.md`**：画板的硬性限制（只用原生图形、不用透明度、不用渐变和模糊、文字颜色导出失真的注意事项），以及 `lark-cli` / `whiteboard-cli` 的具体命令。
-- **`RULES-html5-block.md`**：实验性静态 HTML5 Block 的文档宽度、安全、浏览器验证、发布与 fetch 回查规则。
+- **`HTML5_RULES.md`**：交互式 HTML5 Block 的共享语义、交互钩子、安全、浏览器验证、发布与 fetch 回查规则。
+- **`html5/examples/`**：三个可运行示例（项目架构、服务看板、任务原型），包含 spec 与页面源码，由测试套件验证。
 - **`templates/<slug>/design.md`**：每个风格一份，只有配色和用色说明。布局由 agent 自由发挥，模板只约束配色与气质。
 
 ## 许可

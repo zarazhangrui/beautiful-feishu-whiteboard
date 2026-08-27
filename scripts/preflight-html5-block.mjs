@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
+import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { discoverChrome } from "./lib/browser-render.mjs";
 
@@ -23,6 +25,7 @@ export function checkHtml5Prerequisites({
   chromePath,
   larkCliVersion,
   authenticated,
+  commandsAvailable = true,
 }) {
   const errors = [];
   const warnings = [];
@@ -45,6 +48,11 @@ export function checkHtml5Prerequisites({
   if (!chromePath) {
     errors.push("System Chrome/Chromium is required before publishing an HTML5 Block");
   }
+  if (!commandsAvailable) {
+    errors.push(
+      "HTML5 toolchain commands are missing: scripts/html5-build.mjs, scripts/check-html5-block.mjs, scripts/render-html5-block.mjs",
+    );
+  }
   return {
     ok: errors.length === 0,
     publishAvailable: errors.length === 0,
@@ -53,6 +61,16 @@ export function checkHtml5Prerequisites({
     errors,
     warnings,
   };
+}
+
+export function detectHtml5Commands() {
+  const scriptsDir = fileURLToPath(new URL(".", import.meta.url));
+  const commands = {
+    build: existsSync(join(scriptsDir, "html5-build.mjs")),
+    check: existsSync(join(scriptsDir, "check-html5-block.mjs")),
+    render: existsSync(join(scriptsDir, "render-html5-block.mjs")),
+  };
+  return { commands, available: Object.values(commands).every(Boolean) };
 }
 
 function detectDependencies() {
@@ -96,6 +114,7 @@ export function detectHtml5Prerequisites() {
     chromePath: discoverChrome(),
     larkCliVersion: detectLarkCliVersion(),
     authenticated: detectAuthentication(),
+    commandsAvailable: detectHtml5Commands().available,
   });
 }
 
