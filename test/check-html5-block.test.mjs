@@ -67,3 +67,30 @@ test("rejects CDATA and entity attempts",()=>{
   expectViolation(validHtml().replace(">API</text>",">&#x3c;script&#x3e;</text>"),"unsafe-html-text");
 });
 test("enforces maximum bytes and normalizes hashes",()=>{ expectViolation(validHtml(),"html-too-large",{manifest,maxBytes:100}); assert.equal(normalizedContentSha256("<p>a</p>\r\n"),normalizedContentSha256("<p>a</p>\n")); });
+
+test("reports a structured limit for excessively deep DOM trees", () => {
+  const depth = 10_000;
+  const nested = `${"<div>".repeat(depth)}leaf${"</div>".repeat(depth)}`;
+  expectViolation(
+    validHtml().replace("<h1>Architecture</h1>", nested),
+    "html-dom-limit",
+  );
+});
+
+test("accepts a normal deep DOM tree", () => {
+  const depth = 100;
+  const nested = `${"<div>".repeat(depth)}leaf${"</div>".repeat(depth)}`;
+  assert.equal(
+    checkHtml5Block(validHtml().replace("<h1>Architecture</h1>", nested), {manifest}).ok,
+    true,
+  );
+});
+
+test("validates a nested SVG through one top-level root", () => {
+  const nested = '<svg viewBox="0 0 20 20"><rect x="1" y="1" width="5" height="5" fill="#fff"/></svg>';
+  const report = checkHtml5Block(
+    validHtml().replace("</svg></section>", `${nested}</svg></section>`),
+    {manifest},
+  );
+  assert.equal(report.svgCount, 1);
+});

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JavaScriptPolicyError, validateJavaScript } from "../scripts/lib/javascript-policy.mjs";
-function reject(source,code){assert.throws(()=>validateJavaScript(source,{declaredGlobals:["lucide"]}),(error)=>{assert.ok(error instanceof JavaScriptPolicyError);assert.ok(error.violations.some((item)=>item.code===code),JSON.stringify(error.violations));return true;});}
+function reject(source,code){assert.throws(()=>validateJavaScript(source),(error)=>{assert.ok(error instanceof JavaScriptPolicyError);assert.ok(error.violations.some((item)=>item.code===code),JSON.stringify(error.violations));return true;});}
 test("allows local state, DOM interaction, timers, observers and drawing",()=>assert.equal(validateJavaScript(`const state={n:0};document.querySelector('button').addEventListener('click',()=>{state.n++;});setTimeout(()=>requestAnimationFrame(()=>{}),10);new ResizeObserver(()=>{});lucide.createIcons();`).ok,true));
 test("rejects dynamic code and dynamic script construction",()=>{for(const source of ["eval('1')","new Function('return 1')","document.createElement('script')","node.setAttribute('src', value)"])reject(source,"js-dynamic-code");});
 test("rejects aliased eval and ambiguous element creation",()=>{for(const source of ["const execute=eval;execute('1')","document.createElement(tagName)"])reject(source,"js-dynamic-code");});
@@ -127,13 +127,16 @@ test("rejects equivalent window handles including defaultView", () => {
 
 test("validates setAttributeNS and rejects dynamic or active attributes", () => {
   const cases = [
-    "node.setAttributeNS(null, 'href', 'https://evil.example')",
     "node.setAttributeNS(null, 'onclick', handlerSource)",
     "node.setAttributeNS(namespace, attributeName, value)",
     "node.setAttributeNS(null, name, value)",
     "node.setAttribute(name, value)",
   ];
   for (const source of cases) reject(source, "js-dynamic-code");
+  reject(
+    "node.setAttributeNS(null, 'href', 'https://evil.example')",
+    "js-style-resource",
+  );
   reject(
     "node.setAttributeNS(null, 'style', 'background:url(https://evil.example/x)')",
     "js-style-resource",
@@ -271,4 +274,61 @@ test("keeps ordinary callbacks and data methods available", () => {
     `).ok,
     true,
   );
+});
+
+test("rejects attribute-node mutation surfaces", () => {
+  for (const source of [
+    "const attr = document.createAttribute('fill'); attr.value = value; node.setAttributeNode(attr)",
+    "const attr = document.createAttributeNS(null, 'fill')",
+    "node.setAttributeNodeNS(attr)",
+    "node.removeAttributeNode(attr)",
+    "node.attributes.getNamedItem('fill').value = value",
+    "const attributes = node.attributes",
+    "const getAttributeNode = node.attributes.getNamedItem",
+  ]) reject(source, "js-attribute-mutation");
+});
+
+test("validates SVG URL-capable attribute values", () => {
+  for (const source of [
+    "node.setAttribute('fill', value)",
+    "node.setAttribute('fill', 'url(https://evil.example/paint)')",
+    "node.setAttribute('fill', 'url(' + remotePaint + ')')",
+    "node.setAttributeNS(null, 'marker-end', markerValue)",
+    "node.setAttributeNS(null, 'xlink:href', 'https://evil.example/shape')",
+  ]) reject(source, "js-style-resource");
+
+  assert.equal(
+    validateJavaScript(`
+      node.setAttribute('fill', 'url(#gradient)');
+      node.setAttributeNS(null, 'marker-end', 'url(#arrow)');
+      node.setAttributeNS(null, 'xlink:href', '#shape');
+    `).ok,
+    true,
+  );
+});
+
+test("respects local bindings for browser-global names", () => {
+  assert.equal(
+    validateJavaScript(`
+      const parent = graphNode.parent;
+      const history = [];
+      const open = false;
+      function render(location) { return location.x; }
+      const visit = (parent) => parent.id;
+      try { render(point); } catch (open) { visit(open); }
+    `).ok,
+    true,
+  );
+  for (const source of [
+    "parent.postMessage('x', '*')",
+    "history.back()",
+    "open('https://x')",
+    "location.assign('https://x')",
+  ]) reject(source, "js-navigation");
+});
+
+test("allows ordinary submit methods but blocks clear form submission", () => {
+  assert.equal(validateJavaScript("workflow.submit(); workflow.requestSubmit()").ok, true);
+  reject("form.submit()", "js-navigation");
+  reject("document.forms[0].requestSubmit()", "js-navigation");
 });

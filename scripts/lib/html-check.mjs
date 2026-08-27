@@ -8,6 +8,10 @@ import { validateSvg, SvgPolicyError } from "./svg-policy.mjs";
 
 const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+// Bounds keep adversarial-but-byte-valid documents from exhausting traversal or
+// diagnostic path construction before the HTML5 Block can be rejected safely.
+export const MAX_DOM_DEPTH = 256;
+export const MAX_DOM_NODES = 50_000;
 const HEIGHT_MODES = new Set(["auto", "viewport"]);
 const REQUIRED_NAMED_META = new Map([
   ["viewport", "width=device-width, initial-scale=1"],
@@ -46,24 +50,43 @@ function children(node) {
   return node?.childNodes ?? [];
 }
 
-function walkNodes(node, visit, path = "document") {
-  visit(node, path);
-  children(node).forEach((child, index) =>
-    walkNodes(
-      child,
-      visit,
-      `${path}/${child.tagName ?? child.nodeName}[${index}]`,
-    ),
-  );
-  if (node?.content) walkNodes(node.content, visit, `${path}/template`);
-}
-
-function elements(node) {
+function collectNodes(root, violations) {
   const result = [];
-  walkNodes(node, (item, path) => {
-    if (item.tagName) result.push({ node: item, path });
-  });
-  return result;
+  const stack = [{ node: root, path: "document", depth: 0 }];
+  let limitExceeded = false;
+  const addLimit = (message) => {
+    if (limitExceeded) return;
+    limitExceeded = true;
+    violations.push({ code: "html-dom-limit", message });
+  };
+  while (stack.length) {
+    const current = stack.pop();
+    if (current.depth > MAX_DOM_DEPTH) {
+      addLimit(`DOM depth exceeds ${MAX_DOM_DEPTH}`);
+      continue;
+    }
+    if (result.length >= MAX_DOM_NODES) {
+      addLimit(`DOM node count exceeds ${MAX_DOM_NODES}`);
+      break;
+    }
+    result.push(current);
+    const descendants = children(current.node).map((node, index) => ({
+      node,
+      path: `${current.path}/${node.tagName ?? node.nodeName}[${index}]`,
+      depth: current.depth + 1,
+    }));
+    if (current.node?.content) {
+      descendants.push({
+        node: current.node.content,
+        path: `${current.path}/template`,
+        depth: current.depth + 1,
+      });
+    }
+    for (let index = descendants.length - 1; index >= 0; index -= 1) {
+      stack.push(descendants[index]);
+    }
+  }
+  return { nodes: result, limitExceeded };
 }
 
 function addFromError(violations, error, prefix, path) {
@@ -362,10 +385,10 @@ export function checkHtml5Block(
     });
   }
   if (head[0]) validateMetadata(head[0], safeManifest, violations);
-  const allElements = elements(document);
-  const declaredGlobals = safeManifest.dependencies.map(
-    (item) => item.id.split("@")[0],
-  );
+  const traversal = collectNodes(document, violations);
+  if (traversal.limitExceeded) throw new HtmlCheckError(violations);
+  const allNodes = traversal.nodes;
+  const allElements = allNodes.filter(({ node }) => node.tagName);
   let svgCount = 0;
   let scriptCount = 0;
   for (const { node, path } of allElements) {
@@ -474,7 +497,6 @@ export function checkHtml5Block(
         try {
           validateJavaScript(
             children(node).map((child) => child.value ?? "").join(""),
-            { declaredGlobals },
           );
         } catch (error) {
           if (error instanceof JavaScriptPolicyError) {
@@ -485,7 +507,11 @@ export function checkHtml5Block(
         }
       }
     }
-    if (node.namespaceURI === SVG_NAMESPACE && name === "svg") {
+    if (
+      node.namespaceURI === SVG_NAMESPACE &&
+      name === "svg" &&
+      node.parentNode?.namespaceURI !== SVG_NAMESPACE
+    ) {
       svgCount++;
       try {
         validateSvg(serializeOuter(node), {
@@ -511,7 +537,7 @@ export function checkHtml5Block(
     }
   }
 
-  walkNodes(document, (node, path) => {
+  for (const { node, path } of allNodes) {
     if (
       node.nodeName === "#text" &&
       /<\/?script\b/i.test(node.value ?? "")
@@ -522,7 +548,7 @@ export function checkHtml5Block(
         path,
       });
     }
-  });
+  }
   const usedUrls = allElements
     .filter(
       ({ node }) => node.tagName === "script" && attrs(node).has("src"),

@@ -60,6 +60,37 @@ const RESOURCE_PROPERTY_NAMES = new Set([
   "usemap",
 ]);
 const DOM_MUTATION_METHODS = new Set(["setAttribute", "setAttributeNS"]);
+const ATTRIBUTE_NODE_METHODS = new Set([
+  "createAttribute",
+  "createAttributeNS",
+  "setAttributeNode",
+  "setAttributeNodeNS",
+  "removeAttributeNode",
+  "getAttributeNode",
+  "getAttributeNodeNS",
+]);
+const NAMED_NODE_MAP_METHODS = new Set([
+  "getNamedItem",
+  "getNamedItemNS",
+  "setNamedItem",
+  "setNamedItemNS",
+  "removeNamedItem",
+  "removeNamedItemNS",
+  "item",
+]);
+const SVG_URL_CAPABLE_ATTRIBUTES = new Set([
+  "fill",
+  "stroke",
+  "marker-start",
+  "marker-mid",
+  "marker-end",
+  "filter",
+  "mask",
+  "clip-path",
+  "cursor",
+  "href",
+  "xlink:href",
+]);
 const EXECUTABLE_HTML_SINKS = new Set([
   "innerHTML",
   "outerHTML",
@@ -173,6 +204,51 @@ function genericMutationPath(path) {
   return hasPath(path, ["Object", "assign"]) || hasPath(path, ["Reflect", "set"]);
 }
 
+function formSubmissionPath(path) {
+  return (
+    ["submit", "requestSubmit"].includes(path.at(-1)) &&
+    (path[0] === "form" || (path[0] === "document" && path.includes("forms")))
+  );
+}
+
+function isFunctionScope(node) {
+  return [
+    "FunctionDeclaration",
+    "FunctionExpression",
+    "ArrowFunctionExpression",
+  ].includes(node?.type);
+}
+
+function isLexicalScope(node) {
+  return (
+    node?.type === "Program" ||
+    node?.type === "BlockStatement" ||
+    node?.type === "CatchClause" ||
+    ["ForStatement", "ForInStatement", "ForOfStatement", "SwitchStatement"].includes(
+      node?.type,
+    ) ||
+    isFunctionScope(node)
+  );
+}
+
+function patternNames(pattern, result = []) {
+  if (!pattern) return result;
+  if (pattern.type === "Identifier") result.push(pattern.name);
+  else if (pattern.type === "RestElement") patternNames(pattern.argument, result);
+  else if (pattern.type === "AssignmentPattern") patternNames(pattern.left, result);
+  else if (pattern.type === "ArrayPattern") {
+    for (const element of pattern.elements) patternNames(element, result);
+  } else if (pattern.type === "ObjectPattern") {
+    for (const property of pattern.properties) {
+      patternNames(
+        property.type === "Property" ? property.value : property.argument,
+        result,
+      );
+    }
+  }
+  return result;
+}
+
 function staticString(node) {
   if (
     node?.type === "Literal" &&
@@ -208,7 +284,7 @@ function literalString(node) {
   return node?.type === "Literal" && typeof node.value === "string" ? node.value : null;
 }
 
-export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
+export function validateJavaScript(source) {
   const violations = [];
   let ast;
   try {
@@ -216,6 +292,53 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
   } catch (error) {
     throw new JavaScriptPolicyError([{ code: "javascript-parse", message: error.message, location: error.loc }]);
   }
+
+  const scopeBindings = new Map();
+  const addBindings = (scope, names) => {
+    if (!scope) return;
+    const bindings = scopeBindings.get(scope) ?? new Set();
+    for (const name of names) bindings.add(name);
+    scopeBindings.set(scope, bindings);
+  };
+  const nearestScope = (ancestors, predicate) => {
+    for (let index = ancestors.length - 1; index >= 0; index -= 1) {
+      if (predicate(ancestors[index])) return ancestors[index];
+    }
+    return null;
+  };
+  walk.fullAncestor(ast, (node, _state, ancestors) => {
+    const parents = ancestors.slice(0, -1);
+    if (node.type === "VariableDeclaration") {
+      const scope = nearestScope(
+        parents,
+        node.kind === "var"
+          ? (item) => item.type === "Program" || isFunctionScope(item)
+          : isLexicalScope,
+      );
+      for (const declaration of node.declarations) {
+        addBindings(scope, patternNames(declaration.id));
+      }
+    } else if (node.type === "FunctionDeclaration") {
+      addBindings(nearestScope(parents, isLexicalScope), [node.id?.name]);
+      for (const parameter of node.params) addBindings(node, patternNames(parameter));
+    } else if (["FunctionExpression", "ArrowFunctionExpression"].includes(node.type)) {
+      if (node.id) addBindings(node, [node.id.name]);
+      for (const parameter of node.params) addBindings(node, patternNames(parameter));
+    } else if (node.type === "CatchClause") {
+      addBindings(node, patternNames(node.param));
+    }
+  });
+  const isBound = (name, ancestors) => {
+    for (let index = ancestors.length - 1; index >= 0; index -= 1) {
+      const bindings = scopeBindings.get(ancestors[index]);
+      if (bindings?.has(name)) return true;
+    }
+    return false;
+  };
+  const globalPath = (node, ancestors) => {
+    const root = rootName(node);
+    return root && isBound(root, ancestors) ? [] : normalizedGlobalPath(node);
+  };
 
   const add = (code, message, node) =>
     violations.push({
@@ -282,6 +405,14 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         return;
       }
       if (
+        parentNode?.type === "MemberExpression" &&
+        parentNode.property === node &&
+        !parentNode.computed
+      ) {
+        return;
+      }
+      if (isBound(node.name, ancestors)) return;
+      if (
         ["top", "parent", "history", "open"].includes(node.name) ||
         WINDOW_HANDLES.has(node.name)
       ) {
@@ -313,7 +444,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
     MemberExpression(node, ancestors) {
       const property = propertyName(node);
       const root = rootName(node);
-      const path = normalizedGlobalPath(node);
+      const path = globalPath(node, ancestors);
       if (
         node.computed &&
         property === null &&
@@ -338,6 +469,13 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       if (genericMutationPath(path)) {
         add("js-dynamic-code", "generic property mutation APIs are not allowed", node);
       }
+      if (
+        ATTRIBUTE_NODE_METHODS.has(property) ||
+        NAMED_NODE_MAP_METHODS.has(property) ||
+        property === "attributes"
+      ) {
+        add("js-attribute-mutation", `${property} attribute-node access is not allowed`, node);
+      }
       if (EXECUTABLE_HTML_SINKS.has(property)) {
         add(
           "js-unsafe-html-sink",
@@ -352,7 +490,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
           node,
         );
       }
-      if (["submit", "requestSubmit"].includes(property)) {
+      if (formSubmissionPath(path)) {
         add("js-navigation", "form submission references are not allowed", node);
       }
       if (property === "parseFromString") {
@@ -388,8 +526,8 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
     ImportExpression(node) {
       add("js-dynamic-code", "dynamic module loading is not allowed", node);
     },
-    NewExpression(node) {
-      const path = normalizedGlobalPath(node.callee);
+    NewExpression(node, ancestors) {
+      const path = globalPath(node.callee, ancestors);
       if (hasPath(path, ["Function"])) {
         add("js-dynamic-code", "Function constructor is not allowed", node);
       }
@@ -397,10 +535,10 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         add("js-network", `${path.join(".")} is not allowed`, node);
       }
     },
-    CallExpression(node) {
+    CallExpression(node, ancestors) {
       const direct = node.callee.type === "Identifier" ? node.callee.name : null;
       const property = propertyName(node.callee);
-      const path = normalizedGlobalPath(node.callee);
+      const path = globalPath(node.callee, ancestors);
       if (["eval", "Function"].includes(direct)) {
         add("js-dynamic-code", `${direct} is not allowed`, node);
       }
@@ -418,7 +556,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
       }
       if (
         navigationPath(path) ||
-        ["submit", "requestSubmit"].includes(property)
+        formSubmissionPath(path)
       ) {
         add(
           "js-navigation",
@@ -475,7 +613,16 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         } else {
           const attributeName = qualifiedName.toLowerCase();
           const localName = attributeName.split(":").at(-1);
-          if (
+          if (SVG_URL_CAPABLE_ATTRIBUTES.has(attributeName)) {
+            if (["href", "xlink:href"].includes(attributeName)) {
+              const value = staticString(valueNode);
+              if (value === null || !/^#[A-Za-z_][\w:.-]*$/.test(value)) {
+                add("js-style-resource", `${qualifiedName} must be a static local fragment`, node);
+              }
+            } else {
+              validateStyleSink(attributeName, valueNode, node);
+            }
+          } else if (
             RESOURCE_PROPERTY_NAMES.has(localName) ||
             /^on/.test(localName) ||
             ["http-equiv", "xmlns"].includes(localName)
@@ -496,10 +643,11 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
         add("js-unsafe-html-sink", `${property} is not allowed`, node);
       }
     },
-    AssignmentExpression(node) {
+    AssignmentExpression(node, ancestors) {
       const property = propertyName(node.left);
       const root = rootName(node.left);
       const chain = memberChain(node.left);
+      const path = globalPath(node.left, ancestors);
       if (["innerHTML", "outerHTML", "srcdoc"].includes(property)) {
         add(
           "js-unsafe-html-sink",
@@ -530,11 +678,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
           validateStyleSink(cssProperty, node.right, node);
         }
       }
-      if (
-        property === "location" ||
-        root === "location" ||
-        chain.includes("location")
-      ) {
+      if (navigationPath(path)) {
         add("js-navigation", "navigation assignment is not allowed", node);
       } else if (RESOURCE_PROPERTY_NAMES.has(property?.toLowerCase())) {
         add("js-network", `${property} resource writes are not allowed`, node);
@@ -556,6 +700,7 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
     Identifier(node, ancestors) {
       if (!new Set(["fetch", "XMLHttpRequest", "WebSocket", "EventSource"]).has(node.name)) return;
       const parentNode = ancestors.at(-2);
+      if (isBound(node.name, ancestors)) return;
       if (
         (parentNode?.type === "MemberExpression" && parentNode.property === node && !parentNode.computed) ||
         (parentNode?.type === "Property" && parentNode.key === node && !parentNode.computed)
@@ -566,11 +711,6 @@ export function validateJavaScript(source, { declaredGlobals = [] } = {}) {
     },
   });
 
-  // Declared globals are accepted explicitly; the validator deliberately does not
-  // attempt whole-program name resolution for generated, self-contained pages.
-  if (!Array.isArray(declaredGlobals) || declaredGlobals.some((name) => typeof name !== "string" || !/^[$A-Z_a-z][$\w]*$/.test(name))) {
-    add("js-declared-global", "declaredGlobals must contain JavaScript identifiers", ast);
-  }
   if (violations.length) throw new JavaScriptPolicyError(violations);
   return { ok: true };
 }
