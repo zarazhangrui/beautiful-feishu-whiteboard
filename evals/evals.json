@@ -1,0 +1,70 @@
+[
+  {
+    "prompt": "帮我画一个飞书项目架构图",
+    "expected_route": "whiteboard"
+  },
+  {
+    "prompt": "把这张架构图画成飞书白板，之后我要自己改文字",
+    "expected_route": "whiteboard"
+  },
+  {
+    "prompt": "把这张架构图做成可编辑的飞书白板",
+    "expected_route": "whiteboard"
+  },
+  {
+    "prompt": "把 SVG 作为 HTML5 Block 写进飞书文档",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "在飞书文档里放一个交互式项目架构图",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "把这张架构图作为 HTML Block 嵌入飞书文档",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "Publish an interactive network graph into a Lark doc as an HTML5 Block",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "把这个 Dashboard 作为 HTML5 Block 发布到飞书文档",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "在飞书文档里嵌入一个可交互的产品原型",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "把数据做成带筛选器的飞书 HTML 块",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "给飞书文档加一个带动画的 HTML5 Block",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "做一个普通网页 dashboard",
+    "expected_route": "not-triggered"
+  },
+  {
+    "prompt": "写一个带 ECharts 的 HTML 页面",
+    "expected_route": "not-triggered"
+  },
+  {
+    "prompt": "帮我设计一个移动端原型",
+    "expected_route": "not-triggered"
+  },
+  {
+    "prompt": "把同一项目架构分别作为飞书白板和 HTML5 Block 写入文档",
+    "expected_route": "dual"
+  },
+  {
+    "prompt": "Generate a Lark doc HTML block from this SVG",
+    "expected_route": "html5-block"
+  },
+  {
+    "prompt": "把这个流程做成漂亮的信息图",
+    "expected_route": "whiteboard"
+  }
+]

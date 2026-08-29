@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "type": "prototype",
+  "title": "任务录入原型",
+  "summary": "本地状态的任务录入工具：输入草稿、添加任务、切换紧急模式并重置。",
+  "content": {
+    "nodes": [],
+    "edges": [],
+    "metrics": [],
+    "series": [],
+    "steps": [
+      {
+        "id": "draft",
+        "label": "输入任务草稿",
+        "description": "在输入框填写任务名称。"
+      },
+      {
+        "id": "submit",
+        "label": "添加任务",
+        "description": "点击添加按钮写入本地列表。"
+      },
+      {
+        "id": "reset",
+        "label": "重置表单",
+        "description": "清空输入并恢复初始状态。"
+      }
+    ],
+    "annotations": []
+  },
+  "theme": {
+    "palette": "grove-block",
+    "tokens": {}
+  },
+  "interactions": ["input", "submit", "toggle"],
+  "accessibility": {
+    "alt": "任务录入原型：输入框、添加按钮与任务列表。",
+    "instructions": "输入任务名称，点击添加写入列表；紧急模式按钮可切换高亮样式。"
+  }
+}

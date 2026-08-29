@@ -2,6 +2,32 @@
 # Preflight check for the beautiful-feishu-whiteboard skill.
 # Verifies the tools needed to render an SVG and write it into Feishu as an editable whiteboard.
 set -u
+
+mode="whiteboard"
+if [ "${1:-}" = "--help" ]; then
+  echo "Usage: bash scripts/preflight.sh [--mode whiteboard|html5-block]"
+  echo "default: whiteboard"
+  exit 0
+fi
+if [ "${1:-}" = "--mode" ]; then
+  mode="${2:-}"
+  if [ -z "$mode" ] || [ "${3:-}" != "" ]; then
+    echo "Usage: bash scripts/preflight.sh [--mode whiteboard|html5-block]" >&2
+    exit 2
+  fi
+elif [ "$#" -gt 0 ]; then
+  echo "Usage: bash scripts/preflight.sh [--mode whiteboard|html5-block]" >&2
+  exit 2
+fi
+
+if [ "$mode" = "html5-block" ]; then
+  exec node "$(dirname "$0")/preflight-html5-block.mjs"
+fi
+if [ "$mode" != "whiteboard" ]; then
+  echo "Invalid mode '$mode'; expected whiteboard|html5-block" >&2
+  exit 2
+fi
+
 ok=1
 echo "▶ Checking prerequisites for beautiful-feishu-whiteboard…"
 echo

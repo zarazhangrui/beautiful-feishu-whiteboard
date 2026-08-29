@@ -1,0 +1,241 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beautiful-feishu-whiteboard.local/schemas/visualization-spec.schema.json",
+  "title": "VisualizationSpec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "type",
+    "title",
+    "summary",
+    "content",
+    "theme",
+    "interactions",
+    "accessibility"
+  ],
+  "properties": {
+    "version": {
+      "const": "1.0"
+    },
+    "type": {
+      "enum": [
+        "dashboard",
+        "chart",
+        "network",
+        "flow",
+        "timeline",
+        "presentation",
+        "prototype",
+        "form",
+        "knowledge-tool",
+        "immersive"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content": {
+      "$ref": "#/definitions/content"
+    },
+    "theme": {
+      "$ref": "#/definitions/theme"
+    },
+    "interactions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "select",
+          "filter",
+          "pan",
+          "zoom",
+          "drag",
+          "hover",
+          "toggle",
+          "play",
+          "navigate",
+          "input",
+          "submit"
+        ]
+      }
+    },
+    "accessibility": {
+      "$ref": "#/definitions/accessibility"
+    }
+  },
+  "definitions": {
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/node"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/edge"
+          }
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metric"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/series"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/step"
+          }
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/annotation"
+          }
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "parentId": { "$ref": "#/definitions/id" },
+        "value": {},
+        "metadata": { "type": "object" }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "target"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "source": { "$ref": "#/definitions/id" },
+        "target": { "$ref": "#/definitions/id" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "directed": { "type": "boolean" },
+        "metadata": { "type": "object" }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "value"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "value": {
+          "anyOf": [
+            { "type": "number" },
+            { "type": "string" }
+          ]
+        },
+        "unit": { "type": "string" },
+        "trend": {
+          "anyOf": [
+            { "type": "number" },
+            { "type": "string" }
+          ]
+        },
+        "description": { "type": "string" },
+        "metadata": { "type": "object" }
+      }
+    },
+    "series": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "data"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "data": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              { "type": "number" },
+              { "type": "string" },
+              { "type": "object" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "unit": { "type": "string" },
+        "metadata": { "type": "object" }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "status": { "type": "string" },
+        "dependsOn": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/id" }
+        },
+        "metadata": { "type": "object" }
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text"],
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "text": { "type": "string", "minLength": 1 },
+        "targetId": { "$ref": "#/definitions/id" },
+        "kind": { "type": "string" },
+        "metadata": { "type": "object" }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["palette", "tokens"],
+      "properties": {
+        "palette": { "type": "string", "minLength": 1 },
+        "tokens": { "type": "object" }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alt", "instructions"],
+      "properties": {
+        "alt": { "type": "string", "minLength": 1 },
+        "instructions": { "type": "string", "minLength": 1 }
+      }
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

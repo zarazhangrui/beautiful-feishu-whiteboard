@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <title>离线降级示例</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; margin: 0; padding: 0; }
+    body { font-size: 16px; line-height: 1.5; color: #153125; background: #f7f1ec; }
+    .viz-shell { max-width: 100%; margin: 0 auto; padding: 24px; }
+    .viz-canvas { min-height: 240px; border: 2px solid #153125; border-radius: 12px; padding: 24px; background: #ffffff; }
+  </style>
+  <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js" integrity="sha384-+8nbzwDAyu5kAjqtR/XKxIgPHQD2TflvbZgeDZn5t3JP+OOogNH1jXnfel8ZAgzS" crossorigin="anonymous"></script>
+</head>
+<body>
+  <main class="viz-shell">
+    <h1>离线降级示例</h1>
+    <section class="viz-canvas" data-viz-canvas aria-label="图标面板">
+      <p>核心指标仍然直接可见：可用性 99.9%，错误率 0.02%。</p>
+      <p class="viz-fallback" data-viz-fallback hidden>图表库不可用，以上关键数据仍可阅读。</p>
+    </section>
+  </main>
+  <script>
+    const fallback = document.querySelector("[data-viz-fallback]");
+    if (typeof lucide === "undefined") {
+      fallback.hidden = false;
+    }
+  </script>
+</body>
+</html>

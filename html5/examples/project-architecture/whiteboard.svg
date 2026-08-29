@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 740">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0 L10 4 L0 8 z"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1600" height="740" fill="#F7F1EC"/>
+  <text x="60" y="88" font-size="44" font-weight="700" fill="#153125">项目架构：双渲染器与发布链路</text>
+
+  <rect x="80" y="220" width="250" height="130" rx="28" fill="#008248"/>
+  <text x="205" y="278" text-anchor="middle" font-size="28" font-weight="700" fill="#FFFFFF">内容规划</text>
+  <text x="205" y="314" text-anchor="middle" font-size="18" fill="#FFFFFF">理解内容、受众与用途</text>
+
+  <rect x="450" y="220" width="250" height="130" rx="28" fill="#008248"/>
+  <text x="575" y="278" text-anchor="middle" font-size="28" font-weight="700" fill="#FFFFFF">可视化语义层</text>
+  <text x="575" y="314" text-anchor="middle" font-size="18" fill="#FFFFFF">VisualizationSpec 共享协议</text>
+
+  <rect x="840" y="170" width="280" height="115" rx="26" fill="#F6BDDA"/>
+  <text x="980" y="224" text-anchor="middle" font-size="26" font-weight="700" fill="#153125">白板渲染器</text>
+  <text x="980" y="258" text-anchor="middle" font-size="18" fill="#153125">SVG → whiteboard-cli 写入</text>
+
+  <rect x="840" y="335" width="280" height="115" rx="26" fill="#F6BDDA"/>
+  <text x="980" y="389" text-anchor="middle" font-size="26" font-weight="700" fill="#153125">HTML 渲染器</text>
+  <text x="980" y="423" text-anchor="middle" font-size="18" fill="#153125">HTML → html5-block 写入</text>
+
+  <rect x="1260" y="220" width="270" height="130" rx="28" fill="#FCC715"/>
+  <text x="1395" y="278" text-anchor="middle" font-size="28" font-weight="700" fill="#000000">飞书发布</text>
+  <text x="1395" y="314" text-anchor="middle" font-size="18" fill="#000000">写入文档并 fetch 回查</text>
+
+  <line x1="330" y1="285" x2="450" y2="285" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <polyline points="700,250 770,250 770,227 840,227" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <polyline points="700,310 770,310 770,392 840,392" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <polyline points="1120,227 1190,227 1190,250 1260,250" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <polyline points="1120,392 1190,392 1190,310 1260,310" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="80" y="560" width="1440" height="100" rx="28" fill="#FFFFFF" stroke="#153125" stroke-width="3"/>
+  <text x="800" y="618" text-anchor="middle" font-size="26" font-weight="700" fill="#153125">白板保留节点可编辑性，HTML 支持筛选、平移与缩放交互</text>
+</svg>

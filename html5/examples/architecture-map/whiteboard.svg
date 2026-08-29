@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0 L10 4 L0 8 z"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1600" height="760" fill="#F7F1EC"/>
+  <text x="60" y="80" font-size="40" font-weight="700" fill="#153125">仓库架构：白板与 HTML 双渲染器流水线</text>
+
+  <rect x="40" y="150" width="200" height="100" rx="24" fill="#008248"/>
+  <text x="140" y="194" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">用户请求</text>
+  <text x="140" y="226" text-anchor="middle" font-size="16" fill="#FFFFFF">“画一张飞书架构图”</text>
+
+  <rect x="300" y="150" width="220" height="100" rx="24" fill="#008248"/>
+  <text x="410" y="194" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">路由 SKILL.md</text>
+  <text x="410" y="226" text-anchor="middle" font-size="16" fill="#FFFFFF">whiteboard / html5-block / dual</text>
+
+  <rect x="580" y="150" width="240" height="100" rx="24" fill="#008248"/>
+  <text x="700" y="194" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">VisualizationSpec</text>
+  <text x="700" y="226" text-anchor="middle" font-size="16" fill="#FFFFFF">共享语义层与主题</text>
+
+  <rect x="120" y="330" width="240" height="100" rx="24" fill="#F6BDDA"/>
+  <text x="240" y="374" text-anchor="middle" font-size="24" font-weight="700" fill="#153125">白板渲染器</text>
+  <text x="240" y="406" text-anchor="middle" font-size="16" fill="#153125">RULES.md + whiteboard-cli</text>
+
+  <rect x="560" y="330" width="240" height="100" rx="24" fill="#F6BDDA"/>
+  <text x="680" y="374" text-anchor="middle" font-size="24" font-weight="700" fill="#153125">HTML 渲染器</text>
+  <text x="680" y="406" text-anchor="middle" font-size="16" fill="#153125">build/check/render/publish</text>
+
+  <rect x="1080" y="200" width="240" height="280" rx="28" fill="#FCC715"/>
+  <text x="1200" y="300" text-anchor="middle" font-size="26" font-weight="700" fill="#000000">飞书文档</text>
+  <text x="1200" y="334" text-anchor="middle" font-size="16" fill="#000000">可编辑白板</text>
+  <text x="1200" y="362" text-anchor="middle" font-size="16" fill="#000000">交互式 HTML5 Block</text>
+  <text x="1200" y="390" text-anchor="middle" font-size="16" fill="#000000">支持评论</text>
+
+  <rect x="40" y="560" width="960" height="160" rx="28" fill="#FFFFFF" stroke="#153125" stroke-width="3"/>
+  <text x="520" y="600" text-anchor="middle" font-size="24" font-weight="700" fill="#153125">支撑层</text>
+  <text x="520" y="636" text-anchor="middle" font-size="18" fill="#153125">主题模板 CATALOG + templates · 安全策略 scripts/lib · html5 资产 dependencies + tokens</text>
+  <text x="520" y="670" text-anchor="middle" font-size="18" fill="#153125">骨架与示例 archetypes + examples · 测试 test/ · 前置检查 preflight</text>
+
+  <line x1="240" y1="200" x2="300" y2="200" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="520" y1="200" x2="580" y2="200" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <polyline points="580,250 580,300 240,300 240,330" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="700" y1="250" x2="700" y2="330" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <polyline points="360,380 360,310 1020,310 1080,310" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <polyline points="800,380 800,470 1020,470 1020,370 1080,370" fill="none" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="240" y1="560" x2="240" y2="430" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="680" y1="560" x2="680" y2="430" stroke="#153125" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

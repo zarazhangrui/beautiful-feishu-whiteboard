@@ -1,0 +1,143 @@
+{
+  "version": "1.0",
+  "type": "network",
+  "title": "VIA 公司架构",
+  "summary": "董事会与 CEO 统领治理层，下辖产品研发、市场销售、运营与供应链、数据与技术、职能支持五个部门及各自业务单元。",
+  "content": {
+    "nodes": [
+      {
+        "id": "ceo",
+        "label": "董事会与CEO",
+        "description": "公司治理与决策",
+        "category": "gov"
+      },
+      {
+        "id": "strategy",
+        "label": "战略与投资",
+        "description": "战略规划 · 投资并购",
+        "category": "gov"
+      },
+      {
+        "id": "dept-product",
+        "label": "产品研发",
+        "description": "智能硬件 · 软件与云",
+        "category": "dept"
+      },
+      {
+        "id": "dept-sales",
+        "label": "市场销售",
+        "description": "行业解决方案 · 客户成功",
+        "category": "dept"
+      },
+      {
+        "id": "dept-ops",
+        "label": "运营与供应链",
+        "description": "生产交付 · 全球物流",
+        "category": "dept"
+      },
+      {
+        "id": "dept-data",
+        "label": "数据与技术",
+        "description": "数据中台 · AI 与云",
+        "category": "dept"
+      },
+      {
+        "id": "dept-support",
+        "label": "职能支持",
+        "description": "人力 · 财务 · 法务 · 品牌",
+        "category": "dept"
+      },
+      {
+        "id": "sub-hardware",
+        "label": "智能硬件",
+        "description": "产品研发单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-software",
+        "label": "软件与云",
+        "description": "产品研发单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-solutions",
+        "label": "行业解决方案",
+        "description": "市场销售单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-success",
+        "label": "客户成功",
+        "description": "市场销售单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-manufacturing",
+        "label": "生产交付",
+        "description": "运营单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-logistics",
+        "label": "全球物流",
+        "description": "运营单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-data",
+        "label": "数据中台",
+        "description": "数据与技术单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-ai",
+        "label": "AI 与云平台",
+        "description": "数据与技术单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-hr",
+        "label": "人力行政",
+        "description": "职能支持单元",
+        "category": "sub"
+      },
+      {
+        "id": "sub-finance",
+        "label": "财务与法务",
+        "description": "职能支持单元",
+        "category": "sub"
+      }
+    ],
+    "edges": [
+      { "id": "ceo-to-strategy", "source": "ceo", "target": "strategy" },
+      { "id": "ceo-to-product", "source": "ceo", "target": "dept-product" },
+      { "id": "ceo-to-sales", "source": "ceo", "target": "dept-sales" },
+      { "id": "ceo-to-ops", "source": "ceo", "target": "dept-ops" },
+      { "id": "ceo-to-data", "source": "ceo", "target": "dept-data" },
+      { "id": "ceo-to-support", "source": "ceo", "target": "dept-support" },
+      { "id": "product-to-hardware", "source": "dept-product", "target": "sub-hardware" },
+      { "id": "product-to-software", "source": "dept-product", "target": "sub-software" },
+      { "id": "sales-to-solutions", "source": "dept-sales", "target": "sub-solutions" },
+      { "id": "sales-to-success", "source": "dept-sales", "target": "sub-success" },
+      { "id": "ops-to-manufacturing", "source": "dept-ops", "target": "sub-manufacturing" },
+      { "id": "ops-to-logistics", "source": "dept-ops", "target": "sub-logistics" },
+      { "id": "data-to-datas", "source": "dept-data", "target": "sub-data" },
+      { "id": "data-to-ai", "source": "dept-data", "target": "sub-ai" },
+      { "id": "support-to-hr", "source": "dept-support", "target": "sub-hr" },
+      { "id": "support-to-finance", "source": "dept-support", "target": "sub-finance" }
+    ],
+    "metrics": [],
+    "series": [],
+    "steps": [],
+    "annotations": []
+  },
+  "theme": {
+    "palette": "neo-grid-bold",
+    "tokens": {}
+  },
+  "interactions": ["select", "filter", "pan", "zoom"],
+  "accessibility": {
+    "alt": "VIA 公司架构：董事会与 CEO 下辖战略与投资及五个部门，各部门再分设业务单元。",
+    "instructions": "点击节点或连线查看详情，按治理、部门、单元筛选，平移与缩放浏览整体结构。"
+  }
+}

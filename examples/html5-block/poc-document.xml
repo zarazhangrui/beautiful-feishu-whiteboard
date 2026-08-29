@@ -1,0 +1,3 @@
+<title>HTML5 Block Transport POC</title>
+<p>验证本地 HTML 文件能够被 lark-cli 展开并写入飞书文档。</p>
+<html5-block path="@./index.html"></html5-block>

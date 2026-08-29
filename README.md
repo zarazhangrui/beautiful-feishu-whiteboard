@@ -12,6 +12,29 @@ auto layout chart tool. Your agent composes the layout, and these templates give
 **colour palette and mood** plus the whiteboard medium's hard rendering rules. The result is a real,
 **editable** Feishu whiteboard inside a doc, not a screenshot.
 
+## Interactive HTML5 Block output
+
+Version 1.3 adds an experimental, create-only Feishu/Lark document HTML5 Block route. It starts from
+the same content intent as whiteboard output, but renders a complete interactive page
+(DOM/CSS/JavaScript) instead of an SVG: relationship graphs with selection/filter/pan/zoom,
+KPI dashboards with series switching, and local-state prototypes. The HTML block is interactive in
+the browser but is not node-editable inside the doc.
+
+- Whiteboard remains the default output; the HTML route only triggers for explicit
+  Feishu/Lark document HTML5 Block / interactive / Dashboard / prototype requests.
+- A shared `VisualizationSpec` (JSON Schema) keeps dual whiteboard + HTML outputs factually aligned.
+- Pages are verified at 390/820/1440px in real Chrome, including every declared interaction,
+  reduced-motion handling, and the CDN-offline fallback.
+- Allowlisted, SRI-pinned CDN dependencies are optional; deny-by-default CSP, a 500KB limit, and
+  Manifest-backed hash verification run before publishing.
+- The verified CLI gate is `lark-cli >= 1.0.89`. Existing-document insert/replace remains disabled
+  pending the full transport and trusted-client POC.
+
+Run `bash scripts/preflight.sh --mode html5-block` before publishing. See
+[`HTML5_RULES.md`](HTML5_RULES.md), the archetypes under
+[`html5/archetypes/`](html5/archetypes/), runnable examples under
+[`html5/examples/`](html5/examples/), and the [transport POC](examples/html5-block/POC.md).
+
 > Built from hard won, on board verified knowledge of what the Feishu SVG whiteboard renderer can and
 > cannot do (native shapes only, no opacity, the text colour export quirk, and more), all captured in
 > [`RULES.md`](RULES.md).
@@ -150,6 +173,9 @@ git clone https://github.com/zarazhangrui/beautiful-feishu-whiteboard \
 
 Run the bundled check any time: `bash scripts/preflight.sh`
 
+For HTML5 Block output, install repository dependencies with `npm install`, then run
+`bash scripts/preflight.sh --mode html5-block`.
+
 ## Use it
 
 Once installed, just ask your agent in plain language. You can name a style or describe a vibe:
@@ -158,6 +184,8 @@ Once installed, just ask your agent in plain language. You can name a style or d
 > - "Turn this doc into a visual **board** in Feishu, minimal **cobalt** look."
 > - "Draw the system architecture as a Feishu whiteboard, **playful candy** colours."
 > - "Explain the 3 LLM training stages as a board."
+> - "Put this SVG into a Feishu doc as an HTML5 Block."
+> - "Publish the same architecture as both an editable whiteboard and an HTML5 Block."
 
 Your agent will: ask what the board is for and what vibe you want, pick a fitting style from the
 [catalogue](CATALOG.md), compose the diagram with native shapes, render it and self correct
@@ -172,6 +200,10 @@ Your agent will: ask what the board is for and what vibe you want, pick a fittin
   can pick a style that fits the content.
 - **`RULES.md`**: the medium's hard limits (native shapes only, no opacity, no gradients or blur, the
   text colour export caveat) and the exact `lark-cli` and `whiteboard-cli` commands.
+- **`HTML5_RULES.md`**: shared-spec, interaction-hook, security, browser-rendering, publishing, and
+  fetch-back rules for the interactive HTML5 Block route.
+- **`html5/examples/`**: three runnable examples (project architecture, service dashboard, task
+  prototype) with specs and source pages verified by the test suite.
 - **`templates/<slug>/design.md`**: one per style, just the palette and how to use its colours. The
   agent is free to lay out the content however reads best; the template only constrains colour and mood.
 
