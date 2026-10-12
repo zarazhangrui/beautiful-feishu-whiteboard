@@ -82,6 +82,40 @@ the real board (the image export and the GUI behave differently — see notes be
 - **Text reflows by character** (CJK ≈ 1em, Latin ≈ 0.6em). Pad boxes generously; never fit text to
   the pixel; wrap long lines across `<tspan>`s rather than shrinking.
 
+## SVG→OpenAPI conversion post-processing (hard rules, empirically verified 2026-08)
+
+The whiteboard-cli SVG→OpenAPI conversion has systematic defects in **text width metrics, vertical
+alignment, and connector binding**. Writing the converted JSON of a complex board (multi-box,
+multi-arrow, multi-label — swimlane/architecture diagrams) **without post-processing WILL produce
+wrapped text, clipped text, and arrows that don't follow when shapes are dragged**. Post-process the
+`--to openapi` JSON before `+update`:
+
+1. **No wrapping** — the converter's font metrics are narrower than the board's actual Noto Sans SC
+   rendering (spaces, `/`, `·`, brackets especially). Widen every `text_shape` to ≥ natural width
+   + 20px (CJK 1em, Latin/digit 0.62em); shift `x` left by half the delta for centered text.
+2. **No top-drift** — set every `text_shape` to `vertical_align: "mid"` (converter default is `"top"`,
+   which drifts text up-left relative to its backing box).
+3. **No clipping** — embedding a label's text into its shape (recommended: auto-centered, follows
+   drags, double-click editable) requires shape height ≥ font_size × 1.9 + 6 (use the CLI's actual
+   font_size output — 11.5 rounds to 12). Otherwise keep it an independent text node under rules 1–2.
+   Field-proven: 20–22px label rects clip 11px text by a third; 30–34px title bars fail 14px text.
+4. **Bind connectors** — converted connectors carry bare coordinate endpoints
+   (`specified_coordinate: true`); arrows won't follow dragged shapes. Add per endpoint
+   `"attached_object": {"id": "<node-id>", "snap_to": "left|right|top|bottom", "position": {0~1 along edge}}`
+   and **delete that endpoint's absolute `position` field** (keeping both fails the upload).
+   `snap_to` = nearest of the four edges from the endpoint (tolerance ~14px).
+5. **Host exclusions** — when resolving binding/embedding hosts, exclude: shapes with embedded text
+   (labels riding lines hijack endpoints), large backgrounds (>200,000px²), full-width strips
+   (>600px wide — title bars, legend boxes, patch strips), and rotated shapes (`angle ≠ 0`; their
+   axis-aligned bounding boxes swallow neighboring text).
+6. **Source-of-truth format** — post-process only the native `--to openapi` output. The
+   `+query --output_as raw` export (`{data:{nodes}}`, no `version`) is NOT writable back
+   ("DSL validation failed").
+7. **No second `--overwrite`** — overwriting a board that already has content permanently blanks its
+   server snapshot (client renders an "empty" board; rewriting cannot heal it). To update: insert a
+   fresh blank whiteboard block → write → verify → delete the old block. The `--overwrite` in the
+   workflow below is safe only for the first write into a freshly created blank block.
+
 ## Workflow
 
 1. Pick a **template** (`templates/<slug>/design.md`) for the palette + mood, and read it.
@@ -108,6 +142,10 @@ the real board (the image export and the GUI behave differently — see notes be
      spotted in one view in a single edit pass before re-rendering. This keeps the iterate loop cheap
      without losing any pass.
 4. **Write it into Feishu as an editable whiteboard**, then **look at the real board too:**
+   for complex boards (swimlane/architecture diagrams), post-process the `--to openapi` JSON first
+   per "SVG→OpenAPI conversion post-processing" above. `--overwrite` below is only for the first
+   write into a freshly created blank block — to update a board that already has content, follow
+   rule 7 (new block + delete old, never re-overwrite).
    `npx -y @larksuite/whiteboard-cli@^0.2.11 -i <dir>/diagram.svg --to openapi --format json | lark-cli whiteboard +update --whiteboard-token <tok> --source - --input_format raw --idempotent-token <unique> --overwrite --as user`
    then `lark-cli whiteboard +query --whiteboard-token <tok> --output_as image --output <dir> --as user`,
    view it, and fix any remaining layout issues. The export is faithful for **layout, shapes, fills,
